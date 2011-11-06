@@ -55,6 +55,7 @@ def run_notary(opts, backend, log=None):
 
     connectFactory = http.HTTPFactory(timeout=10)
     connectFactory.protocol = ConnectChannel
+    connectFactory.verifier = backend
 
     notary = Resource()
     notary.putChild('target', TargetPage(database, cert_key, backend))

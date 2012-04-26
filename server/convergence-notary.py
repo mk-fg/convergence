@@ -64,7 +64,7 @@ DEFAULT_CONVERGENCE_DATABASE_FILE = '/var/lib/convergence/convergence.db'
 DEFAULT_CONVERGENCE_LOG_FILE = '/var/log/convergence.log'
 DEFAULT_CONVERGENCE_PID_FILE = '/var/run/convergence.pid'
 
-class ServerContextFactory:
+class SSLContextFactory:
 
     def __init__(self, cert, key):
         self.cert         = cert
@@ -92,15 +92,20 @@ def parseOptions(argv):
     gname             = "nogroup"
     verifier          = NetworkPerspectiveVerifier();
     background        = True
+    listenHttp        = False
+    proxyPort         = 4242
 
     try:
-        opts, args = getopt.getopt(argv, "s:p:i:o:c:k:P:D:L:u:g:b:fdh")
+        opts, args = getopt.getopt(argv,
+            "s:p:x:i:o:c:k:P:D:L:u:g:b:fdh", ['no-https'])
 
         for opt, arg in opts:
             if opt in("-p"):
                 httpPort = int(arg)
             elif opt in ("-s"):
                 sslPort = int(arg)
+            elif opt in ("-x"):
+                proxyPort = int(arg)
             elif opt in ("-i"):
                 incomingInterface = arg
             elif opt in ("-c"):
@@ -126,9 +131,11 @@ def parseOptions(argv):
             elif opt in ("-h"):
                 usage()
                 sys.exit()
+            elif opt in ("--no-https"):
+                listenHttp = True
         
         return (logLevel, sslPort, httpPort, certFile, keyFile, pidFile, dbFile, logFile,
-                uname, gname, background, incomingInterface, verifier)
+                uname, gname, background, incomingInterface, verifier, listenHttp, proxyPort)
 
     except getopt.GetoptError:
         usage()
@@ -138,20 +145,22 @@ def usage():
     print "\nnotary " + str(gVersion) + " by Moxie Marlinspike"
     print "usage: notary <options>\n"
     print "Options:"
-    print "-p <http_port> HTTP port to listen on (default 80)."
-    print "-s <ssl_port>  SSL port to listen on (default 443)."
-    print "-i <address>   IP address to listen on for incoming connections (optional)."
-    print "-c <cert>      SSL certificate location."
-    print "-k <key>       SSL private key location."
-    print "-D <db>        SQLite database (default", DEFAULT_CONVERGENCE_DATABASE_FILE, ")."
-    print "-P <pidfile>   pid file location (default", DEFAULT_CONVERGENCE_PID_FILE, ")."
-    print "-L <logfile>   log file location (default", DEFAULT_CONVERGENCE_LOG_FILE, ")."
-    print "-u <username>  Name of user to drop privileges to (defaults to 'nobody')"
-    print "-g <group>     Name of group to drop privileges to (defaults to 'nogroup')"
-    print "-b <backend>   Verifier backend [perspective|google] (defaults to 'perspective')"
-    print "-f             Run in foreground."
-    print "-d             Debug mode."
-    print "-h             Print this help message."
+    print "--no-https      Turn off ssl on listened ports (e.g. to put Twisted behind Nginx)."
+    print "-p <http_port>  HTTP port to listen on (default 80)."
+    print "-s <ssl_port>   SSL port to listen on (default 443)."
+    print "-x <proxy_port> SSL proxy port to listen on (default 4242)."
+    print "-i <address>    IP address to listen on for incoming connections (optional)."
+    print "-c <cert>       SSL certificate location."
+    print "-k <key>        SSL private key location."
+    print "-D <db>         SQLite database (default", DEFAULT_CONVERGENCE_DATABASE_FILE, ")."
+    print "-P <pidfile>    pid file location (default", DEFAULT_CONVERGENCE_PID_FILE, ")."
+    print "-L <logfile>    log file location (default", DEFAULT_CONVERGENCE_LOG_FILE, ")."
+    print "-u <username>   Name of user to drop privileges to (defaults to 'nobody')"
+    print "-g <group>      Name of group to drop privileges to (defaults to 'nogroup')"
+    print "-b <backend>    Verifier backend [perspective|google] (defaults to 'perspective')"
+    print "-f              Run in foreground."
+    print "-d              Debug mode."
+    print "-h              Print this help message."
     print ""
 
 def initializeBackend(backend):
@@ -218,19 +227,24 @@ def initializeKey(keyFile):
 
 def main(argv):
     (logLevel, sslPort, httpPort,
-     certFile, keyFile, pidFile, dbFile, logFile,
-     userName, groupName, background,
-     incomingInterface, verifier) = parseOptions(argv)
+        certFile, keyFile, pidFile, dbFile, logFile,
+        userName, groupName, background,
+        incomingInterface, verifier, listenHttp, proxyPort) = parseOptions(argv)
     privateKey                    = initializeKey(keyFile)
     database                      = initializeDatabase(dbFile)
     sslFactory                    = initializeFactory(database, privateKey, verifier)
     connectFactory                = http.HTTPFactory(timeout=10)
     connectFactory.protocol       = ConnectChannel
-    
-    reactor.listenSSL(sslPort, sslFactory, ServerContextFactory(certFile, keyFile),
-                      interface=incomingInterface)
-    reactor.listenSSL(4242, sslFactory, ServerContextFactory(certFile, keyFile),
-                      interface=incomingInterface)
+
+    if listenHttp:
+        reactor.listenTCP(sslPort, notaryFactory, interface=incomingInterface)
+        reactor.listenTCP(proxyPort, notaryFactory, interface=incomingInterface)
+    else:
+        reactor.listenSSL(sslPort, sslFactory, SSLContextFactory(certFile, keyFile),
+                          interface=incomingInterface)
+        reactor.listenSSL(proxyPort, sslFactory, SSLContextFactory(certFile, keyFile),
+                          interface=incomingInterface)
+
     reactor.listenTCP(port=httpPort, factory=connectFactory,
                       interface=incomingInterface)
         

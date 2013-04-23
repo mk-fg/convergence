@@ -1,1 +1,7 @@
 /client/Convergence.xpi
+
+/server/*.egg-info
+/server/build
+/server/dist
+*.pyc
+*.pyo

@@ -38,9 +38,9 @@ class TargetPage(Resource):
     isLeaf = True
 
     def __init__(self, databaseConnection, privateKey, verifier):
-        self.database     = FingerprintDatabase(databaseConnection)
+        self.database = FingerprintDatabase(databaseConnection)
         self.cacheUpdater = CacheUpdater(self.database, verifier)
-        self.privateKey   = privateKey
+        self.privateKey = privateKey
 
     def cacheUpdateComplete(self, (code, recordRows), request):
         self.sendResponse(request, code, recordRows)
@@ -54,7 +54,7 @@ class TargetPage(Resource):
         deferred = self.cacheUpdater.updateCache(host, port, submittedFingerprint)
         deferred.addCallback(self.cacheUpdateComplete, request)
         deferred.addErrback(self.cacheUpdateError, request)
-        
+
     def isCacheMiss(self, recordRows, fingerprint):
         if (recordRows == None or len(recordRows) == 0):
             return True
@@ -102,10 +102,10 @@ class TargetPage(Resource):
         if target.find("+") == -1:
             self.sendErrorResponse(request, 400, "You must specify a destination port.")
             return
-        
+
         (host, port) = target.split("+")
-        fingerprint  = None
-        
+        fingerprint = None
+
         if (('fingerprint' not in request.args) and (request.method == "POST")):
             self.sendErrorResponse(request, 400, "You must specify a fingerprint.")
             return

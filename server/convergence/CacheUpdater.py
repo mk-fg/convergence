@@ -57,4 +57,4 @@ class CacheUpdater:
         deferred.addCallback(self.handleVerifyCertificateComplete, host, port)
         deferred.addErrback(self.handleVerifyCertificateError)
 
-        return deferred        
+        return deferred

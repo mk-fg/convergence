@@ -32,12 +32,12 @@ class Verifier:
         the implementation does not know of any valid fingerprint.
 
         :Parameters:
-          - `host` (str) - The target's host name.
-          - `port` (int) - The target's port.
-          - `fingerpring` (str) - The fingerprint in question for this target.
+        - `host` (str) - The target's host name.
+        - `port` (int) - The target's port.
+        - `fingerpring` (str) - The fingerprint in question for this target.
 
         :Returns Type:
-          Deferred
+        Deferred
 
         """
         raise NotImplementedError("Abstract method!")

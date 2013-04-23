@@ -31,7 +31,7 @@ class ConnectRequest(Request):
 
     def __init__(self, channel, queued, reactor=reactor):
         Request.__init__(self, channel, queued)
-        self.reactor          = reactor
+        self.reactor = reactor
 
     def isValidConnectRequest(self, method, destinations):
         if (method is None or destinations is None or len(destinations) == 0):
@@ -43,8 +43,8 @@ class ConnectRequest(Request):
 
             if ((destination.find("+") != -1) and (not destination.endswith("+4242"))):
                 return False
-            
-        return method.strip() == "CONNECT"    
+
+        return method.strip() == "CONNECT"
 
     def getDestinations(self):
         destinations = []
@@ -52,7 +52,7 @@ class ConnectRequest(Request):
         if not self.uri is None:
             destinations.append(self.uri)
 
-        headers            = self.getAllHeaders()
+        headers = self.getAllHeaders()
         destinationHeaders = self.requestHeaders.getRawHeaders("x-convergence-notary")
 
         if destinationHeaders is None:
@@ -65,19 +65,19 @@ class ConnectRequest(Request):
         logging.debug("Got connect request: " + self.uri)
 
         destinations = self.getDestinations()
-        
+
         if (self.isValidConnectRequest(self.method, destinations)):
             logging.debug("Got connect request...")
             self.proxyRequest(destinations);
         else:
             logging.debug("Denying request...")
-            self.denyRequest()            
+            self.denyRequest()
 
     def proxyRequest(self, destinations):
-        factory          = NotaryConnectionFactory(self)
+        factory = NotaryConnectionFactory(self)
         factory.protocol = NotaryConnection
-        
-        for destination in destinations:            
+
+        for destination in destinations:
             if (destination.find(":") != -1):
                 destination = destination.split(":")[0]
             elif (destination.find("+") != -1):
@@ -101,7 +101,7 @@ class NotaryConnection(BaseProtocol):
 
     def __init__(self, client, host):
         self.client = client
-        self.host   = host
+        self.host = host
 
     def connectionMade(self):
         logging.debug("Connection made to : " + self.host + "...")
@@ -121,13 +121,13 @@ class NotaryConnection(BaseProtocol):
 # The ConnectionFactory for a proxy tunnel to another notary.
 class NotaryConnectionFactory(ClientFactory):
     def __init__(self, client):
-        self.client             = client
-        self.connectors         = []
-        self.connectorHosts     = {}
+        self.client = client
+        self.connectors = []
+        self.connectorHosts = {}
         self.connectedConnector = None
 
     def buildProtocol(self, addr):
-        if self.connectedConnector is None:            
+        if self.connectedConnector is None:
             for connector in self.connectors[:]:
                 if connector.state == "connected":
                     self.connectedConnector = connector
@@ -142,10 +142,11 @@ class NotaryConnectionFactory(ClientFactory):
     def addConnector(self, connector, host):
         self.connectors.append(connector)
         self.connectorHosts[connector] = host
-    
+
     def clientConnectionFailed(self, connector, reason):
         if connector in self.connectors:
-            logging.debug("Connection to notary failed: " + self.connectorHosts[connector] + " , " + str(reason))
+            logging.debug("Connection to notary failed: "
+                + self.connectorHosts[connector] + " , " + str(reason))
             self.connectors.remove(connector)
             del self.connectorHosts[connector]
 
@@ -155,4 +156,3 @@ class NotaryConnectionFactory(ClientFactory):
             self.client.setHeader("Connection", "close")
             self.client.write("<html><body>Unable to connect to notary!</body></html>")
             self.client.finish()
-

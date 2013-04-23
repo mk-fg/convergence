@@ -2,8 +2,8 @@
 """convergence-notary implements the Convergence Notary System."""
 
 __author__ = "Moxie Marlinspike"
-__email__  = "moxie@thoughtcrime.org"
-__license__= """
+__email__ = "moxie@thoughtcrime.org"
+__license__ = """
 Copyright (c) 2010 Moxie Marlinspike <moxie@thoughtcrime.org>
 
 This program is free software; you can redistribute it and/or
@@ -57,7 +57,7 @@ from twisted.internet import reactor
 
 import sys, string, os, getopt, logging, pwd, grp, convergence.daemonize
 
-gVersion                  = "0.4"
+gVersion = "0.4"
 DEFAULT_CONVERGENCE_CERT_FILE = '/etc/ssl/certs/convergence.pem'
 DEFAULT_CONVERGENCE_KEY_FILE = '/etc/ssl/private/convergence.key'
 DEFAULT_CONVERGENCE_DATABASE_FILE = '/var/lib/convergence/convergence.db'
@@ -67,8 +67,8 @@ DEFAULT_CONVERGENCE_PID_FILE = '/var/run/convergence.pid'
 class SSLContextFactory:
 
     def __init__(self, cert, key):
-        self.cert         = cert
-        self.key          = key
+        self.cert = cert
+        self.key = key
 
     def getContext(self):
         ctx = SSL.Context(SSL.SSLv23_METHOD)
@@ -79,21 +79,21 @@ class SSLContextFactory:
         return ctx
 
 def parseOptions(argv):
-    logLevel          = logging.INFO
-    httpPort          = 80
-    sslPort           = 443
+    logLevel = logging.INFO
+    httpPort = 80
+    sslPort = 443
     incomingInterface = ''
-    certFile          = DEFAULT_CONVERGENCE_CERT_FILE
-    keyFile           = DEFAULT_CONVERGENCE_KEY_FILE
-    pidFile           = DEFAULT_CONVERGENCE_PID_FILE
-    dbFile            = DEFAULT_CONVERGENCE_DATABASE_FILE
-    logFile           = DEFAULT_CONVERGENCE_LOG_FILE
-    uname             = "nobody"
-    gname             = "nogroup"
-    verifier          = NetworkPerspectiveVerifier();
-    background        = True
-    listenHttp        = False
-    proxyPort         = 4242
+    certFile = DEFAULT_CONVERGENCE_CERT_FILE
+    keyFile = DEFAULT_CONVERGENCE_KEY_FILE
+    pidFile = DEFAULT_CONVERGENCE_PID_FILE
+    dbFile = DEFAULT_CONVERGENCE_DATABASE_FILE
+    logFile = DEFAULT_CONVERGENCE_LOG_FILE
+    uname = "nobody"
+    gname = "nogroup"
+    verifier = NetworkPerspectiveVerifier();
+    background = True
+    listenHttp = False
+    proxyPort = 4242
 
     try:
         opts, args = getopt.getopt(argv,
@@ -133,7 +133,7 @@ def parseOptions(argv):
                 sys.exit()
             elif opt in ("--no-https"):
                 listenHttp = True
-        
+
         return (logLevel, sslPort, httpPort, certFile, keyFile, pidFile, dbFile, logFile,
                 uname, gname, background, incomingInterface, verifier, listenHttp, proxyPort)
 
@@ -164,30 +164,30 @@ def usage():
     print ""
 
 def initializeBackend(backend):
-    if   (backend == "perspective"):   return NetworkPerspectiveVerifier()
+    if (backend == "perspective"): return NetworkPerspectiveVerifier()
     elif (backend.startswith("dns:")): return DNSVerifier(backend.split(":")[1])
-    else:                              raise getopt.GetoptError("Invalid backend: " + backend)
-    
-def checkPrivileges(userName, groupName):                
+    else: raise getopt.GetoptError("Invalid backend: " + backend)
+
+def checkPrivileges(userName, groupName):
     try:
         grp.getgrnam(groupName)
     except KeyError:
         print >> sys.stderr, 'Can not drop group privileges to %s, ' \
-              'because it does not exist!' % groupName
+            'because it does not exist!' % groupName
         sys.exit(2)
 
     try:
         pwd.getpwnam(userName)
     except KeyError:
         print >> sys.stderr, 'Can not drop user privilges to %s, ' \
-              'because it does not exist!' % userName
-        sys.exit(2)            
+            'because it does not exist!' % userName
+        sys.exit(2)
 
 def writePidFile(pidFilename):
     pidFile = open(pidFilename, "wb")
     pidFile.write(str(os.getpid()))
     pidFile.close()
-    
+
 def dropPrivileges(userName, groupName, dbFile):
     try:
         user = pwd.getpwnam(userName)
@@ -202,14 +202,14 @@ def dropPrivileges(userName, groupName, dbFile):
 
     os.chown(os.path.dirname(dbFile), user.pw_uid, group.gr_gid)
     os.chown(dbFile, user.pw_uid, group.gr_gid)
-    
+
     os.setgroups([group.gr_gid])
     os.setgid(group.gr_gid)
     os.setuid(user.pw_uid)
 
 def initializeLogging(logLevel, logFile):
     logging.basicConfig(filename=logFile,level=logLevel,
-                        format='%(asctime)s %(message)s',filemode='a')        
+                        format='%(asctime)s %(message)s',filemode='a')
 
     logging.info("Convergence Notary started...")
 
@@ -217,37 +217,37 @@ def initializeFactory(database, privateKey, verifier):
     root = Resource()
     root.putChild("target", TargetPage(database, privateKey, verifier))
 
-    return Site(root)    
+    return Site(root)
 
 def initializeDatabase(dbFile):
     return adbapi.ConnectionPool("sqlite3", dbFile, cp_max=1, cp_min=1)
 
 def initializeKey(keyFile):
-    return open(keyFile,'r').read() 
+    return open(keyFile,'r').read()
 
 def main(argv):
     (logLevel, sslPort, httpPort,
         certFile, keyFile, pidFile, dbFile, logFile,
         userName, groupName, background,
         incomingInterface, verifier, listenHttp, proxyPort) = parseOptions(argv)
-    privateKey                    = initializeKey(keyFile)
-    database                      = initializeDatabase(dbFile)
-    sslFactory                    = initializeFactory(database, privateKey, verifier)
-    connectFactory                = http.HTTPFactory(timeout=10)
-    connectFactory.protocol       = ConnectChannel
+    privateKey = initializeKey(keyFile)
+    database = initializeDatabase(dbFile)
+    sslFactory = initializeFactory(database, privateKey, verifier)
+    connectFactory = http.HTTPFactory(timeout=10)
+    connectFactory.protocol = ConnectChannel
 
     if listenHttp:
         reactor.listenTCP(sslPort, notaryFactory, interface=incomingInterface)
         reactor.listenTCP(proxyPort, notaryFactory, interface=incomingInterface)
     else:
         reactor.listenSSL(sslPort, sslFactory, SSLContextFactory(certFile, keyFile),
-                          interface=incomingInterface)
+            interface=incomingInterface)
         reactor.listenSSL(proxyPort, sslFactory, SSLContextFactory(certFile, keyFile),
-                          interface=incomingInterface)
+            interface=incomingInterface)
 
     reactor.listenTCP(port=httpPort, factory=connectFactory,
-                      interface=incomingInterface)
-        
+        interface=incomingInterface)
+
     initializeLogging(logLevel, logFile)
     checkPrivileges(userName, groupName)
 

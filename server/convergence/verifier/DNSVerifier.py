@@ -41,7 +41,7 @@ class DNSVerifier(Verifier):
 
     def verify(self, host, port, fingerprint):
         formatted = "".join(fingerprint.split(":")).lower()
-        deferred  = twisted.names.client.lookupText("%s.%s" % (formatted, self.host))
+        deferred = twisted.names.client.lookupText("%s.%s" % (formatted, self.host))
 
         deferred.addCallback(self._dnsLookupComplete, fingerprint)
         deferred.addErrback(self._dnsLookupError)

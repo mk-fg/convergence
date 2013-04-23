@@ -2,8 +2,8 @@
 """convergence-gencert generates certificates."""
 
 __author__ = "Moxie Marlinspike"
-__email__  = "moxie@thoughtcrime.org"
-__license__= """
+__email__ = "moxie@thoughtcrime.org"
+__license__ = """
 Copyright (c) 2010 Moxie Marlinspike <moxie@thoughtcrime.org>
 
 This program is free software; you can redistribute it and/or
@@ -27,9 +27,9 @@ import os, tempfile, sys, getopt
 
 
 def parseOptions(argv):
-    certFile   = "mynotary.pem"
-    keyFile    = "mynotary.key"
-    subject    = None
+    certFile = "mynotary.pem"
+    keyFile = "mynotary.key"
+    subject = None
 
     try:
         opts, args = getopt.getopt(argv, "c:k:s:h")
@@ -92,7 +92,7 @@ def main(argv):
         cmd.extend(["-subj", "\'" + subject + "\'"])
     os.system(" ".join(cmd))
     cmd = [openssl, "x509", "-req", "-days", "14600", "-in", csrPath,
-           "-signkey", keyFile, "-out", certFile]
+        "-signkey", keyFile, "-out", certFile]
     os.system(" ".join(cmd))
 
     os.remove(csrPath)

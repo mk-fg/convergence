@@ -59,7 +59,7 @@ setup(
         'Topic :: Security',
         'Topic :: System :: Networking :: Monitoring' ],
 
-    install_requires = ['Twisted', 'M2Crypto'],
+    install_requires = ['Twisted', 'pyOpenSSL', 'M2Crypto'],
 
     packages = find_packages(),
     include_package_data = True,

@@ -156,9 +156,9 @@ def writeBundle(bundle):
     print "\n\nBundle saved in 'mynotarybundle.notary'"
 
 
-def main(argv):
+def main(argv=None):
+    if argv is None: argv = sys.argv[1:]
     bundle = promptForBundleInfo()
     writeBundle(bundle)
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+if __name__ == '__main__': main()

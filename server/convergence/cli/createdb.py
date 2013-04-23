@@ -45,7 +45,8 @@ USA
 from sqlite3 import *
 import sys, os.path, os
 
-def main(argv):
+def main(argv=None):
+    if argv is None: argv = sys.argv[1:]
 
     convergencePath = "/var/lib/convergence/"
     convergencedb = convergencePath + "convergence.db"
@@ -66,6 +67,4 @@ def main(argv):
     connection.commit()
     cursor.close()
 
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
+if __name__ == '__main__': main()

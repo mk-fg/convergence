@@ -74,7 +74,8 @@ def existsInPath(command):
     return None
 
 
-def main(argv):
+def main(argv=None):
+    if argv is None: argv = sys.argv[1:]
     openssl = existsInPath("openssl")
 
     if openssl is None:
@@ -99,5 +100,4 @@ def main(argv):
 
     print "Certificate and key generated in " + certFile + " and " + keyFile
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+if __name__ == '__main__': main()

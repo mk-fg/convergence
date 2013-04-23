@@ -225,7 +225,8 @@ def initializeDatabase(dbFile):
 def initializeKey(keyFile):
     return open(keyFile,'r').read()
 
-def main(argv):
+def main(argv=None):
+    if argv is None: argv = sys.argv[1:]
     (logLevel, sslPort, httpPort,
         certFile, keyFile, pidFile, dbFile, logFile,
         userName, groupName, background,
@@ -262,5 +263,4 @@ def main(argv):
 
     reactor.run()
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+if __name__ == '__main__': main()

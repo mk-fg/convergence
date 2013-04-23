@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2011 Moxie Marlinspike <moxie@thoughtcrime.org>
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -14,54 +16,57 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 
-import os, shutil
-from distutils.core import setup, Extension
 
-shutil.copyfile("convergence-notary.py", "convergence/convergence-notary")
-shutil.copyfile("convergence-gencert.py", "convergence/convergence-gencert")
-shutil.copyfile("convergence-createdb.py", "convergence/convergence-createdb")
-shutil.copyfile("convergence-bundle.py", "convergence/convergence-bundle")
+from setuptools import setup, find_packages
+import os, glob
 
-REQUIRES = [
-    'twisted.web',
-    'twisted.enterprise',
-    'twisted.internet',
-    'twisted.names',
-    'OpenSSL',
-    'sqlite3' ]
+pkg_root = os.path.dirname(__file__)
+
+# Error-handling here is to allow package to be built w/o README included
+try: readme = open(os.path.join(pkg_root, 'README.md')).read()
+except IOError: readme = ''
 
 setup(
+
     name = 'convergence-notary',
-    version = '0.4',
-    description = 'An agile, distributed, and'
-        ' secure alternative to the Certificate Authority system.',
+    version = '0.5',
     author = 'Moxie Marlinspike',
     author_email = 'moxie@thoughtcrime.org',
-    url = 'http://convergence.io/',
     license = 'GPL',
-    packages = ["convergence", "convergence.verifier"],
-    package_dir = {'convergence' : 'convergence/', 'convergence.verifier' : 'convergence/verifier'},
-    scripts = ['convergence/convergence-notary',
-        'convergence/convergence-gencert',
-        'convergence/convergence-createdb',
-        'convergence/convergence-bundle'],
-    install_requires = REQUIRES,
-    data_files = [('share/convergence', ['README', 'INSTALL', 'COPYING']),
-        ('/etc/init.d', ['init-script/convergence']),
-        ('/etc/default', ['init-script/default/convergence'])]
-)
+    url = 'http://convergence.io/',
 
-print "Cleaning up..."
-if os.path.exists("build/"):
-    shutil.rmtree("build/")
+    description = 'An agile, distributed, and'
+        ' secure alternative to the Certificate Authority system',
+    long_description = readme,
 
-try:
-    os.remove("convergence/convergence-notary")
-    os.remove("convergence/convergence-bundle")
-    os.remove('convergence/convergence-createdb')
-    os.remove("convergence/convergence-gencert")
-except:
-    pass
+    classifiers = [
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Environment :: No Input/Output (Daemon)',
+        'Framework :: Twisted',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'Intended Audience :: Telecommunications Industry',
+        'License :: OSI Approved',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Operating System :: POSIX',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 2 :: Only',
+        'Topic :: Internet',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Security',
+        'Topic :: System :: Networking :: Monitoring' ],
 
-def capture(cmd):
-    return os.popen(cmd).read().strip()
+    install_requires = ['Twisted', 'M2Crypto'],
+
+    packages = find_packages(),
+    include_package_data = True,
+    zip_safe = False,
+
+    entry_points = dict(console_scripts=sorted(
+        '{} = {}:main'.format(link, target[:-3].replace(os.sep, '.'))
+        for link, target in
+            ((link, os.readlink(link)) for link in glob.glob('convergence-*'))
+        if target.endswith('.py') )) )

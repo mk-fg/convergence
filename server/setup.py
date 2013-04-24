@@ -26,10 +26,12 @@ pkg_root = os.path.dirname(__file__)
 try: readme = open(os.path.join(pkg_root, 'README.md')).read()
 except IOError: readme = ''
 
+import convergence
+
 setup(
 
     name = 'convergence-notary',
-    version = '0.5',
+    version = convergence.__version__,
     author = 'Moxie Marlinspike',
     author_email = 'moxie@thoughtcrime.org',
     license = 'GPL',
@@ -65,8 +67,10 @@ setup(
     include_package_data = True,
     zip_safe = False,
 
-    entry_points = dict(console_scripts=sorted(
-        '{} = {}:main'.format(link, target[:-3].replace(os.sep, '.'))
-        for link, target in
-            ((link, os.readlink(link)) for link in glob.glob('convergence-*'))
-        if target.endswith('.py') )) )
+    entry_points = dict(console_scripts=(
+        ['convergence = convergence.core:main'] +
+        sorted(
+            '{} = {}:main'.format(link, target[:-3].replace(os.sep, '.'))
+            for link, target in
+                ((link, os.readlink(link)) for link in glob.glob('convergence-*'))
+            if target.endswith('.py') ))) )

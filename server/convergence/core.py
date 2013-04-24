@@ -128,8 +128,8 @@ def main(argv=None):
         format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
 
     if opts.call == 'notary':
-        from convergence.notary import pick_backend, run_notary
-        backend = pick_backend(opts.backend)
+        from convergence.notary import get_backend, run_notary
+        backend = get_backend(opts.backend)
         if not backend: parser.error('Invalid backend: {}'.format(opts.backend))
         return run_notary(opts, backend)
 

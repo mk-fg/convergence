@@ -148,7 +148,7 @@ def main(argv=None):
     elif opts.call == 'createdb':
         from sqlite3 import connect
 
-        db_dir = dirname(opts.db_path)
+        db_dir = dirname(realpath(opts.db_path))
         if not exists(db_dir): os.makedirs(db_dir)
 
         with connect(opts.db_path) as connection,\

@@ -47,7 +47,7 @@ ShuffleWorkerItem.prototype.readFromServer = function() {
   var read = NSPR.lib.PR_Read(this.server, this.serverBuffer, 4095);
 
   if ((read == 0) || ((read == -1) && (NSPR.lib.PR_GetError() != NSPR.lib.PR_WOULD_BLOCK_ERROR))) {
-    dump("Got normal close from SERVER\n");
+    dump('Got normal close from SERVER\n');
     this.closed = true;
     return;
   }
@@ -58,7 +58,7 @@ ShuffleWorkerItem.prototype.readFromServer = function() {
     written = 0;
 
   if (written < read) {
-    dump("*** Blocking write to CLIENT *****\n");
+    dump('*** Blocking write to CLIENT *****\n');
     this.clientMode = this.clientMode | NSPR.lib.PR_POLL_WRITE;
     this.serverMode = this.serverMode & (~NSPR.lib.PR_POLL_READ) ;
 
@@ -74,7 +74,7 @@ ShuffleWorkerItem.prototype.readFromClient = function() {
   var read = NSPR.lib.PR_Read(this.client, this.clientBuffer, 4095);
 
   if ((read == 0) || ((read == -1) && (NSPR.lib.PR_GetError() != NSPR.lib.PR_WOULD_BLOCK_ERROR))) {
-    dump("Got normal close from CLIENT\n");
+    dump('Got normal close from CLIENT\n');
     this.closed = true;
     return;
   }
@@ -85,7 +85,7 @@ ShuffleWorkerItem.prototype.readFromClient = function() {
     written = 0;
 
   if (written < read) {
-    dump("**** Blocking write to SERVER *****\n");
+    dump('**** Blocking write to SERVER *****\n');
     this.serverMode = this.serverMode | NSPR.lib.PR_POLL_WRITE;
     this.clientMode = this.clientMode & (~NSPR.lib.PR_POLL_READ);
 
@@ -102,7 +102,7 @@ ShuffleWorkerItem.prototype.writeToClient = function() {
 
   if (written == -1) {
     if (NSPR.lib.PR_GetError() != NSPR.lib.PR_WOULD_BLOCK_ERROR) {
-      dump("**** Got write CLOSE from CLIENT **** : " + NSPR.lib.PR_GetError() + "\n");
+      dump('**** Got write CLOSE from CLIENT **** : ' + NSPR.lib.PR_GetError() + '\n');
       this.closed = true;
       return;
     }
@@ -111,14 +111,14 @@ ShuffleWorkerItem.prototype.writeToClient = function() {
   }
 
   if (written < this.serverBufferLength) {
-    dump("**** Caught up with half-write to CLIENT ****\n");
+    dump('**** Caught up with half-write to CLIENT ****\n');
     if (written != 0)
-      this.serverBuffer = this.constructRemainingBuffer(this.serverBuffer, written,
-                                                        this.serverBufferLength-written);
+      this.serverBuffer = this.constructRemainingBuffer(
+        this.serverBuffer, written, this.serverBufferLength-written );
 
     this.serverBufferLength -= written;
   } else {
-    dump("**** Completed full write to CLIENT ****\n");
+    dump('**** Completed full write to CLIENT ****\n');
     this.serverMode = this.serverMode | NSPR.lib.PR_POLL_READ;
     this.clientMode = this.clientMode & (~NSPR.lib.PR_POLL_WRITE);
     this.modified = true;
@@ -130,7 +130,7 @@ ShuffleWorkerItem.prototype.writeToServer = function() {
 
   if (written == -1) {
     if (NSPR.lib.PR_GetError() != NSPR.lib.PR_WOULD_BLOCK_ERROR) {
-      dump("**** Got write CLOSE from SERVER ****\n");
+      dump('**** Got write CLOSE from SERVER ****\n');
       this.closed = true;
       return;
     }
@@ -139,14 +139,14 @@ ShuffleWorkerItem.prototype.writeToServer = function() {
   }
 
   if (written < this.clientBufferLength) {
-    dump("**** Caught up with half-write to SERVER ****\n");
+    dump('**** Caught up with half-write to SERVER ****\n');
     if (written != 0)
       this.clientBuffer = this.constructRemainingBuffer(this.clientBuffer, written,
                                                         this.clientBufferLength-written);
 
     this.clientBufferLength -= written;
   } else {
-    dump("**** Completed full write to SERVER ******\n");
+    dump('**** Completed full write to SERVER ******\n');
     this.clientMode = this.clientMode | NSPR.lib.PR_POLL_READ;
     this.serverMode = this.serverMode & (~NSPR.lib.PR_POLL_WRITE);
     this.modified = true;
@@ -160,7 +160,7 @@ ShuffleWorkerItem.prototype.close = function() {
 
 ShuffleWorkerItem.prototype.shuffle = function(clientFlags, serverFlags) {
   if (this.isSocketClosed(clientFlags) || this.isSocketClosed(serverFlags)) {
-    dump("Got RST close\n");
+    dump('Got RST close\n');
     this.closed = true;
     return [this.closed, false];
   }

@@ -16,11 +16,11 @@
 
 
 /**
- * This class is responsible for initializing the local CA certificate
- * used for the local MITM, as well as generating and signing target
- * certificates as appropriate.
- *
- **/
+  * This class is responsible for initializing the local CA certificate
+  * used for the local MITM, as well as generating and signing target
+  * certificates as appropriate.
+  *
+  **/
 
 
 function CertificateManager(serialized) {
@@ -29,17 +29,17 @@ function CertificateManager(serialized) {
     return;
   }
 
-  this.caCertificate = NSS.lib.CERT_FindCertByNickname(NSS.lib.CERT_GetDefaultCertDB(),
-                                                       "Convergence");
+  this.caCertificate = NSS.lib.CERT_FindCertByNickname(
+    NSS.lib.CERT_GetDefaultCertDB(), 'Convergence' );
 
   if (!this.caCertificate.isNull()) {
-    dump("Found existing certificate!\n");
+    dump('Found existing certificate!\n');
     this.updateCertificateTrust(this.caCertificate);
     this.caKey = NSS.lib.PK11_FindKeyByAnyCert(this.caCertificate, null);
     this.needsReboot = false;
   } else {
-    dump("Generating new ca certificate..\n");
-    var keys = this.generateKeyPair(true, "Convergence Local Private");
+    dump('Generating new ca certificate..\n');
+    var keys = this.generateKeyPair(true, 'Convergence Local Private');
     this.caKey = keys.privateKey;
     this.caCertificate = this.generateCaCertificate(keys.privateKey, keys.publicKey);
     this.needsReboot = true;
@@ -48,7 +48,7 @@ function CertificateManager(serialized) {
     this.importCertificate(this.caCertificate);
   }
 
-  this.peerKeys = this.generateKeyPair(false, "Convergence Peer Private");
+  this.peerKeys = this.generateKeyPair(false, 'Convergence Peer Private');
 }
 
 CertificateManager.prototype.getPeerKeys = function() {
@@ -62,9 +62,10 @@ CertificateManager.prototype.getCaMaterial = function() {
 CertificateManager.prototype.signCertificate = function(certificate) {
   var algorithmId = NSS.lib.SEC_GetSignatureAlgorithmOidTag(this.caKey.contents.keyType, 191);
 
-  NSS.lib.SECOID_SetAlgorithmID(certificate.contents.arena,
-                                certificate.contents.signature.address(),
-                                algorithmId, null);
+  NSS.lib.SECOID_SetAlgorithmID(
+    certificate.contents.arena,
+    certificate.contents.signature.address(),
+    algorithmId, null );
   certificate.contents.version.data.contents = 2;
   certificate.contents.version.len = 1;
 
@@ -73,12 +74,14 @@ CertificateManager.prototype.signCertificate = function(certificate) {
   // NSS.lib.SEC_ASN1EncodeItem(certificate.contents.arena, der.address(),
   //                              certificate, NSS.lib.CERT_CertificateTemplate.address());
 
-  NSS.lib.SEC_ASN1EncodeItem(certificate.contents.arena, der.address(),
-                               certificate, NSS.lib.NSS_Get_CERT_CertificateTemplate());
+  NSS.lib.SEC_ASN1EncodeItem(
+    certificate.contents.arena, der.address(),
+    certificate, NSS.lib.NSS_Get_CERT_CertificateTemplate() );
 
-  NSS.lib.SEC_DerSignData(certificate.contents.arena,
-                          certificate.contents.derCert.address(),
-                          der.data, der.len, this.caKey, algorithmId);
+  NSS.lib.SEC_DerSignData(
+    certificate.contents.arena,
+    certificate.contents.derCert.address(),
+    der.data, der.len, this.caKey, algorithmId );
 
 };
 
@@ -88,33 +91,33 @@ CertificateManager.prototype.importCertificate = function(certificate) {
   var derCertPtr = derCert.address();
   var results = NSS.types.CERTCertificate.ptr().address();
 
-  var status = NSS.lib.CERT_ImportCerts(certdb, 3, 1, derCertPtr, results.address(), 1, 1, "Convergence");
+  var status = NSS.lib.CERT_ImportCerts(certdb, 3, 1, derCertPtr, results.address(), 1, 1, 'Convergence');
 
 
   this.updateCertificateTrust(certificate);
 };
 
 CertificateManager.prototype.generateCaCertificate = function(privateKey, publicKey) {
-  return this.generateCertificate(privateKey, publicKey,
-                                  "CN=Convergence Local CA,OU=Convergence,O=Convergence,C=US",
-                                  "CN=Convergence Local CA,OU=Convergence,O=Convergence,C=US",
-                                  true, null, null);
+  return this.generateCertificate( privateKey, publicKey,
+    'CN=Convergence Local CA,OU=Convergence,O=Convergence,C=US',
+    'CN=Convergence Local CA,OU=Convergence,O=Convergence,C=US',
+    true, null, null );
 };
 
 CertificateManager.prototype.generatePeerCertificate = function(certificateInfo) {
   var commonName = certificateInfo.commonName.readString();
 
-  if (commonName.indexOf(",") != -1)
-    commonName = '"' + commonName + '"';
+  if (commonName.indexOf(',') != -1)
+    commonName = "'" + commonName + "'";
 
-  var certificateName =
-  "CN=" + commonName + ",OU=Convergence,O=Convergence,C=US";
+  var certificateName = 'CN=' + commonName + ',OU=Convergence,O=Convergence,C=US';
 
-  var certificate = this.generateCertificate(this.peerKeys.privateKey, this.peerKeys.publicKey,
-                                               certificateName,
-                                               "CN=Convergence Local CA,OU=Convergence,O=Convergence,C=US",
-                                               false, certificateInfo.altNames,
-                                             certificateInfo.verificationDetails);
+  var certificate = this.generateCertificate(
+    this.peerKeys.privateKey, this.peerKeys.publicKey,
+    certificateName,
+    'CN=Convergence Local CA,OU=Convergence,O=Convergence,C=US',
+    false, certificateInfo.altNames,
+    certificateInfo.verificationDetails );
 
   this.signCertificate(certificate);
 
@@ -170,11 +173,10 @@ CertificateManager.prototype.addVerificationDetails = function(certificate, exte
   commentItem.data = comment;
   commentItem.len = verificationDetails.length;
 
-  var status = NSS.lib.CERT_EncodeAndAddBitStrExtension(extensionHandle,
-                                                        NSS.lib.SEC_OID_NS_CERT_EXT_COMMENT,
-                                                        commentItem.address(), 0);
+  var status = NSS.lib.CERT_EncodeAndAddBitStrExtension(
+    extensionHandle, NSS.lib.SEC_OID_NS_CERT_EXT_COMMENT, commentItem.address(), 0 );
 
-  dump("COMMENT v3 extension result: " + status + "\n");
+  dump('COMMENT v3 extension result: ' + status + '\n');
 };
 
 CertificateManager.prototype.addAltNames = function(certificate, extensionHandle, altNames) {
@@ -186,31 +188,31 @@ CertificateManager.prototype.addAltNames = function(certificate, extensionHandle
   NSS.lib.PORT_FreeArena(arena, 0);
 };
 
-CertificateManager.prototype.generateCertificate = function(privateKey, publicKey, subject, issuer, isCa,
-                                                            altNames, verificationDetails)
+CertificateManager.prototype.generateCertificate = function(
+  privateKey, publicKey, subject, issuer, isCa, altNames, verificationDetails )
 {
   var subjectName = NSS.lib.CERT_AsciiToName(subject);
 
   if (subjectName == null || subjectName.isNull()) {
-    throw "Could not construct subject name: " + subject;
+    throw 'Could not construct subject name: ' + subject;
   }
 
   var issuerName = NSS.lib.CERT_AsciiToName(issuer);
 
   if (issuerName == null || issuerName.isNull()) {
-    throw "Could not construct issuer name!";
+    throw 'Could not construct issuer name!';
   }
 
   var publicKeyInfo = NSS.lib.SECKEY_CreateSubjectPublicKeyInfo(publicKey);
 
   if (publicKeyInfo == null || publicKeyInfo.isNull()) {
-    throw "Could not construct public key info!";
+    throw 'Could not construct public key info!';
   }
 
   var certificateRequest = NSS.lib.CERT_CreateCertificateRequest(subjectName, publicKeyInfo, null);
 
   if (certificateRequest == null || certificateRequest.isNull()) {
-    throw "Could not construct certificate request!";
+    throw 'Could not construct certificate request!';
   }
 
   var serial = this.generateRandomSerial();
@@ -218,7 +220,7 @@ CertificateManager.prototype.generateCertificate = function(privateKey, publicKe
   var certificate = NSS.lib.CERT_CreateCertificate(serial, issuerName, validity, certificateRequest);
 
   if (certificate == null || certificate.isNull()) {
-    throw "Could not construct certificate!";
+    throw 'Could not construct certificate!';
   }
 
   var extensionHandle = NSS.lib.CERT_StartCertExtensions(certificate);
@@ -241,8 +243,8 @@ CertificateManager.prototype.generateCertificate = function(privateKey, publicKe
 };
 
 CertificateManager.prototype.unlockPsmIfNecessary = function() {
-  var token = Components.classes["@mozilla.org/security/pk11tokendb;1"]
-              .getService(Components.interfaces.nsIPK11TokenDB).findTokenByName("");
+  var token = Components.classes['@mozilla.org/security/pk11tokendb;1']
+    .getService(Components.interfaces.nsIPK11TokenDB).findTokenByName('');
 
   if (!token.isLoggedIn()) {
     token.login(true);
@@ -255,19 +257,18 @@ CertificateManager.prototype.generateKeyPair = function(permanent, nick) {
   var slot = NSS.lib.PK11_GetInternalKeySlot();
   var publicKey = NSS.types.SECKEYPublicKey.ptr(0);
   var rsaParams = NSS.types.PK11RSAGenParams({'keySizeInBits' : 1024, 'pe' : 65537});
-  var privateKey = NSS.lib.PK11_GenerateKeyPair(slot, NSS.lib.CKM_RSA_PKCS_KEY_PAIR_GEN,
-                                                rsaParams.address(),
-                                                publicKey.address(),
-                                                permanent ? 1 : 0, 1, null);
+  var privateKey = NSS.lib.PK11_GenerateKeyPair(
+    slot, NSS.lib.CKM_RSA_PKCS_KEY_PAIR_GEN,
+    rsaParams.address(), publicKey.address(), permanent ? 1 : 0, 1, null );
 
   if (privateKey == null || privateKey.isNull()) {
-    dump("KeyPair generation error: " + NSPR.lib.PR_GetError() + "\n");
-    throw "Error generating keypair!";
+    dump('KeyPair generation error: ' + NSPR.lib.PR_GetError() + '\n');
+    throw 'Error generating keypair!';
   }
 
   if (publicKey == null || publicKey.isNull()) {
-    dump("KeyPair generation error: " + NSPR.lib.PR_GetError() + "\n");
-    throw "Error generating keypair (pub)!"
+    dump('KeyPair generation error: ' + NSPR.lib.PR_GetError() + '\n');
+    throw 'Error generating keypair (pub)!'
   }
 
   NSS.lib.PK11_SetPrivateKeyNickname(privateKey, nick);
@@ -276,23 +277,24 @@ CertificateManager.prototype.generateKeyPair = function(permanent, nick) {
 };
 
 CertificateManager.prototype.updateCertificateTrust = function(certificate) {
-  var certificateTrust = NSS.types.CERTCertTrust({'sslFlags' : ((1<<7) | (1<<4)),
-                                                  'emailFlags' : 0,
-                                                  'objectSigningFlags' : 0});
-  NSS.lib.CERT_ChangeCertTrust(NSS.lib.CERT_GetDefaultCertDB(),
-                               certificate, certificateTrust.address());
+  var certificateTrust = NSS.types.CERTCertTrust({
+    'sslFlags' : ((1<<7) | (1<<4)), 'emailFlags' : 0, 'objectSigningFlags' : 0 });
+  NSS.lib.CERT_ChangeCertTrust(
+    NSS.lib.CERT_GetDefaultCertDB(), certificate, certificateTrust.address() );
 };
 
 CertificateManager.prototype.serialize = function() {
-  return {'caCertificate'  : Serialization.serializePointer(this.caCertificate),
-          'caKey'          : Serialization.serializePointer(this.caKey),
-          'peerKeyPublic'  : Serialization.serializePointer(this.peerKeys.publicKey),
-          'peerKeyPrivate' : Serialization.serializePointer(this.peerKeys.privateKey)};
+  return {
+    'caCertificate' : Serialization.serializePointer(this.caCertificate),
+    'caKey' : Serialization.serializePointer(this.caKey),
+    'peerKeyPublic' : Serialization.serializePointer(this.peerKeys.publicKey),
+    'peerKeyPrivate' : Serialization.serializePointer(this.peerKeys.privateKey) };
 };
 
 CertificateManager.prototype.deserialize = function(serialized) {
   this.caCertificate = Serialization.deserializeCERTCertificate(serialized.caCertificate);
   this.caKey = Serialization.deserializeSECKEYPrivateKey(serialized.caKey);
-  this.peerKeys = {'publicKey'  : Serialization.deserializeSECKEYPublicKey(serialized.peerKeyPublic),
-                        'privateKey' : Serialization.deserializeSECKEYPrivateKey(serialized.peerKeyPrivate)};
+  this.peerKeys = {
+    'publicKey'  : Serialization.deserializeSECKEYPublicKey(serialized.peerKeyPublic),
+    'privateKey' : Serialization.deserializeSECKEYPrivateKey(serialized.peerKeyPrivate) };
 };

@@ -18,12 +18,12 @@ function BaseProxyConnector(proxy) {
       var eventCount = NSPR.lib.PR_Poll(pollfds, pollfds.length, 5000);
 
       if (eventCount == -1) {
-        dump("BaseProxy Poll failed!\n");
+        dump('BaseProxy Poll failed!\n');
         return -1;
       }
 
       if (eventCount == 0) {
-        dump("BaseProxy Poll timeout!\n");
+        dump('BaseProxy Poll timeout!\n');
         return -1;
       }
 
@@ -33,9 +33,9 @@ function BaseProxyConnector(proxy) {
             self.readMultiConnectResponse(clientSockets[i], destinations[i].host);
             return i;
           } catch (e) {
-            dump("Got BaseProxy connection error...\n");
+            dump('Got BaseProxy connection error...\n');
             if (--activeCount <= 0) {
-              dump("All BaseProxy connections failed...\n");
+              dump('All BaseProxy connections failed...\n');
               return -1;
             }
             pollfds[i].in_flags = 0;
@@ -46,11 +46,11 @@ function BaseProxyConnector(proxy) {
   };
 
   this.makeMultiConnection = function(destinations) {
-    dump("Proxy host: " + self.proxy.host + " , port: " + self.proxy.port + "\n");
+    dump('Proxy host: ' + self.proxy.host + ' , port: ' + self.proxy.port + '\n');
     var clientSockets = new Array();
 
     for (var i=0;i<destinations.length;i++) {
-      dump("Sending connection request for: " + destinations[i].host + "\n");
+      dump('Sending connection request for: ' + destinations[i].host + '\n');
       var clientSocket = new ConvergenceClientSocket(self.proxy.host, self.proxy.port, null);
       self.sendMultiConnectRequest(clientSocket, destinations[i].host, destinations[i].port);
       clientSockets[i] = clientSocket;
@@ -58,7 +58,7 @@ function BaseProxyConnector(proxy) {
 
     var readyIndex = self.waitForConnection(clientSockets, destinations);
 
-    dump("Got connection: " + readyIndex + "\n");
+    dump('Got connection: ' + readyIndex + '\n');
 
     for (var i=0;i<clientSockets.length;i++) {
       if (readyIndex != i) {
@@ -67,7 +67,7 @@ function BaseProxyConnector(proxy) {
     }
 
     if (readyIndex != -1) return clientSockets[readyIndex];
-    else                  throw "All SOCKS5 Connection failed!\n";
+    else                  throw 'All SOCKS5 Connection failed!\n';
   };
 
 }

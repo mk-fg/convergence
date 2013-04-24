@@ -16,10 +16,10 @@
 
 
 /**
- * This class is responsible for parsing an HTTP CONNECT response,
- * when communicating through an external HTTP proxy.
- *
- **/
+  * This class is responsible for parsing an HTTP CONNECT response,
+  * when communicating through an external HTTP proxy.
+  *
+  **/
 
 
 function ConnectResponseParser(convergenceSocket) {
@@ -34,16 +34,16 @@ ConnectResponseParser.prototype.getResponseCode = function() {
 };
 
 ConnectResponseParser.prototype.parseResponseCode = function(response) {
-  var firstLineDelimiter = response.indexOf("\r\n");
+  var firstLineDelimiter = response.indexOf('\r\n');
 
   if (firstLineDelimiter == -1) {
     return 500;
   }
 
   var firstLine = response.substring(0, firstLineDelimiter);
-  var firstLineComponents = firstLine.split(" ");
+  var firstLineComponents = firstLine.split(' ');
 
-  if (firstLineComponents[0].indexOf("HTTP") != 0) {
+  if (firstLineComponents[0].indexOf('HTTP') != 0) {
     return 500;
   }
 
@@ -52,13 +52,13 @@ ConnectResponseParser.prototype.parseResponseCode = function(response) {
 
 
 ConnectResponseParser.prototype.readHeaders = function() {
-  var headers = "";
+  var headers = '';
   var buf = null;
 
   while ((buf = this.convergenceSocket.readString()) != null) {
     headers += buf;
 
-    if (headers.indexOf("\r\n\r\n") != -1) {
+    if (headers.indexOf('\r\n\r\n') != -1) {
       return headers;
     }
   }

@@ -13,7 +13,7 @@ MultiDestinationConnector.prototype.makeConnection = function(destinations) {
   this.freeAddresses(addresses);
 
   if (connectionIndex == -1) {
-    throw "MultiDestination connection failed!";
+    throw 'MultiDestination connection failed!';
   } else {
     // this.makeBlocking(pollfds[connectionIndex].fd);
     return new ConvergenceClientSocket(null, null, null, pollfds[connectionIndex].fd);
@@ -24,7 +24,7 @@ MultiDestinationConnector.prototype.makeBlocking = function(fd) {
   var socketOption = NSPR.types.PRSocketOptionData({'option' : 0, 'value' : 0});
   var status = NSPR.lib.PR_SetSocketOption(fd, socketOption.address());
 
-  dump("Switch back to blocking status: " + status + " , " + NSPR.lib.PR_GetError() + "\n");
+  dump('Switch back to blocking status: ' + status + ' , ' + NSPR.lib.PR_GetError() + '\n');
 };
 
 MultiDestinationConnector.prototype.waitForConnection = function(pollfds, addresses) {
@@ -34,18 +34,18 @@ MultiDestinationConnector.prototype.waitForConnection = function(pollfds, addres
     return -1;
   }
 
-  dump("Active count: " + activeCount + "\n");
+  dump('Active count: ' + activeCount + '\n');
 
   while (true) {
     var eventCount = NSPR.lib.PR_Poll(pollfds, pollfds.length, 5000);
 
     if (eventCount == -1) {
-      dump("MultiDestination poll failed!\n");
+      dump('MultiDestination poll failed!\n');
       return -1;
     }
 
     if (eventCount == 0) {
-      dump("MultiDestination poll timeout!\n");
+      dump('MultiDestination poll timeout!\n');
       return -1;
     }
 
@@ -54,12 +54,12 @@ MultiDestinationConnector.prototype.waitForConnection = function(pollfds, addres
         var connectedStatus = NSPR.lib.PR_ConnectContinue(pollfds[i].fd, pollfds[i].out_flags);
 
         if (connectedStatus == 0) {
-          dump("Got connected event: "  + i + "!\n");
+          dump('Got connected event: '  + i + '!\n');
           return i;
         } else if (NSPR.lib.PR_GetError() != NSPR.lib.PR_IN_PROGRESS) {
-          dump("Got error event: " + i + "!\n");
+          dump('Got error event: ' + i + '!\n');
           if (--activeCount <= 0) {
-            dump("All MultiDestination polls failed!\n");
+            dump('All MultiDestination polls failed!\n');
             return -1;
           }
 
@@ -104,7 +104,7 @@ MultiDestinationConnector.prototype.makeSockets = function(addresses) {
     var fd = NSPR.lib.PR_OpenTCPSocket(NSPR.lib.PR_AF_INET);
 
     if (fd == null) {
-      dump("Unable to construct socket!\n");
+      dump('Unable to construct socket!\n');
       continue;
     }
 
@@ -130,12 +130,11 @@ MultiDestinationConnector.prototype.resolveNames = function(destinations) {
   var resultsIndex = 0;
 
   for (var i=0;i<destinations.length;i++) {
-    var addrInfo = NSPR.lib.PR_GetAddrInfoByName(destinations[i].host,
-                                                 NSPR.lib.PR_AF_INET,
-                                                 NSPR.lib.PR_AI_ADDRCONFIG);
+    var addrInfo = NSPR.lib.PR_GetAddrInfoByName(
+      destinations[i].host, NSPR.lib.PR_AF_INET, NSPR.lib.PR_AI_ADDRCONFIG );
 
     if (addrInfo == null || addrInfo.isNull()) {
-      dump("DNS lookup failed: " + NSPR.lib.PR_GetError() + "\n");
+      dump('DNS lookup failed: ' + NSPR.lib.PR_GetError() + '\n');
       continue;
     }
 
@@ -143,8 +142,8 @@ MultiDestinationConnector.prototype.resolveNames = function(destinations) {
     var netAddress = ctypes.cast(netAddressBuffer, NSPR.types.PRNetAddr.ptr);
 
     NSPR.lib.PR_EnumerateAddrInfo(null, addrInfo, 0, netAddress);
-    NSPR.lib.PR_SetNetAddr(NSPR.lib.PR_IpAddrNull, NSPR.lib.PR_AF_INET,
-                           destinations[i].port, netAddress);
+    NSPR.lib.PR_SetNetAddr(
+      NSPR.lib.PR_IpAddrNull, NSPR.lib.PR_AF_INET, destinations[i].port, netAddress );
 
     NSPR.lib.PR_FreeAddrInfo(addrInfo);
 

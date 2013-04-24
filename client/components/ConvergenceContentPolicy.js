@@ -16,36 +16,36 @@
 
 
 /**
- * This class uses the ContentPolicy API to redirect outbound requests
- * for files with a ".notary" extension back to the Convergence addon,
- * to be inspected as an import bundle.
- *
- **/
+  * This class uses the ContentPolicy API to redirect outbound requests
+  * for files with a '.notary' extension back to the Convergence addon,
+  * to be inspected as an import bundle.
+  *
+  **/
 
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
 function ConvergenceContentPolicy() {
   this.wrappedJSObject = this;
-  this.notaryExpression = new RegExp("http[s]?:\/\/.+\\.notary");
+  this.notaryExpression = new RegExp('http[s]?:\/\/.+\\.notary');
   this.convergenceManager = Components.classes['@thoughtcrime.org/convergence;1'].getService().wrappedJSObject;
 }
 
 ConvergenceContentPolicy.prototype = {
-  classDescription:  "Convergence NotaryWatcherComponent",
-  classID:           Components.ID("{6B065D8C-9B68-11E0-8355-062C4924019B}"),
-  contractID:        "@thoughtcrime.org/convergence-contentpolicy;1",
-  QueryInterface:    XPCOMUtils.generateQI([Components.interfaces.nsIContentPolicy]),
-  _xpcom_categories: [{category: "content-policy"}],
+  classDescription: 'Convergence NotaryWatcherComponent',
+  classID: Components.ID('{6B065D8C-9B68-11E0-8355-062C4924019B}'),
+  contractID: '@thoughtcrime.org/convergence-contentpolicy;1',
+  QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIContentPolicy]),
+  _xpcom_categories: [{category: 'content-policy'}],
 
   shouldLoad: function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra) {
     if (this.notaryExpression.test(aContentLocation.spec)) {
-      dump("********* DETECTED NOTARY FILE ***************\n");
+      dump('********* DETECTED NOTARY FILE ***************\n');
 
       ConvergenceUtil.persistUrl(aContentLocation.spec, function(temporaryFile) {
-          var observerService = Components.classes["@mozilla.org/observer-service;1"]
-                                .getService(Components.interfaces.nsIObserverService);
-          observerService.notifyObservers(observerService, "convergence-add-notary", temporaryFile.path);
+          var observerService = Components.classes['@mozilla.org/observer-service;1']
+            .getService(Components.interfaces.nsIObserverService);
+          observerService.notifyObservers(observerService, 'convergence-add-notary', temporaryFile.path);
         });
 
       return Components.interfaces.nsIContentPolicy.REJECT_REQUEST;
@@ -61,9 +61,9 @@ ConvergenceContentPolicy.prototype = {
 
 var components = [ConvergenceContentPolicy];
 /**
- * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
- * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
- */
+  * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
+  * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
+  */
 if (XPCOMUtils.generateNSGetFactory)
   var NSGetFactory = XPCOMUtils.generateNSGetFactory(components);
 else
@@ -77,8 +77,8 @@ var loadScript = function(isChrome, subdir, filename) {
 
     if (isChrome) {
       path = path.parent.clone();
-      path.append("chrome");
-      path.append("content");
+      path.append('chrome');
+      path.append('content');
     }
 
     if (subdir != null) {
@@ -87,19 +87,19 @@ var loadScript = function(isChrome, subdir, filename) {
 
     path.append(filename);
 
-    dump("Loading: " + path.path + "\n");
+    dump('Loading: ' + path.path + '\n');
 
-    var fileProtocol = Components.classes["@mozilla.org/network/protocol;1?name=file"]
-    .getService(Components.interfaces["nsIFileProtocolHandler"]);
-    var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-    .getService(Components.interfaces["mozIJSSubScriptLoader"]);
+    var fileProtocol = Components.classes['@mozilla.org/network/protocol;1?name=file']
+    .getService(Components.interfaces['nsIFileProtocolHandler']);
+    var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
+    .getService(Components.interfaces['mozIJSSubScriptLoader']);
 
     loader.loadSubScript(fileProtocol.getURLSpecFromFile(path));
 
-    dump("Loaded!\n");
+    dump('Loaded!\n');
   } catch (e) {
-    dump("Error loading component script: " + path.path + " : " + e + " , " + e.stack + "\n");
+    dump('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack + '\n');
   }
 };
 
-loadScript(true, "util", "ConvergenceUtil.js");
+loadScript(true, 'util', 'ConvergenceUtil.js');

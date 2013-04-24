@@ -22,12 +22,12 @@ function onDialogLoad() {
 
 
 function onDialogOK() {
-  var host = document.getElementById("host").value;
-  var port = document.getElementById("port").value;
-  var fingerprint = document.getElementById("fingerprint").value;
+  var host = document.getElementById('host').value;
+  var port = document.getElementById('port').value;
+  var fingerprint = document.getElementById('fingerprint').value;
 
   if (!host || !port || !fingerprint) {
-    alert("Sorry, you must specify a host, port, and fingerprint.");
+    alert('Sorry, you must specify a host, port, and fingerprint.');
     return false;
   }
 
@@ -52,7 +52,7 @@ function onDialogOK() {
     }
   }
   if (formatFailure) {
-    alert("Sorry, you must specify a correctly formatted fingerprint.");
+    alert('Sorry, you must specify a correctly formatted fingerprint.');
     return false;
   }
 

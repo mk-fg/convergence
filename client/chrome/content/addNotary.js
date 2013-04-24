@@ -14,35 +14,35 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA
 
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
+Components.utils.import('resource://gre/modules/NetUtil.jsm');
 
 function onDialogLoad() {
 }
 
 function onBrowse() {
   var nsIFilePicker = Components.interfaces.nsIFilePicker;
-  var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
-  fp.init(window, "Select a .notary bundle", nsIFilePicker.modeOpen);
-  fp.appendFilter("Notary Bundles", "*.notary");
+  var fp = Components.classes['@mozilla.org/filepicker;1'].createInstance(nsIFilePicker);
+  fp.init(window, 'Select a .notary bundle', nsIFilePicker.modeOpen);
+  fp.appendFilter('Notary Bundles', '*.notary');
 
   var res = fp.show();
   if (res == nsIFilePicker.returnOK){
-    document.getElementById("notary-local").value = fp.file.path;
+    document.getElementById('notary-local').value = fp.file.path;
   }
 }
 
 
 function handleLocalNotaryBundle(bundlePath) {
   var convergence = Components.classes['@thoughtcrime.org/convergence;1']
-                    .getService().wrappedJSObject;
+    .getService().wrappedJSObject;
 
   var retvalue = window.arguments[0];
 
   try {
     retvalue.notary = convergence.getNewNotaryFromBundle(bundlePath);
   } catch (exception) {
-    dump("Got exception: " + exception + " , " + exception.stack + "\n");
-    alert("Unknown Notary bundle version: " + exception.version + "!");
+    dump('Got exception: ' + exception + ' , ' + exception.stack + '\n');
+    alert('Unknown Notary bundle version: ' + exception.version + '!');
     return false;
   }
 
@@ -50,7 +50,7 @@ function handleLocalNotaryBundle(bundlePath) {
 }
 
 function handleRemoteNotaryBundle(bundleUrl) {
-  var dialog = document.getElementById("convergence-add-notary");
+  var dialog = document.getElementById('convergence-add-notary');
 
   ConvergenceUtil.persistUrl(bundleUrl, function(temporaryFile) {
       dialog.asyncInProgress = false;
@@ -63,21 +63,21 @@ function handleRemoteNotaryBundle(bundleUrl) {
 }
 
 function onDialogOK() {
-  if (document.getElementById("convergence-add-notary").asyncComplete)
+  if (document.getElementById('convergence-add-notary').asyncComplete)
     return true;
 
-  if (document.getElementById("convergence-add-notary").asyncInProgress)
+  if (document.getElementById('convergence-add-notary').asyncInProgress)
     return false;
 
-  var localNotaryPath = document.getElementById("notary-local").value.replace(/^\s+|\s+$/g, "");
-  var remoteNotaryUrl = document.getElementById("notary-remote").value.replace(/^\s+|\s+$/g, "");
+  var localNotaryPath = document.getElementById('notary-local').value.replace(/^\s+|\s+$/g, '');
+  var remoteNotaryUrl = document.getElementById('notary-remote').value.replace(/^\s+|\s+$/g, '');
 
   if (localNotaryPath.length != 0) {
     return handleLocalNotaryBundle(localNotaryPath);
   } else if (remoteNotaryUrl.length != 0) {
     return handleRemoteNotaryBundle(remoteNotaryUrl);
   } else {
-    alert("Whoops, you must specify a local or remote path!");
+    alert('Whoops, you must specify a local or remote path!');
     return false;
   }
 }

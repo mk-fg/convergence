@@ -16,10 +16,10 @@
 
 
 /**
- * This class is responsible for building a tunnel through an external
- * SOCKS5 proxy.
- *
- **/
+  * This class is responsible for building a tunnel through an external
+  * SOCKS5 proxy.
+  *
+  **/
 
 function SOCKS5Connector(proxy) {
   this.base = BaseProxyConnector;
@@ -36,15 +36,15 @@ SOCKS5Connector.prototype.readServerHello = function(proxySocket) {
 
   if (serverHello[1] == 0xFF) {
     proxySocket.close();
-    throw "Server requires authentication, which we don't support!";
+    throw 'Server requires authentication, which we dont support!';
   }
 };
 
 SOCKS5Connector.prototype.sendConnectRequest = function(proxySocket, host, port) {
-  dump("Sending connect request for: " + host + ":" + port + "\n");
+  dump('Sending connect request for: ' + host + ':' + port + '\n');
   var request = [String.fromCharCode(0x05), String.fromCharCode(0x01),
-                 String.fromCharCode(0x00), String.fromCharCode(0x03),
-                 String.fromCharCode(host.length)];
+                  String.fromCharCode(0x00), String.fromCharCode(0x03),
+                  String.fromCharCode(host.length)];
 
   var status = proxySocket.writeBytes(NSPR.lib.buffer(request.join('')), 5);
   var status = proxySocket.writeBytes(NSPR.lib.buffer(host), host.length);
@@ -55,11 +55,11 @@ SOCKS5Connector.prototype.sendConnectRequest = function(proxySocket, host, port)
 SOCKS5Connector.prototype.readConnectResponse = function(proxySocket, host) {
   var response = proxySocket.readFully(4);
 
-  dump("Got response: " + response[1] + "\n");
+  dump('Got response: ' + response[1] + '\n');
 
   if (response[1] != 0x00) {
     proxySocket.close();
-    throw "SOCKS Proxy denied connection request (" + response[1] + ")!";
+    throw 'SOCKS Proxy denied connection request (' + response[1] + ')!';
   }
 
   if (response[3] == 0x01) {
@@ -72,12 +72,12 @@ SOCKS5Connector.prototype.readConnectResponse = function(proxySocket, host) {
     proxySocket.readFully(domainLength+2);
   } else {
     proxySocket.close();
-    throw "Unknown address type in socks connect response.";
+    throw 'Unknown address type in socks connect response.';
   }
 };
 
 SOCKS5Connector.prototype.makeConnection = function(proxySocket, host, port) {
-  dump("Making SOCKS5 proxy connection...\n");
+  dump('Making SOCKS5 proxy connection...\n');
 
   this.sendClientHello(proxySocket);
   this.readServerHello(proxySocket)

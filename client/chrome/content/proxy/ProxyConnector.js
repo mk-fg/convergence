@@ -16,10 +16,10 @@
 
 
 /**
- * This class is responsible for the logic of initiating a tunnel
- * through an external proxy. Right now HTTP and SOCKS5 are supported.
- *
- **/
+  * This class is responsible for the logic of initiating a tunnel
+  * through an external proxy. Right now HTTP and SOCKS5 are supported.
+  *
+  **/
 
 
 function ProxyConnector(proxyInfo) {
@@ -27,26 +27,26 @@ function ProxyConnector(proxyInfo) {
 }
 
 ProxyConnector.prototype.makeMultiConnection = function(destinations) {
-  if (this.proxy.type == "http") {
+  if (this.proxy.type == 'http') {
     var proxyConnector = new HttpProxyConnector(this.proxy);
     return proxyConnector.makeMultiConnection(destinations);
-  } else if (this.proxy.type == "socks") {
+  } else if (this.proxy.type == 'socks') {
     var proxyConnector = new SOCKS5Connector(this.proxy);
     return proxyConnector.makeMultiConnection(destinations);
   } else {
-    throw "Unsupported proxy type: " + this.proxy.type;
+    throw 'Unsupported proxy type: ' + this.proxy.type;
   }
 };
 
 ProxyConnector.prototype.makeConnection = function(destinationSocket, host, port) {
-  if (this.proxy.type == "http") {
+  if (this.proxy.type == 'http') {
     var proxyConnector = new HttpProxyConnector(this.proxy);
     proxyConnector.makeConnection(destinationSocket, host, port);
-  } else if (this.proxy.type == "socks") {
+  } else if (this.proxy.type == 'socks') {
     var proxyConnector = new SOCKS5Connector(this.proxy);
     proxyConnector.makeConnection(destinationSocket, host, port);
   } else {
-    throw "Unsupported proxy type: " + this.proxy.type;
+    throw 'Unsupported proxy type: ' + this.proxy.type;
   }
 
   return destinationSocket;

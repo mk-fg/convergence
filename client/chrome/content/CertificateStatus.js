@@ -14,24 +14,24 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA
 
-Components.utils.import("resource://gre/modules/ctypes.jsm");
+Components.utils.import('resource://gre/modules/ctypes.jsm');
 
 /**
- * This class pulls out the notary vote results for the currently
- * rendered page.
- *
- **/
+  * This class pulls out the notary vote results for the currently
+  * rendered page.
+  *
+  **/
 
 function CertificateStatus(convergenceManager) {
-  dump("CertificateStatus constructor called : " + convergenceManager.nssFile.path + "\n");
+  dump('CertificateStatus constructor called : ' + convergenceManager.nssFile.path + '\n');
   NSS.initialize(convergenceManager.nssFile.path);
-  dump("Constructed!\n");
+  dump('Constructed!\n');
 }
 
 CertificateStatus.prototype.getInvalidCertificate = function(destination) {
-  dump("Getting invalid certificate for: " + destination + "\n");
+  dump('Getting invalid certificate for: ' + destination + '\n');
 
-  var badCertService = Components.classes["@mozilla.org/security/recentbadcerts;1"]
+  var badCertService = Components.classes['@mozilla.org/security/recentbadcerts;1']
   .getService(Components.interfaces.nsIRecentBadCertsService);
 
   if (!badCertService)
@@ -49,7 +49,7 @@ CertificateStatus.prototype.getInvalidCertificate = function(destination) {
 CertificateStatus.prototype.getCertificateForCurrentTab = function() {
   var browser = gBrowser.selectedBrowser;
 
-  if (browser.currentURI.scheme != "https")
+  if (browser.currentURI.scheme != 'https')
     return null;
 
   var securityProvider = browser.securityUI.QueryInterface(Components.interfaces.nsISSLStatusProvider);
@@ -58,7 +58,7 @@ CertificateStatus.prototype.getCertificateForCurrentTab = function() {
     return securityProvider.SSLStatus.serverCert;
   } else {
     var port = browser.currentURI.port == -1 ? 443 : browser.currentURI.port;
-    return this.getInvalidCertificate(browser.currentURI.host + ":" + port);
+    return this.getInvalidCertificate(browser.currentURI.host + ':' + port);
   }
 };
 
@@ -73,9 +73,8 @@ CertificateStatus.prototype.getVerificationStatus = function(certificate) {
   var completeCertificate = NSS.lib.CERT_DecodeDERCertificate(derItem.address(), 1, null);
 
   var extItem = NSS.types.SECItem();
-  var status = NSS.lib.CERT_FindCertExtension(completeCertificate,
-                                               NSS.lib.SEC_OID_NS_CERT_EXT_COMMENT,
-                                               extItem.address());
+  var status = NSS.lib.CERT_FindCertExtension(
+    completeCertificate, NSS.lib.SEC_OID_NS_CERT_EXT_COMMENT, extItem.address() );
 
   if (status != -1) {
     var encoded = '';
@@ -95,7 +94,7 @@ CertificateStatus.prototype.getVerificationStatus = function(certificate) {
 };
 
 CertificateStatus.prototype.getCurrentTabStatus = function() {
-  dump("Getting current tab status...\n");
+  dump('Getting current tab status...\n');
   var certificate = this.getCertificateForCurrentTab();
 
   if (certificate != null) {

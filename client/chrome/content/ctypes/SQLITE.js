@@ -16,10 +16,10 @@
 
 
 /**
- * This class manages the ctypes bridge to the sqlite libraries
- * distributed with Mozilla.
- *
- **/
+  * This class manages the ctypes bridge to the sqlite libraries
+  * distributed with Mozilla.
+  *
+  **/
 
 function SQLITE() {
 
@@ -32,19 +32,19 @@ SQLITE.initialize = function(sqlitePath) {
     sharedLib = ctypes.open(sqlitePath);
   } catch (e) {
     try {
-      dump("Failed to find mozsqlite3 in installed directory, checking system paths for sqlite3.\n");
-      sharedLib = ctypes.open(ctypes.libraryName("sqlite3"));
+      dump('Failed to find mozsqlite3 in installed directory, checking system paths for sqlite3.\n');
+      sharedLib = ctypes.open(ctypes.libraryName('sqlite3'));
     } catch (e) {
-      dump("Failed to find standard sqlite3 permutations, checking debian-specific libsqlite3.so.0.\n");
-      sharedLib = ctypes.open("libsqlite3.so.0");
+      dump('Failed to find standard sqlite3 permutations, checking debian-specific libsqlite3.so.0.\n');
+      sharedLib = ctypes.open('libsqlite3.so.0');
     }
   }
 
   SQLITE.types = new Object();
 
-  SQLITE.types.sqlite3 = ctypes.StructType("sqlite3");
+  SQLITE.types.sqlite3 = ctypes.StructType('sqlite3');
 
-  SQLITE.types.sqlite3_stmt = ctypes.StructType("sqlite3_stmt");
+  SQLITE.types.sqlite3_stmt = ctypes.StructType('sqlite3_stmt');
 
   SQLITE.types.bind_free_function = ctypes.FunctionType(ctypes.default_abi, ctypes.void_t, [ctypes.voidptr_t]);
 
@@ -58,13 +58,13 @@ SQLITE.initialize = function(sqlitePath) {
     SQLITE_ROW : 100,
     buffer : ctypes.ArrayType(ctypes.char),
 
-    sqlite3_open : sharedLib.declare("sqlite3_open",
+    sqlite3_open : sharedLib.declare('sqlite3_open',
                                          ctypes.default_abi,
                                          ctypes.int,
                                      ctypes.char.ptr,
                                      SQLITE.types.sqlite3.ptr.ptr),
 
-    sqlite3_prepare_v2 : sharedLib.declare("sqlite3_prepare_v2",
+    sqlite3_prepare_v2 : sharedLib.declare('sqlite3_prepare_v2',
                                            ctypes.default_abi,
                                            ctypes.int,
                                            SQLITE.types.sqlite3.ptr,
@@ -73,7 +73,7 @@ SQLITE.initialize = function(sqlitePath) {
                                            SQLITE.types.sqlite3_stmt.ptr.ptr,
                                            ctypes.char.ptr.ptr),
 
-    sqlite3_bind_text : sharedLib.declare("sqlite3_bind_text",
+    sqlite3_bind_text : sharedLib.declare('sqlite3_bind_text',
                                           ctypes.default_abi,
                                           ctypes.int,
                                           SQLITE.types.sqlite3_stmt.ptr,
@@ -83,36 +83,36 @@ SQLITE.initialize = function(sqlitePath) {
                                           SQLITE.types.bind_free_function.ptr),
 
 
-    sqlite3_bind_int64 : sharedLib.declare("sqlite3_bind_int",
+    sqlite3_bind_int64 : sharedLib.declare('sqlite3_bind_int',
                                          ctypes.default_abi,
                                          ctypes.int,
                                          SQLITE.types.sqlite3_stmt.ptr,
                                          ctypes.int,
                                          ctypes.int64_t),
 
-    sqlite3_step : sharedLib.declare("sqlite3_step",
+    sqlite3_step : sharedLib.declare('sqlite3_step',
                                      ctypes.default_abi,
                                      ctypes.int,
                                      SQLITE.types.sqlite3_stmt.ptr),
 
-    sqlite3_column_text : sharedLib.declare("sqlite3_column_text",
+    sqlite3_column_text : sharedLib.declare('sqlite3_column_text',
                                             ctypes.default_abi,
                                             ctypes.unsigned_char.ptr,
                                             SQLITE.types.sqlite3_stmt.ptr,
                                             ctypes.int),
 
-    sqlite3_column_int64 : sharedLib.declare("sqlite3_column_int64",
+    sqlite3_column_int64 : sharedLib.declare('sqlite3_column_int64',
                                             ctypes.default_abi,
                                             ctypes.int64_t,
                                             SQLITE.types.sqlite3_stmt.ptr,
                                             ctypes.int),
 
-    sqlite3_finalize : sharedLib.declare("sqlite3_finalize",
+    sqlite3_finalize : sharedLib.declare('sqlite3_finalize',
                                          ctypes.default_abi,
                                          ctypes.int,
                                          SQLITE.types.sqlite3_stmt.ptr),
 
-    sqlite3_close : sharedLib.declare("sqlite3_close",
+    sqlite3_close : sharedLib.declare('sqlite3_close',
                                       ctypes.default_abi,
                                       ctypes.int,
                                       SQLITE.types.sqlite3.ptr),

@@ -16,10 +16,10 @@
 
 
 /**
- * This class is responsible for the logic required to initiate a tunnel
- * through an external HTTP proxy.
- *
- **/
+  * This class is responsible for the logic required to initiate a tunnel
+  * through an external HTTP proxy.
+  *
+  **/
 
 
 function HttpProxyConnector(proxy) {
@@ -32,20 +32,20 @@ HttpProxyConnector.prototype.readResponse = function(proxySocket) {
 
   if (headers.getResponseCode() != 200) {
     proxySocket.close();
-    throw "Proxy connect failed! " + headers.getResponseCode();
+    throw 'Proxy connect failed! ' + headers.getResponseCode();
   }
 };
 
 HttpProxyConnector.prototype.sendRequest = function(proxySocket, host, port) {
   var request =
-  "CONNECT " + host + ":" + port + " HTTP/1.1\r\n" +
-  "Host: " + host + "\r\n\r\n";
+  'CONNECT ' + host + ':' + port + ' HTTP/1.1\r\n' +
+  'Host: ' + host + '\r\n\r\n';
 
   proxySocket.writeBytes(NSPR.lib.buffer(request), request.length);
 };
 
 HttpProxyConnector.prototype.makeConnection = function(proxySocket, host, port) {
-  dump("Making HTTP proxy connection...\n");
+  dump('Making HTTP proxy connection...\n');
 
   this.sendRequest(proxySocket, host, port);
   this.readResponse(proxySocket);

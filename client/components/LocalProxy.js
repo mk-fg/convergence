@@ -16,11 +16,11 @@
 
 
 /**
- * Now that we have to operate in ChromeWorker land, this does nothing
- * but initialize the local ServerSocket, and maintain the nsIProxyInfo
- * instance that describes its address and port.
- *
- **/
+  * Now that we have to operate in ChromeWorker land, this does nothing
+  * but initialize the local ServerSocket, and maintain the nsIProxyInfo
+  * instance that describes its address and port.
+  *
+  **/
 
 
 function LocalProxy() {
@@ -45,6 +45,6 @@ LocalProxy.prototype.constructListenSocket = function() {
 };
 
 LocalProxy.prototype.initializeProxyInfo = function() {
-  var proxyService = Components.classes["@mozilla.org/network/protocol-proxy-service;1"].getService(Components.interfaces.nsIProtocolProxyService);
-  this.proxyInfo = proxyService.newProxyInfo("http", "localhost", this.listenSocket.listenPort, 1, 0, null);
+  var proxyService = Components.classes['@mozilla.org/network/protocol-proxy-service;1'].getService(Components.interfaces.nsIProtocolProxyService);
+  this.proxyInfo = proxyService.newProxyInfo('http', 'localhost', this.listenSocket.listenPort, 1, 0, null);
 };

@@ -16,13 +16,13 @@
 
 
 /**
- * This class is the main entrypoint for the Convergence front-end.
- * It is responspible for kicking off the back-end, and initializing
- * the front end visual components.
- *
- **/
+  * This class is the main entrypoint for the Convergence front-end.
+  * It is responspible for kicking off the back-end, and initializing
+  * the front end visual components.
+  *
+  **/
 
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
+Components.utils.import('resource://gre/modules/NetUtil.jsm');
 
 var Convergence = {
 
@@ -40,15 +40,15 @@ var Convergence = {
   },
 
   setToolTip: function(status) {
-    var panel = document.getElementById("convergence-button");
+    var panel = document.getElementById('convergence-button');
 
     if (status == null) {
-      panel.tooltipText = "Page not secure.";
+      panel.tooltipText = 'Page not secure.';
       return;
     }
 
     if (!status.status) {
-      dump("Displaying certificate fialure notification\n");
+      dump('Displaying certificate fialure notification\n');
       this.displayCertificateFailureNotification(status);
     }
 
@@ -69,11 +69,11 @@ var Convergence = {
           accessKey: null,
           popup: null,
           callback: function() {
-            var argument = {"returnCode" : false, "status" : status};
+            var argument = {'returnCode' : false, 'status' : status};
             window.openDialog('chrome://convergence/content/exceptionDialog.xul',
                               'dialog', 'modal', argument);
 
-            if (argument["returnCode"]) {
+            if (argument['returnCode']) {
               gBrowser.contentDocument.location.reload();
             }
 
@@ -92,13 +92,13 @@ var Convergence = {
     var container = gBrowser.tabContainer;
     var convergence = this;
 
-    container.addEventListener("TabSelect", function(event) {
-        dump("On tab selected..\n");
+    container.addEventListener('TabSelect', function(event) {
+        dump('On tab selected..\n');
         try {
           var status = convergence.certificateStatus.getCurrentTabStatus();
           convergence.setToolTip(status);
         } catch (e) {
-          dump(e + " , " + e.stack);
+          dump(e + ' , ' + e.stack);
         }
       }, false);
   },
@@ -110,11 +110,11 @@ var Convergence = {
   },
 
   initializeObserver: function() {
-    var observerService = Components.classes["@mozilla.org/observer-service;1"]
+    var observerService = Components.classes['@mozilla.org/observer-service;1']
     .getService(Components.interfaces.nsIObserverService);
 
-    observerService.addObserver(this, "convergence-add-notary", false);
-    observerService.addObserver(this, "convergence-disabled", false);
+    observerService.addObserver(this, 'convergence-add-notary', false);
+    observerService.addObserver(this, 'convergence-disabled', false);
   },
 
   addNotaryFromFile: function(path) {
@@ -123,20 +123,20 @@ var Convergence = {
     try {
       notary = this.convergenceManager.getNewNotaryFromBundle(path);
     } catch (exception) {
-      dump("Got exception: " + exception + " , " + exception.stack + "\n");
-      alert("Unknown Notary bundle version: " + exception.version + "!");
+      dump('Got exception: ' + exception + ' , ' + exception.stack + '\n');
+      alert('Unknown Notary bundle version: ' + exception.version + '!');
       return;
     }
 
     var settingsManager = this.convergenceManager.getSettingsManager();
 
-    var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+    var promptService = Components.classes['@mozilla.org/embedcomp/prompt-service;1']
                           .getService(Components.interfaces.nsIPromptService);
 
-    var status = promptService.confirm(null, "Trust This Notary?",
-                                                "Are you sure that you would like to trust this notary: \n\n" +
-                                                notary.name + "\n\n" +
-                                                "...to verify the authenticity of your secure communication?");
+    var status = promptService.confirm(null, 'Trust This Notary?',
+                                                'Are you sure that you would like to trust this notary: \n\n' +
+                                                notary.name + '\n\n' +
+                                                '...to verify the authenticity of your secure communication?');
 
     if (status) {
       settingsManager.addNotary(notary);
@@ -145,11 +145,11 @@ var Convergence = {
   },
 
   observe: function(subject, topic, data) {
-    dump("Observe called!\n");
-    if (topic == "convergence-add-notary") {
-      dump("Adding notary from file: " + data + "\n");
+    dump('Observe called!\n');
+    if (topic == 'convergence-add-notary') {
+      dump('Adding notary from file: ' + data + '\n');
       this.addNotaryFromFile(data);
-    } else if (topic == "convergence-disabled") {
+    } else if (topic == 'convergence-disabled') {
       this.setDisabledStatus();
     }
   },
@@ -158,7 +158,7 @@ var Convergence = {
     if (event.target.id == 'convergence-button' ||
         event.target.id == 'convergence-menu-toggle')
     {
-      dump("onToolBarClick\n");
+      dump('onToolBarClick\n');
       this.updateSystemStatus();
       this.updateLocalStatus();
     }
@@ -173,7 +173,7 @@ var Convergence = {
     if (!this.convergenceManager.isEnabled() &&
         !this.convergenceManager.getSettingsManager().hasEnabledNotary())
     {
-      alert("Unable to activate Convergence, no configured notaries are enabled.");
+      alert('Unable to activate Convergence, no configured notaries are enabled.');
       return;
     }
 
@@ -185,30 +185,30 @@ var Convergence = {
   },
 
   setEnabledStatus: function() {
-    document.getElementById("convergence-menu-toggle").label = "Disable";
-    document.getElementById("convergence-button").image = "chrome://convergence/content/images/status-enabled.png";
+    document.getElementById('convergence-menu-toggle').label = 'Disable';
+    document.getElementById('convergence-button').image = 'chrome://convergence/content/images/status-enabled.png';
   },
 
   setDisabledStatus: function() {
-    document.getElementById("convergence-menu-toggle").label = "Enable";
-    document.getElementById("convergence-button").image = "chrome://convergence/content/images/status-disabled.png";
+    document.getElementById('convergence-menu-toggle').label = 'Enable';
+    document.getElementById('convergence-button').image = 'chrome://convergence/content/images/status-disabled.png';
   },
 
   installToolbarIcon: function() {
-    var toolbutton = document.getElementById("convergence-button");
-    if (toolbutton && toolbutton.parentNode.localName != "toolbarpalette")
+    var toolbutton = document.getElementById('convergence-button');
+    if (toolbutton && toolbutton.parentNode.localName != 'toolbarpalette')
       return;
 
-    var toolbar = document.getElementById("nav-bar");
-    if (!toolbar || typeof toolbar.insertItem != "function")
+    var toolbar = document.getElementById('nav-bar');
+    if (!toolbar || typeof toolbar.insertItem != 'function')
       return;
 
-    toolbar.insertItem("convergence-button", null, null, false);
-    toolbar.setAttribute("currentset", toolbar.currentSet);
-    document.persist(toolbar.id, "currentset");
+    toolbar.insertItem('convergence-button', null, null, false);
+    toolbar.setAttribute('currentset', toolbar.currentSet);
+    document.persist(toolbar.id, 'currentset');
   },
 };
 
 
-window.addEventListener("load", function(e) { Convergence.onLoad(e); }, false);
-window.document.addEventListener("DOMContentLoaded", function(e) {Convergence.onContentLoad(e);}, true);
+window.addEventListener('load', function(e) { Convergence.onLoad(e); }, false);
+window.document.addEventListener('DOMContentLoaded', function(e) {Convergence.onContentLoad(e);}, true);

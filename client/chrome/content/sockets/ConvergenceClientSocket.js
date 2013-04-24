@@ -16,12 +16,12 @@
 
 
 /**
- * This class is responsible for making an SSL connection to the
- * destination server the client is trying to reach.  This is the
- * first time we see the destination certificate, the validation of
- * which is what this entire game is about.
- *
- **/
+  * This class is responsible for making an SSL connection to the
+  * destination server the client is trying to reach.  This is the
+  * first time we see the destination certificate, the validation of
+  * which is what this entire game is about.
+  *
+  **/
 
 function ConvergenceClientSocket(host, port, proxy, fd) {
   if (typeof fd != 'undefined') {
@@ -29,25 +29,27 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
     return;
   }
 
-  var addrInfo = NSPR.lib.PR_GetAddrInfoByName(proxy == null ? host : proxy.host,
-                                               NSPR.lib.PR_AF_INET,
-                                               NSPR.lib.PR_AI_ADDRCONFIG);
+  var addrInfo = NSPR.lib.PR_GetAddrInfoByName(
+    proxy == null ? host : proxy.host,
+    NSPR.lib.PR_AF_INET,
+    NSPR.lib.PR_AI_ADDRCONFIG );
 
   if (addrInfo == null || addrInfo.isNull()) {
-    throw "DNS lookup failed: " + NSPR.lib.PR_GetError() + "\n";
+    throw 'DNS lookup failed: ' + NSPR.lib.PR_GetError() + '\n';
   }
 
   var netAddressBuffer = NSPR.lib.PR_Malloc(1024);
   var netAddress = ctypes.cast(netAddressBuffer, NSPR.types.PRNetAddr.ptr);
 
   NSPR.lib.PR_EnumerateAddrInfo(null, addrInfo, 0, netAddress);
-  NSPR.lib.PR_SetNetAddr(NSPR.lib.PR_IpAddrNull, NSPR.lib.PR_AF_INET,
-                         proxy == null ? port : proxy.port, netAddress);
+  NSPR.lib.PR_SetNetAddr(
+    NSPR.lib.PR_IpAddrNull, NSPR.lib.PR_AF_INET,
+    proxy == null ? port : proxy.port, netAddress );
 
   this.fd = NSPR.lib.PR_OpenTCPSocket(NSPR.lib.PR_AF_INET);
 
   if (this.fd == null) {
-    throw "Unable to construct socket!\n";
+    throw 'Unable to construct socket!\n';
   }
 
   var status = NSPR.lib.PR_Connect(this.fd, netAddress, NSPR.lib.PR_SecondsToInterval(5));
@@ -56,11 +58,11 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
     NSPR.lib.PR_Free(netAddressBuffer);
     NSPR.lib.PR_FreeAddrInfo(addrInfo);
     NSPR.lib.PR_Close(this.fd);
-    throw "Failed to connect to " + host + " : " + port + " -- " + NSPR.lib.PR_GetError();
+    throw 'Failed to connect to ' + host + ' : ' + port + ' -- ' + NSPR.lib.PR_GetError();
   }
 
   if (proxy != null) {
-    dump("Making proxied connection...\n");
+    dump('Making proxied connection...\n');
     var proxyConnector = new ProxyConnector(proxy);
     proxyConnector.makeConnection(this, host, port);
   }
@@ -77,9 +79,9 @@ function allGoodAuth(arg, fd, foo, bar) {
 }
 
 function clientAuth(arg, fd, caNames, retCert, retKey) {
-  dump("Server requested client certificate...\n");
+  dump('Server requested client certificate...\n');
   var status = SSL.lib.NSS_GetClientAuthData(arg, fd, caNames, retCert, retKey);
-  dump("Client certificate status: " + staus + "\n");
+  dump('Client certificate status: ' + staus + '\n');
 }
 
 ConvergenceClientSocket.prototype.negotiateSSL = function() {
@@ -88,20 +90,20 @@ ConvergenceClientSocket.prototype.negotiateSSL = function() {
   var status = SSL.lib.SSL_AuthCertificateHook(this.fd, callbackFunction, null);
 
   if (status == -1) {
-    throw "Error setting auth certificate hook!";
+    throw 'Error setting auth certificate hook!';
   }
 
   // var callbackFunction = SSL.types.SSLGetClientAuthData(clientAuth);
   // var status = SSL.lib.SSL_GetClientAuthDataHook(this.fd, callbackFunction, null);
 
   // if (status == -1) {
-  //   throw "Error setting client auth certificate hook!";
+  //   throw 'Error setting client auth certificate hook!';
   // }
 
   var status = SSL.lib.SSL_ResetHandshake(this.fd, NSPR.lib.PR_FALSE);
 
   if (status == -1) {
-    throw "Error resetting handshake!";
+    throw 'Error resetting handshake!';
   }
 
   var status;

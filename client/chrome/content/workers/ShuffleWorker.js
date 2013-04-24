@@ -16,25 +16,26 @@
 
 
 /**
- * This ChromeWorker is responsible for two things:
- *
- * 1) Listening to the ListenSocket FD for incoming connection requests,
- * which it then hands off to its parent.
- *
- * 2) Shuffling data between pairs of established SSL connections,
- * effectively moving data across the MITM bridge.
- *
- * It is setup by the ConnectionManager in components.
- *
- **/
+  * This ChromeWorker is responsible for two things:
+  *
+  * 1) Listening to the ListenSocket FD for incoming connection requests,
+  * which it then hands off to its parent.
+  *
+  * 2) Shuffling data between pairs of established SSL connections,
+  * effectively moving data across the MITM bridge.
+  *
+  * It is setup by the ConnectionManager in components.
+  *
+  **/
 
-importScripts("chrome://convergence/content/ctypes/NSPR.js",
-              "chrome://convergence/content/ctypes/NSS.js",
-              "chrome://convergence/content/ctypes/SSL.js",
-              "chrome://convergence/content/sockets/ConvergenceServerSocket.js",
-              "chrome://convergence/content/sockets/ConvergenceListenSocket.js",
-              "chrome://convergence/content/ctypes/Serialization.js",
-              "chrome://convergence/content/workers/ShuffleWorkerItem.js");
+importScripts(
+  'chrome://convergence/content/ctypes/NSPR.js',
+  'chrome://convergence/content/ctypes/NSS.js',
+  'chrome://convergence/content/ctypes/SSL.js',
+  'chrome://convergence/content/sockets/ConvergenceServerSocket.js',
+  'chrome://convergence/content/sockets/ConvergenceListenSocket.js',
+  'chrome://convergence/content/ctypes/Serialization.js',
+  'chrome://convergence/content/workers/ShuffleWorkerItem.js' );
 
 const TYPE_INITIALIZE = 1;
 const TYPE_CONNECTION = 2;
@@ -51,8 +52,8 @@ ShuffleWorker.prototype.initializeDescriptors = function() {
   var pollfds = new pollfds_t(connectionsLength + 2);
 
   for (var i=0;i<this.connectionPairs.length;i++) {
-    this.connectionPairs[i].getPollDesc(pollfds[i*2].address(),
-                                        pollfds[(i*2)+1].address());
+    this.connectionPairs[i].getPollDesc(
+      pollfds[i*2].address(), pollfds[(i*2)+1].address() );
   }
 
   pollfds[connectionsLength].fd = this.wakeup;
@@ -95,7 +96,7 @@ ShuffleWorker.prototype.handleConnectionEvents = function(pollfds, connectionsLe
 
   for (var i=connectionsLength-2;i>=0;i-=2) {
     var result = this.connectionPairs[i/2].shuffle(pollfds[i].out_flags,
-                                                   pollfds[i+1].out_flags);
+                                                    pollfds[i+1].out_flags);
 
     if (result[0]) { // Closed
       this.connectionPairs[i/2].close();
@@ -137,12 +138,12 @@ ShuffleWorker.prototype.processConnections = function() {
     var modified = false;
 
     if (this.isWakeupEvent(pollfds[connectionsLength].out_flags)) {
-      dump("Bailing out for wakeup...\n");
+      dump('Bailing out for wakeup...\n');
       return;
     }
 
     if (this.isAcceptEvent(pollfds[connectionsLength + 1].out_flags)) {
-      dump("Handling accept event...\n");
+      dump('Handling accept event...\n');
       this.handleAcceptEvent();
     }
 
@@ -160,18 +161,18 @@ onmessage = function(event) {
   try {
     switch (event.data.type) {
     case TYPE_INITIALIZE:
-      dump("Initializing ShuffleWorker...\n");
+      dump('Initializing ShuffleWorker...\n');
       shuffleWorker.initialize(event.data);
       break;
     case TYPE_CONNECTION:
-      dump("Adding ShuffleWorker connection...\n");
+      dump('Adding ShuffleWorker connection...\n');
       shuffleWorker.addConnection(event.data);
       break;
     }
 
     shuffleWorker.processConnections();
-    dump("ShuffleWorker complete!\n");
+    dump('ShuffleWorker complete!\n');
   } catch (e) {
-    dump("ShuffleWorker exception: " + e + " , " + e.stack + "\n");
+    dump('ShuffleWorker exception: ' + e + ' , ' + e.stack + '\n');
   }
 };

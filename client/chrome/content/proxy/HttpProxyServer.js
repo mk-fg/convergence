@@ -16,12 +16,12 @@
 
 
 /**
- * This class is responsible for parsing an HTTP CONNECT request,
- * which the local browser will send to us (the internal proxy server).
- * From here, we get the actual destination the client is trying to
- * connect to, and begin the MITM process.
- *
- **/
+  * This class is responsible for parsing an HTTP CONNECT request,
+  * which the local browser will send to us (the internal proxy server).
+  * From here, we get the actual destination the client is trying to
+  * connect to, and begin the MITM process.
+  *
+  **/
 
 
 function HttpProxyServer(clientSocket) {
@@ -30,33 +30,33 @@ function HttpProxyServer(clientSocket) {
 }
 
 HttpProxyServer.prototype.readHttpHeaders = function() {
-  var headers = "";
+  var headers = '';
 
   for (;;) {
     var buf = this.clientSocket.readString();
 
     if (buf == null)
-      throw "Socket closed while reading local HTTP CONNECT request.";
+      throw 'Socket closed while reading local HTTP CONNECT request.';
 
     headers  += buf;
 
-    dump("Total headers: " + headers + "\n");
+    dump('Total headers: ' + headers + '\n');
 
-    if (headers.indexOf("\r\n\r\n") != -1)
+    if (headers.indexOf('\r\n\r\n') != -1)
       return headers;
   }
 };
 
 HttpProxyServer.prototype.parseDestination = function(httpHeaders) {
-  if (httpHeaders.indexOf("CONNECT ") != 0) {
-    throw "Not a connect request!";
+  if (httpHeaders.indexOf('CONNECT ') != 0) {
+    throw 'Not a connect request!';
   }
 
-  var destination = httpHeaders.substring(8, httpHeaders.indexOf(" ", 9));
-  var splitIndex = destination.indexOf(":");
+  var destination = httpHeaders.substring(8, httpHeaders.indexOf(' ', 9));
+  var splitIndex = destination.indexOf(':');
 
   if (splitIndex == -1) {
-    throw "Not a well formatted destination: " + destination;
+    throw 'Not a well formatted destination: ' + destination;
   }
 
   var endpoint = new Object();
@@ -67,9 +67,9 @@ HttpProxyServer.prototype.parseDestination = function(httpHeaders) {
 };
 
 HttpProxyServer.prototype.getConnectDestination = function() {
-  dump("Reading http headers...\n");
+  dump('Reading http headers...\n');
   httpHeaders = this.readHttpHeaders();
 
-  dump("Read http headers: " + httpHeaders + "\n");
+  dump('Read http headers: ' + httpHeaders + '\n');
   return this.parseDestination(httpHeaders);
 };

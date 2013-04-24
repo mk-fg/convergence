@@ -16,11 +16,11 @@
 
 
 /**
- * This class is responsible for parsing a normal HTTP response.
- * It is used, for instance, to parse the HTTP response a Notary
- * returns.
- *
- **/
+  * This class is responsible for parsing a normal HTTP response.
+  * It is used, for instance, to parse the HTTP response a Notary
+  * returns.
+  *
+  **/
 
 
 function HttpParser(socket) {
@@ -42,26 +42,26 @@ HttpParser.prototype.getResponseBodyJson = function() {
 };
 
 HttpParser.prototype.parseResponseBody = function(response) {
-  var headerDelimeter = response.indexOf("\r\n\r\n");
+  var headerDelimeter = response.indexOf('\r\n\r\n');
 
   if (headerDelimeter == -1) {
-    return "";
+    return '';
   }
 
   return response.substring(headerDelimeter+4);
 };
 
 HttpParser.prototype.parseResponseCode = function(response) {
-  var firstLineDelimiter = response.indexOf("\r\n");
+  var firstLineDelimiter = response.indexOf('\r\n');
 
   if (firstLineDelimiter == -1) {
     return 500;
   }
 
   var firstLine = response.substring(0, firstLineDelimiter);
-  var firstLineComponents = firstLine.split(" ");
+  var firstLineComponents = firstLine.split(' ');
 
-  if (firstLineComponents[0].indexOf("HTTP") != 0) {
+  if (firstLineComponents[0].indexOf('HTTP') != 0) {
     return 500;
   }
 

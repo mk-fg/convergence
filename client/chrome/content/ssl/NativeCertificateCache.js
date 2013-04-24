@@ -17,23 +17,24 @@
 
 
 /**
- * This class is responsible for maintaing the local cache of certificates
- * we've seen and approved.  It currently stores this information in a
- * local sqlite database.
- *
- **/
+  * This class is responsible for maintaing the local cache of certificates
+  * we've seen and approved.  It currently stores this information in a
+  * local sqlite database.
+  *
+  **/
 
 
 function NativeCertificateCache(cacheLocation, useCache) {
-  dump("Initializing certificate cache...\n");
+  dump('Initializing certificate cache...\n');
   this.useCache = useCache;
   this.connection = SQLITE.types.sqlite3.ptr(0);
 
-  var status = SQLITE.lib.sqlite3_open(SQLITE.lib.buffer(cacheLocation),
-                                       this.connection.address());
+  var status = SQLITE.lib.sqlite3_open(
+    SQLITE.lib.buffer(cacheLocation),
+    this.connection.address() );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to open database at: " + cacheLocation;
+    throw 'Unable to open database at: ' + cacheLocation;
   }
 }
 
@@ -45,46 +46,43 @@ NativeCertificateCache.prototype.cacheFingerprint = function(host, port, fingerp
   if (!this.useCache)
     return;
 
-  var insertStatement = "INSERT INTO fingerprints (location, fingerprint, timestamp) " +
-                        "VALUES (?, ?, ?)";
+  var insertStatement = 'INSERT INTO fingerprints (location, fingerprint, timestamp) VALUES (?, ?, ?)';
   var preparedStatement = SQLITE.types.sqlite3_stmt.ptr(0);
   var unused = ctypes.char.ptr(0);
-  var destination = host + ":" + port;
+  var destination = host + ':' + port;
   var staticData = SQLITE.types.bind_free_function.ptr(0);
 
-  var status = SQLITE.lib.sqlite3_prepare_v2(this.connection, SQLITE.lib.buffer(insertStatement),
-                                             -1, preparedStatement.address(), unused.address());
+  var status = SQLITE.lib.sqlite3_prepare_v2(
+    this.connection, SQLITE.lib.buffer(insertStatement),
+    -1, preparedStatement.address(), unused.address() );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to create prepared statement: " + status;
+    throw 'Unable to create prepared statement: ' + status;
   }
 
-  var status = SQLITE.lib.sqlite3_bind_text(preparedStatement, 1,
-                                            SQLITE.lib.buffer(destination),
-                                            -1, staticData);
+  var status = SQLITE.lib.sqlite3_bind_text(
+    preparedStatement, 1, SQLITE.lib.buffer(destination), -1, staticData );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to bind destination param: " + status;
+    throw 'Unable to bind destination param: ' + status;
   }
 
-  var status = SQLITE.lib.sqlite3_bind_text(preparedStatement, 2,
-                                            SQLITE.lib.buffer(fingerprint),
-                                            -1, staticData);
+  var status = SQLITE.lib.sqlite3_bind_text(
+    preparedStatement, 2, SQLITE.lib.buffer(fingerprint), -1, staticData );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to bind fingerprint param: " + status;
+    throw 'Unable to bind fingerprint param: ' + status;
   }
 
   // var status = SQLITE.lib.sqlite3_bind_int64(preparedStatement, 3,
   //                                           new Date().getTime());
 
   var timestamp = new ctypes.Int64(new Date().getTime());
-  var status = SQLITE.lib.sqlite3_bind_text(preparedStatement, 3,
-                                               SQLITE.lib.buffer(timestamp.toString()),
-                                               -1, staticData);
+  var status = SQLITE.lib.sqlite3_bind_text(
+    preparedStatement, 3, SQLITE.lib.buffer(timestamp.toString()), -1, staticData );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to bind timestamp param: " + status;
+    throw 'Unable to bind timestamp param: ' + status;
   }
 
   SQLITE.lib.sqlite3_step(preparedStatement);
@@ -93,34 +91,35 @@ NativeCertificateCache.prototype.cacheFingerprint = function(host, port, fingerp
 
 NativeCertificateCache.prototype.isCached = function(host, port, fingerprint) {
   if (!this.useCache) {
-    dump("Ignoring cache...\n");
+    dump('Ignoring cache...\n');
     return false;
   }
 
-  var queryStatement = "SELECT * FROM fingerprints WHERE location = ? AND fingerprint = ?";
+  var queryStatement = 'SELECT * FROM fingerprints WHERE location = ? AND fingerprint = ?';
   var preparedStatement = SQLITE.types.sqlite3_stmt.ptr(0);
   var unused = ctypes.char.ptr(0);
-  var destination = host + ":" + port;
+  var destination = host + ':' + port;
   var staticData = SQLITE.types.bind_free_function.ptr(0);
 
-  var status = SQLITE.lib.sqlite3_prepare_v2(this.connection, SQLITE.lib.buffer(queryStatement),
-                                             -1, preparedStatement.address(), unused.address());
+  var status = SQLITE.lib.sqlite3_prepare_v2(
+    this.connection, SQLITE.lib.buffer(queryStatement),
+    -1, preparedStatement.address(), unused.address() );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to create prepared statement: " + status;
+    throw 'Unable to create prepared statement: ' + status;
   }
 
   var status = SQLITE.lib.sqlite3_bind_text(preparedStatement, 1, destination, -1, staticData);
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to bind parameter to prepared statement: " + status;
+    throw 'Unable to bind parameter to prepared statement: ' + status;
 
   }
 
   var status = SQLITE.lib.sqlite3_bind_text(preparedStatement, 2, fingerprint, -1, staticData);
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to bind parameter to prepared statement: " + status;
+    throw 'Unable to bind parameter to prepared statement: ' + status;
   }
 
   var result;
@@ -137,32 +136,34 @@ NativeCertificateCache.prototype.isCached = function(host, port, fingerprint) {
 };
 
 NativeCertificateCache.prototype.constructOrderTerm = function(sortColumn, sortDirection) {
-  var orderTerm = "ORDER BY location";
+  var orderTerm = 'ORDER BY location';
 
   if (typeof sortColumn != 'undefined') {
-    orderTerm = "ORDER BY " + sortColumn;
+    orderTerm = 'ORDER BY ' + sortColumn;
   }
 
-  var sortTerm = "ASC";
+  var sortTerm = 'ASC';
 
   if (typeof sortDirection != 'undefined') {
     sortTerm = sortDirection;
   }
 
-  return orderTerm + " " + sortTerm;
+  return orderTerm + ' ' + sortTerm;
 };
 
 NativeCertificateCache.prototype.fetchAll = function(sortColumn, sortDirection) {
-  var queryStatement = "SELECT id,location,fingerprint,timestamp FROM fingerprints " +
-                          this.constructOrderTerm(sortColumn, sortDirection);
+  var queryStatement = (
+    'SELECT id,location,fingerprint,timestamp FROM fingerprints '
+    + this.constructOrderTerm(sortColumn, sortDirection) );
   var preparedStatement = SQLITE.types.sqlite3_stmt.ptr(0);
   var unused = ctypes.char.ptr(0);
 
-  var status = SQLITE.lib.sqlite3_prepare_v2(this.connection, SQLITE.lib.buffer(queryStatement),
-                                             -1, preparedStatement.address(), unused.address());
+  var status = SQLITE.lib.sqlite3_prepare_v2(
+    this.connection, SQLITE.lib.buffer(queryStatement),
+    -1, preparedStatement.address(), unused.address() );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to create prepared statement: " + status;
+    throw 'Unable to create prepared statement: ' + status;
   }
 
   var result = new Array();
@@ -181,21 +182,22 @@ NativeCertificateCache.prototype.fetchAll = function(sortColumn, sortDirection) 
 }
 
 NativeCertificateCache.prototype.deleteCertificate = function(id) {
-  var queryStatement = "DELETE FROM fingerprints WHERE id = ?";
+  var queryStatement = 'DELETE FROM fingerprints WHERE id = ?';
   var preparedStatement = SQLITE.types.sqlite3_stmt.ptr(0);
   var unused = ctypes.char.ptr(0);
 
-  var status = SQLITE.lib.sqlite3_prepare_v2(this.connection, SQLITE.lib.buffer(queryStatement),
-                                             -1, preparedStatement.address(), unused.address());
+  var status = SQLITE.lib.sqlite3_prepare_v2(
+    this.connection, SQLITE.lib.buffer(queryStatement),
+    -1, preparedStatement.address(), unused.address() );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to create prepared statement: " + status;
+    throw 'Unable to create prepared statement: ' + status;
   }
 
   status = SQLITE.lib.sqlite3_bind_int64(preparedStatement, 1, id);
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to bind id param: " + status;
+    throw 'Unable to bind id param: ' + status;
   }
 
   SQLITE.lib.sqlite3_step(preparedStatement);
@@ -203,15 +205,16 @@ NativeCertificateCache.prototype.deleteCertificate = function(id) {
 }
 
 NativeCertificateCache.prototype.clearCache = function() {
-  var queryStatement = "DELETE FROM fingerprints";
+  var queryStatement = 'DELETE FROM fingerprints';
   var preparedStatement = SQLITE.types.sqlite3_stmt.ptr(0);
   var unused = ctypes.char.ptr(0);
 
-  var status = SQLITE.lib.sqlite3_prepare_v2(this.connection, SQLITE.lib.buffer(queryStatement),
-                                             -1, preparedStatement.address(), unused.address());
+  var status = SQLITE.lib.sqlite3_prepare_v2(
+    this.connection, SQLITE.lib.buffer(queryStatement),
+    -1, preparedStatement.address(), unused.address() );
 
   if (status != SQLITE.lib.SQLITE_OK) {
-    throw "Unable to create prepared statement: " + status;
+    throw 'Unable to create prepared statement: ' + status;
   }
 
   SQLITE.lib.sqlite3_step(preparedStatement);

@@ -16,11 +16,11 @@
 
 
 /**
- * This class is responsible for taking the actively configured notaries,
- * talking to all of them about a certificate, and then returning aggregated
- * results.
- *
- **/
+  * This class is responsible for taking the actively configured notaries,
+  * talking to all of them about a certificate, and then returning aggregated
+  * results.
+  *
+  **/
 
 
 function ActiveNotaries(settings, serializedNotaries) {
@@ -66,8 +66,8 @@ ActiveNotaries.prototype.checkNotaryValidity = function(host, port, certificate)
 };
 
 ActiveNotaries.prototype.checkHostValidity = function(host, port, certificate) {
-  dump("Checking host validity...\n");
-  var target = host + ":" + port;
+  dump('Checking host validity...\n');
+  var target = host + ':' + port;
   var results = this.buildCheckNotaries();
   var bounceNotary = results[0];
   var checkNotaries = results[1];
@@ -77,11 +77,12 @@ ActiveNotaries.prototype.checkHostValidity = function(host, port, certificate) {
   var checkedNotaryCount = 0;
 
   if (bounceNotary != null)
-    verdictDetail.push({'notary' : bounceNotary.name,
-                        'status' : ConvergenceResponseStatus.ANONYMIZATION_RELAY});
+    verdictDetail.push({
+      'notary' : bounceNotary.name,
+      'status' : ConvergenceResponseStatus.ANONYMIZATION_RELAY });
 
   for (var i in checkNotaries) {
-    dump("Checking checknotary: " + i + "\n");
+    dump('Checking checknotary: ' + i + '\n');
     var notaryResponse = checkNotaries[i].checkValidity(host, port, certificate, bounceNotary);
 
     if (notaryResponse == ConvergenceResponseStatus.VERIFICATION_SUCCESS) {
@@ -96,23 +97,20 @@ ActiveNotaries.prototype.checkHostValidity = function(host, port, certificate) {
 
   var aggregateStatus = this.calculateAggregateStatus(successCount, checkedNotaryCount);
 
-  return {'status'      : aggregateStatus,
-          'target'      : target,
-          'certificate' : certificate.original,
-          'details'     : verdictDetail};
+  return {'status' : aggregateStatus, 'target' : target, 'certificate' : certificate.original, 'details' : verdictDetail};
 };
 
 ActiveNotaries.prototype.buildCheckNotaries = function() {
   if ((this.getUniqueNotaryCount(this.notaries) > 1) &&
       (this.isNotaryBounceEnabled()))
   {
-    dump("Setting bounce notary...\n");
+    dump('Setting bounce notary...\n');
     var bounceNotaryIndex = Math.floor(Math.random()* this.notaries.length);
     var bounceNotary = this.notaries[bounceNotaryIndex];
 
     return [bounceNotary, this.getUniqueNotaryQuorum(bounceNotary)];
   } else {
-    dump("Not setting bounce notary...\n");
+    dump('Not setting bounce notary...\n');
     return [null, this.getUniqueNotaryQuorum(null)];
   }
 };
@@ -123,7 +121,7 @@ ActiveNotaries.prototype.getUniqueNotaryCount = function(notaryList) {
 
   for (var i=0;i<notaryList.length;i++) {
     countMap[notaryList[i].getName()] = true;
-    dump("Added: " + notaryList[i].getName() + "\n");
+    dump('Added: ' + notaryList[i].getName() + '\n');
   }
 
   for (var key in countMap) {
@@ -150,8 +148,7 @@ ActiveNotaries.prototype.getUniqueNotaryQuorum = function(bounceNotary) {
   if (bounceNotary != null)
     notaryList = this.removeNotariesByName(notaryList, bounceNotary.getName());
 
-  while ((notaryQuorum.length < this.getMaxNotaryQuorum()) &&
-         (notaryList.length > 0))
+  while ((notaryQuorum.length < this.getMaxNotaryQuorum()) && (notaryList.length > 0))
   {
     var notary = notaryList[Math.floor(Math.random() * notaryList.length)];
     notaryList = this.removeNotariesByName(notaryList, notary.getName());
@@ -173,7 +170,7 @@ ActiveNotaries.prototype.calculateAggregateStatus = function(successCount, check
   if (this.isThresholdMinority() && (successCount > 0)) {
     return true;
   } else if (successCount <= 0 ||
-             (this.isThresholdConsensus() &&
+              (this.isThresholdConsensus() &&
               (successCount < checkedNotaryCount)))
   {
     return false;
@@ -195,7 +192,7 @@ ActiveNotaries.prototype.getNotary = function(host, port) {
     for (var j in physicalNotaries) {
       if (host == physicalNotaries[j].getHost()     &&
           (port == physicalNotaries[j].getSSLPort() ||
-           port == physicalNotaries[j].getHTTPPort()))
+            port == physicalNotaries[j].getHTTPPort()))
       {
         return this.notaries[i];
       }

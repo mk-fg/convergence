@@ -16,16 +16,16 @@
 
 
 /**
- * This XPCOM Component is the main entrypoint for the convergence
- * backend processing.  This initializes the backend system (registers
- * the local proxy, sets up the local CA certificate, initializes the
- * database, etc...) and then dispatches outgoing HTTPS requests to the
- * local proxy.
- *
- **/
+  * This XPCOM Component is the main entrypoint for the convergence
+  * backend processing.  This initializes the backend system (registers
+  * the local proxy, sets up the local CA certificate, initializes the
+  * database, etc...) and then dispatches outgoing HTTPS requests to the
+  * local proxy.
+  *
+  **/
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-Components.utils.import("resource://gre/modules/ctypes.jsm");
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+Components.utils.import('resource://gre/modules/ctypes.jsm');
 
 function Convergence() {
   try {
@@ -43,18 +43,18 @@ function Convergence() {
     this.registerObserverService();
 
     this.initializeNotaryUpdateTimer(false);
-    dump("Convergence Setup Complete.\n");
+    dump('Convergence Setup Complete.\n');
   } catch (e) {
-    dump("Initializing error: " + e + " , " + e.stack + "\n");
+    dump('Initializing error: ' + e + ' , ' + e.stack + '\n');
   }
 }
 
 Convergence.prototype = {
-  classDescription:   "Convergence Javascript Component",
-  classID:            Components.ID("{ec13aa86-9da1-41f0-b37e-331a0435fb18}"),
-  contractID:         "@thoughtcrime.org/convergence;1",
+  classDescription:   'Convergence Javascript Component',
+  classID:            Components.ID('{ec13aa86-9da1-41f0-b37e-331a0435fb18}'),
+  contractID:         '@thoughtcrime.org/convergence;1',
   QueryInterface:     XPCOMUtils.generateQI([Components.interfaces.nsIClassInfo]),
-  extensionVersion:   "0.0",
+  extensionVersion:   '0.0',
   enabled:            true,
   localProxy:         null,
   flags:              Components.interfaces.nsIClassInfo.THREADSAFE,
@@ -65,54 +65,56 @@ Convergence.prototype = {
   cacheFile:          null,
   certificateManager: null,
   rfc1918:            null,
-  timer:              Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+  timer:              Components.classes['@mozilla.org/timer;1'].createInstance(Components.interfaces.nsITimer),
 
   initializeCtypes: function() {
     try {
-      Components.utils.import("resource://gre/modules/Services.jsm");
-      Components.utils.import("resource://gre/modules/ctypes.jsm");
+      Components.utils.import('resource://gre/modules/Services.jsm');
+      Components.utils.import('resource://gre/modules/ctypes.jsm');
 
-      this.nsprFile = Services.dirsvc.get("GreD", Components.interfaces.nsILocalFile);
-      this.nsprFile.append(ctypes.libraryName("nspr4"));
+      this.nsprFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
+      this.nsprFile.append(ctypes.libraryName('nspr4'));
 
-      this.nssFile = Services.dirsvc.get("GreD", Components.interfaces.nsILocalFile);
-      this.nssFile.append(ctypes.libraryName("nss3"));
+      this.nssFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
+      this.nssFile.append(ctypes.libraryName('nss3'));
 
-      this.sslFile = Services.dirsvc.get("GreD", Components.interfaces.nsILocalFile);
-      this.sslFile.append(ctypes.libraryName("ssl3"));
+      this.sslFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
+      this.sslFile.append(ctypes.libraryName('ssl3'));
 
-      this.sqliteFile = Services.dirsvc.get("GreD", Components.interfaces.nsILocalFile);
-      this.sqliteFile.append(ctypes.libraryName("mozsqlite3"));
+      this.sqliteFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
+      this.sqliteFile.append(ctypes.libraryName('mozsqlite3'));
 
       NSPR.initialize(this.nsprFile.path);
       NSS.initialize(this.nssFile.path);
       SSL.initialize(this.sslFile.path);
       SQLITE.initialize(this.sqliteFile.path);
     } catch (e) {
-      dump("Error initializing ctypes: " + e + ", " + e.stack + "\n");
+      dump('Error initializing ctypes: ' + e + ', ' + e.stack + '\n');
       throw e;
     }
   },
 
   initializeConnectionManager : function() {
     if (this.certificateManager != null) {
-      this.connectionManager = new ConnectionManager(this.localProxy.getListenSocket(),
-                                                     this.nssFile,
-                                                     this.sslFile,
-                                                     this.nsprFile,
-                                                     this.sqliteFile,
-                                                     this.cacheFile,
-                                                     this.certificateManager,
-                                                     this.settingsManager);
+      this.connectionManager = new ConnectionManager(
+        this.localProxy.getListenSocket(),
+        this.nssFile,
+        this.sslFile,
+        this.nsprFile,
+        this.sqliteFile,
+        this.cacheFile,
+        this.certificateManager,
+        this.settingsManager );
     }
   },
 
   initializeRegularExpressions: function() {
-    this.rfc1918 = new RegExp("(^10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$)|" +
-                              "(^172\\.1[6-9]\\.\\d{1,3}\\.\\d{1,3}$)|"  +
-                              "(^172\\.2[0-9]\\.\\d{1,3}\\.\\d{1,3}$)|"  +
-                              "(^172\\.3[0-1]\\.\\d{1,3}\\.\\d{1,3}$)|"  +
-                              "(^192\\.168\\.\\d{1,3}\\.\\d{1,3}$)");
+    this.rfc1918 = new RegExp(
+      '(^10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$)|'
+      + '(^172\\.1[6-9]\\.\\d{1,3}\\.\\d{1,3}$)|'
+      + '(^172\\.2[0-9]\\.\\d{1,3}\\.\\d{1,3}$)|'
+      + '(^172\\.3[0-1]\\.\\d{1,3}\\.\\d{1,3}$)|'
+      + '(^192\\.168\\.\\d{1,3}\\.\\d{1,3}$)' );
   },
 
   initializeLocalProxy: function() {
@@ -124,26 +126,26 @@ Convergence.prototype = {
       this.settingsManager = new SettingsManager();
       this.enabled = this.settingsManager.isEnabled();
     } catch (e) {
-      dump("Error initializing notary manager: " + e + "\n");
+      dump('Error initializing notary manager: ' + e + '\n');
       throw e;
     }
   },
 
   initializeCertificateManager: function() {
-    dump("Configuring cache...\n");
+    dump('Configuring cache...\n');
     SSL.lib.SSL_ConfigServerSessionIDCache(1000, 60, 60, null);
 
     try {
       this.certificateManager = new CertificateManager();
     } catch (e) {
-      dump("User declined password entry, disabling convergence...\n");
+      dump('User declined password entry, disabling convergence...\n');
       this.certificateManager = null;
       this.enabled = false;
       return false;
     }
 
     if (this.certificateManager.needsReboot) {
-      Components.classes["@mozilla.org/toolkit/app-startup;1"].getService(Components.interfaces.nsIAppStartup)
+      Components.classes['@mozilla.org/toolkit/app-startup;1'].getService(Components.interfaces.nsIAppStartup)
         .quit(Components.interfaces.nsIAppStartup.eRestart | Components.interfaces.nsIAppStartup.eAttemptQuit);
     }
 
@@ -151,11 +153,11 @@ Convergence.prototype = {
   },
 
   initializeCertificateCache: function() {
-    this.cacheFile = Components.classes["@mozilla.org/file/directory_service;1"]
+    this.cacheFile = Components.classes['@mozilla.org/file/directory_service;1']
       .getService(Components.interfaces.nsIProperties)
-      .get("ProfD", Components.interfaces.nsIFile);
+      .get('ProfD', Components.interfaces.nsIFile);
 
-    this.cacheFile.append("convergence.sqlite");
+    this.cacheFile.append('convergence.sqlite');
 
     var databaseHelper = new DatabaseHelper(this.cacheFile);
 
@@ -164,27 +166,27 @@ Convergence.prototype = {
   },
 
   initializeNotaryUpdateTimer: function(reschedule) {
-    var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+    var prefs = Components.classes['@mozilla.org/preferences-service;1']
                 .getService(Components.interfaces.nsIPrefService)
-                .getBranch("extensions.convergence.");
+                .getBranch('extensions.convergence.');
 
     var updateBundleTime = 0;
 
     try {
       if (!reschedule)
-        updateBundleTime = parseInt(prefs.getCharPref("updateBundleTime"));
+        updateBundleTime = parseInt(prefs.getCharPref('updateBundleTime'));
     } catch (e) {}
 
     if (updateBundleTime == 0) {
       updateBundleTime = Date.now() + (24 * 60 * 60 * 1000) + Math.floor((Math.random() * (12 * 60 * 60 *1000)));
       // updateBundleTime = Date.now() + 10000;
-      prefs.setCharPref("updateBundleTime", updateBundleTime + "");
+      prefs.setCharPref('updateBundleTime', updateBundleTime + '');
     }
 
     var difference = Math.max(1, updateBundleTime - Date.now());
     this.timer.init(this, difference, 0);
 
-    dump("Timer will fire in: " + difference + "\n");
+    dump('Timer will fire in: ' + difference + '\n');
   },
 
   setEnabled: function(value) {
@@ -225,15 +227,15 @@ Convergence.prototype = {
   },
 
   registerObserverService: function() {
-    var observerService = Components.classes["@mozilla.org/observer-service;1"]
+    var observerService = Components.classes['@mozilla.org/observer-service;1']
       .getService(Components.interfaces.nsIObserverService);
-    observerService.addObserver(this, "quit-application", false);
-    observerService.addObserver(this, "network:offline-status-changed", false);
-    observerService.addObserver(this, "convergence-notary-updated", false);
+    observerService.addObserver(this, 'quit-application', false);
+    observerService.addObserver(this, 'network:offline-status-changed', false);
+    observerService.addObserver(this, 'convergence-notary-updated', false);
   },
 
   registerProxyObserver: function() {
-    var protocolService = Components.classes["@mozilla.org/network/protocol-proxy-service;1"]
+    var protocolService = Components.classes['@mozilla.org/network/protocol-proxy-service;1']
       .getService(Components.interfaces.nsIProtocolProxyService);
 
     protocolService.unregisterFilter(this);
@@ -242,22 +244,22 @@ Convergence.prototype = {
 
   observe: function(subject, topic, data) {
     if (topic == 'quit-application') {
-      dump("Got application shutdown request...\n");
+      dump('Got application shutdown request...\n');
       if (this.connectionManager != null)
         this.connectionManager.shutdown();
     } else if (topic == 'network:offline-status-changed') {
       if (data == 'online') {
-        dump("Got network state change, shutting down listensocket...\n");
+        dump('Got network state change, shutting down listensocket...\n');
         if (this.connectionManager != null)
           this.connectionManager.shutdown();
-        dump("Initializing listensocket...\n");
+        dump('Initializing listensocket...\n');
         this.initializeConnectionManager();
       }
     } else if (topic == 'timer-callback') {
-      dump("Got timer update...\n");
+      dump('Got timer update...\n');
       this.handleNotaryUpdates();
     } else if (topic == 'convergence-notary-updated') {
-      dump("Got update callback...\n");
+      dump('Got update callback...\n');
       this.settingsManager.savePreferences();
     }
   },
@@ -285,7 +287,7 @@ Convergence.prototype = {
       for (var j in physicalNotaries) {
         if ((physicalNotaries[j].host == uri.host) &&
             ((physicalNotaries[i].httpPort == uriPort) ||
-             (physicalNotaries[i].sslPort == uriPort)))
+            (physicalNotaries[i].sslPort == uriPort)))
         {
           return true;
         }
@@ -296,18 +298,17 @@ Convergence.prototype = {
   },
 
   isWhitelisted: function(uri) {
-    return uri.host == "localhost"        ||
-           uri.host == "127.0.0.1"        ||
-           uri.host == "aus3.mozilla.org" ||
-           (this.settingsManager.getPrivateIpExempt() &&
-            this.rfc1918.test(uri.host));
+    return uri.host == 'localhost' ||
+      uri.host == '127.0.0.1' ||
+      uri.host == 'aus3.mozilla.org' ||
+      (this.settingsManager.getPrivateIpExempt() && this.rfc1918.test(uri.host));
   },
 
   applyFilter : function(protocolService, uri, proxy) {
     if (!this.enabled)
       return proxy;
 
-    if ((uri.scheme == "https") && (!this.isNotaryUri(uri)) && (!this.isWhitelisted(uri))) {
+    if ((uri.scheme == 'https') && (!this.isNotaryUri(uri)) && (!this.isWhitelisted(uri))) {
       this.connectionManager.setProxyTunnel(proxy);
 
       return this.localProxy.getProxyInfo();
@@ -335,9 +336,9 @@ Convergence.prototype = {
 var components = [Convergence];
 
 /**
- * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
- * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
- */
+  * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
+  * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
+  */
 if (XPCOMUtils.generateNSGetFactory)
   var NSGetFactory = XPCOMUtils.generateNSGetFactory(components);
 else
@@ -351,8 +352,8 @@ var loadScript = function(isChrome, subdir, filename) {
 
     if (isChrome) {
       path = path.parent.clone();
-      path.append("chrome");
-      path.append("content");
+      path.append('chrome');
+      path.append('content');
     }
 
     if (subdir != null) {
@@ -361,40 +362,40 @@ var loadScript = function(isChrome, subdir, filename) {
 
     path.append(filename);
 
-    dump("Loading: " + path.path + "\n");
+    dump('Loading: ' + path.path + '\n');
 
-    var fileProtocol = Components.classes["@mozilla.org/network/protocol;1?name=file"]
-      .getService(Components.interfaces["nsIFileProtocolHandler"]);
-    var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-      .getService(Components.interfaces["mozIJSSubScriptLoader"]);
+    var fileProtocol = Components.classes['@mozilla.org/network/protocol;1?name=file']
+      .getService(Components.interfaces['nsIFileProtocolHandler']);
+    var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
+      .getService(Components.interfaces['mozIJSSubScriptLoader']);
 
     loader.loadSubScript(fileProtocol.getURLSpecFromFile(path));
 
-    dump("Loaded!\n");
+    dump('Loaded!\n');
   } catch (e) {
-    dump("Error loading component script: " + path.path + " : " + e + " , " + e.stack + "\n");
+    dump('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack + '\n');
   }
 };
 
-loadScript(true, "ctypes", "NSPR.js");
-loadScript(true, "ctypes", "NSS.js");
-loadScript(true, "ctypes", "SSL.js");
-loadScript(true, "ctypes", "SQLITE.js");
+loadScript(true, 'ctypes', 'NSPR.js');
+loadScript(true, 'ctypes', 'NSS.js');
+loadScript(true, 'ctypes', 'SSL.js');
+loadScript(true, 'ctypes', 'SQLITE.js');
 
-loadScript(true, "sockets", "ConvergenceListenSocket.js");
-loadScript(true, "sockets", "ConvergenceClientSocket.js");
-loadScript(true, "sockets", "ConvergenceServerSocket.js");
-loadScript(true, "ctypes", "Serialization.js");
-loadScript(true, "ssl", "CertificateManager.js");
-loadScript(true, "ssl", "CertificateInfo.js");
-loadScript(true, "proxy", "HttpProxyServer.js");
+loadScript(true, 'sockets', 'ConvergenceListenSocket.js');
+loadScript(true, 'sockets', 'ConvergenceClientSocket.js');
+loadScript(true, 'sockets', 'ConvergenceServerSocket.js');
+loadScript(true, 'ctypes', 'Serialization.js');
+loadScript(true, 'ssl', 'CertificateManager.js');
+loadScript(true, 'ssl', 'CertificateInfo.js');
+loadScript(true, 'proxy', 'HttpProxyServer.js');
 
-loadScript(false, null, "LocalProxy.js");
+loadScript(false, null, 'LocalProxy.js');
 
-loadScript(true, "ssl", "PhysicalNotary.js");
-loadScript(true, "ssl", "Notary.js");
-loadScript(false, null, "SettingsManager.js");
-loadScript(false, null, "ConnectionManager.js");
-loadScript(true, "ssl", "NativeCertificateCache.js");
-loadScript(false, null, "DatabaseHelper.js");
-loadScript(true, "util", "ConvergenceUtil.js");
+loadScript(true, 'ssl', 'PhysicalNotary.js');
+loadScript(true, 'ssl', 'Notary.js');
+loadScript(false, null, 'SettingsManager.js');
+loadScript(false, null, 'ConnectionManager.js');
+loadScript(true, 'ssl', 'NativeCertificateCache.js');
+loadScript(false, null, 'DatabaseHelper.js');
+loadScript(true, 'util', 'ConvergenceUtil.js');

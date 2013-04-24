@@ -20,7 +20,7 @@ var notaries;
 var cachedCerts;
 
 function getNotaryTree() {
-  return document.getElementById("notaryTree");
+  return document.getElementById('notaryTree');
 }
 
 function onOptionsLoad() {
@@ -34,20 +34,20 @@ function onOptionsLoad() {
 }
 
 function onOptionsSave() {
-  settingsManager.setCacheCertificates(document.getElementById("cache-certificates").checked);
-  settingsManager.setNotaryBounce(document.getElementById("notary-bounce").checked);
-  settingsManager.setConnectivityErrorIsFailure(document.getElementById("connectivity-failure").checked);
-  settingsManager.setVerificationThreshold(document.getElementById("threshold").selectedItem.id);
-  settingsManager.setMaxNotaryQuorum(document.getElementById("notary-quorum").value);
-  settingsManager.setPrivatePkiExempt(document.getElementById("private-pki-exempt").checked);
-  settingsManager.setPrivateIpExempt(document.getElementById("private-ip-exempt").checked);
+  settingsManager.setCacheCertificates(document.getElementById('cache-certificates').checked);
+  settingsManager.setNotaryBounce(document.getElementById('notary-bounce').checked);
+  settingsManager.setConnectivityErrorIsFailure(document.getElementById('connectivity-failure').checked);
+  settingsManager.setVerificationThreshold(document.getElementById('threshold').selectedItem.id);
+  settingsManager.setMaxNotaryQuorum(document.getElementById('notary-quorum').value);
+  settingsManager.setPrivatePkiExempt(document.getElementById('private-pki-exempt').checked);
+  settingsManager.setPrivateIpExempt(document.getElementById('private-ip-exempt').checked);
 
   settingsManager.setNotaryList(notaries);
   settingsManager.savePreferences();
   issuePreferencesChangedNotification();
 
   if (isAllNotariesDisabled()) {
-    alert("No configured notaries are enabled, disabling Convergence.");
+    alert('No configured notaries are enabled, disabling Convergence.');
     convergence.setEnabled(false);
     issueConvergenceDisabledNotification();
   }
@@ -91,15 +91,15 @@ function isDuplicateNotary(notaryOne, notaryTwo) {
 
 function onAddNotary() {
   var retVal = {notary: null};
-  window.openDialog("chrome://convergence/content/addNotary.xul", "dialog2", "modal", retVal).focus();
+  window.openDialog('chrome://convergence/content/addNotary.xul', 'dialog2', 'modal', retVal).focus();
 
   if (retVal.notary) {
     for (var i=0;i<notaries.length;i++) {
       if (isDuplicateNotary(notaries[i], retVal.notary)) {
-        dump("Found duplicate: " + notaries[i].getName()+ "\n");
-        alert("Sorry, this notary conflicts with a notary that you already have configured." +
-              "  You can only use two notaries from the same organization if they are"       +
-              " configured  for seperate regions.");
+        dump('Found duplicate: ' + notaries[i].getName()+ '\n');
+        alert('Sorry, this notary conflicts with a notary that you already have configured.' +
+              '  You can only use two notaries from the same organization if they are'       +
+              ' configured  for seperate regions.');
         return;
       }
     }
@@ -110,7 +110,7 @@ function onAddNotary() {
 }
 
 function onTreeSelected() {
-  var tree = document.getElementById("notaryTree");
+  var tree = document.getElementById('notaryTree');
   var parentIndex = tree.view.getParentIndex(tree.currentIndex);
 
   if (parentIndex != -1) {
@@ -137,13 +137,13 @@ function updateAdvancedSettings() {
   var privateIpExempt = convergence.getSettingsManager().getPrivateIpExempt();
   var privatePkiExempt = convergence.getSettingsManager().getPrivatePkiExempt();
 
-  document.getElementById("cache-certificates").checked = cacheCertificatesEnabled;
-  document.getElementById("notary-bounce").checked = notaryBounceEnabled;
-  document.getElementById("connectivity-failure").checked = connectivityIsFailureEnabled;
-  document.getElementById("threshold").selectedItem = document.getElementById(verificationThreshold);
-  document.getElementById("notary-quorum").value = maxQuorum;
-  document.getElementById("private-ip-exempt").checked = privateIpExempt;
-  document.getElementById("private-pki-exempt").checked = privatePkiExempt;
+  document.getElementById('cache-certificates').checked = cacheCertificatesEnabled;
+  document.getElementById('notary-bounce').checked = notaryBounceEnabled;
+  document.getElementById('connectivity-failure').checked = connectivityIsFailureEnabled;
+  document.getElementById('threshold').selectedItem = document.getElementById(verificationThreshold);
+  document.getElementById('notary-quorum').value = maxQuorum;
+  document.getElementById('private-ip-exempt').checked = privateIpExempt;
+  document.getElementById('private-pki-exempt').checked = privatePkiExempt;
 };
 
 function updateCacheSettings(sortColumn, sortDirection) {
@@ -151,7 +151,7 @@ function updateCacheSettings(sortColumn, sortDirection) {
   cachedCerts = certificateCache.fetchAll(sortColumn, sortDirection);
   certificateCache.close();
 
-  var cacheTree = document.getElementById("cacheTree");
+  var cacheTree = document.getElementById('cacheTree');
 
   cacheTree.view = {
     rowCount: cachedCerts.length,
@@ -159,9 +159,9 @@ function updateCacheSettings(sortColumn, sortDirection) {
     getCellText : function(row, column) {
       var cachedCert = cachedCerts[row];
 
-      if      (column.id == "cacheLocation")    return cachedCert.location;
-      else if (column.id == "cacheFingerprint") return cachedCert.fingerprint;
-      else if (column.id == "cacheTimestamp")   return formatDate(cachedCert.timestamp);
+      if      (column.id == 'cacheLocation')    return cachedCert.location;
+      else if (column.id == 'cacheFingerprint') return cachedCert.fingerprint;
+      else if (column.id == 'cacheTimestamp')   return formatDate(cachedCert.timestamp);
     },
 
     setTree: function(treebox){this.treebox = treebox; },
@@ -209,13 +209,13 @@ function getNotaryRowCount() {
     }
   }
 
-  dump("Notary row count: " + count + "\n");
+  dump('Notary row count: ' + count + '\n');
   return count;
 };
 
 function getLogicalNotaryName(notary) {
   if (notary.getRegion() != null) {
-    return notary.getName() + " (" + notary.getRegion() + ")";
+    return notary.getName() + ' (' + notary.getRegion() + ')';
   }
 
   return notary.getName();
@@ -231,9 +231,9 @@ function updateNotarySettings() {
       var notary = getNotaryForRow(row);
       var isLogical = (notary.parent == true);
 
-      if      (column.id == "notaryHost")     return (isLogical ? getLogicalNotaryName(notary) : notary.getHost());
-      else if (column.id == "notaryHTTPPort") return (isLogical ? "" : notary.getHTTPPort());
-      else if (column.id == "notarySSLPort")  return (isLogical ? "" : notary.getSSLPort());
+      if      (column.id == 'notaryHost')     return (isLogical ? getLogicalNotaryName(notary) : notary.getHost());
+      else if (column.id == 'notaryHTTPPort') return (isLogical ? '' : notary.getHTTPPort());
+      else if (column.id == 'notarySSLPort')  return (isLogical ? '' : notary.getSSLPort());
     },
 
     getCellValue: function(row, col) {
@@ -248,7 +248,7 @@ function updateNotarySettings() {
       var isLogical = (notary.parent == true);
 
       if (isLogical) {
-        notary.setEnabled(val == "true");
+        notary.setEnabled(val == 'true');
       }
     },
 
@@ -264,7 +264,7 @@ function updateNotarySettings() {
     isSeparator: function(row){ return false; },
     isSorted: function(){ return false; },
     isEditable: function(row, column) {
-      if (column.id == "notaryEnabled") return true;
+      if (column.id == 'notaryEnabled') return true;
       else                              return false;
     },
     getLevel: function(row){
@@ -309,13 +309,13 @@ function issuePreferencesChangedNotification() {
 }
 
 function issueConvergenceDisabledNotification() {
-  var observerService = Components.classes["@mozilla.org/observer-service;1"]
+  var observerService = Components.classes['@mozilla.org/observer-service;1']
     .getService(Components.interfaces.nsIObserverService);
-  observerService.notifyObservers(observerService, "convergence-disabled", null);
+  observerService.notifyObservers(observerService, 'convergence-disabled', null);
 }
 
 function onRemoveCertificate() {
-  var tree = document.getElementById("cacheTree");
+  var tree = document.getElementById('cacheTree');
   var id = cachedCerts[tree.currentIndex].id;
   var certificateCache = convergence.getNativeCertificateCache();
 
@@ -333,7 +333,7 @@ function onClearCache() {
 
 function onAddCertificate() {
   var retVal = {fingerprint: null};
-  window.openDialog("chrome://convergence/content/addCertificate.xul", "dialog2", "modal", retVal).focus();
+  window.openDialog('chrome://convergence/content/addCertificate.xul', 'dialog2', 'modal', retVal).focus();
 
   if (retVal.fingerprint) {
     var certificateCache = convergence.getNativeCertificateCache();
@@ -351,36 +351,36 @@ function formatDate(date) {
   var min = date.getMinutes();
   var sec = date.getSeconds();
 
-  if (month < 10) month = "0" + month;
-  if (dom < 10)   dom = "0" + dom;
-  if (hour < 10)  hour = "0" + hour;
-  if (min < 10)   min = "0" + min;
-  if (sec < 10)   sec = "0" + sec;
+  if (month < 10) month = '0' + month;
+  if (dom < 10)   dom = '0' + dom;
+  if (hour < 10)  hour = '0' + hour;
+  if (min < 10)   min = '0' + min;
+  if (sec < 10)   sec = '0' + sec;
 
-  return year + "-" + month + "-" + dom + " " + hour + ":" + min + ":" + sec;
+  return year + '-' + month + '-' + dom + ' ' + hour + ':' + min + ':' + sec;
 }
 
 function sortCacheTree(column) {
-  var id = column.getAttribute("id");
-  var sortDirection = column.getAttribute("sortDirection");
-  var sortColumn = "location";
+  var id = column.getAttribute('id');
+  var sortDirection = column.getAttribute('sortDirection');
+  var sortColumn = 'location';
 
   switch(sortDirection) {
-    case "ASC":
-      sortDirection = "DESC";
+    case 'ASC':
+      sortDirection = 'DESC';
       break;
-    case "DESC":
-      sortDirection = "ASC";
+    case 'DESC':
+      sortDirection = 'ASC';
       break;
     default:
   }
 
-  if      (id == "cacheLocation")    sortColumn = "location";
-  else if (id == "cacheFingerprint") sortColumn = "fingerprint";
-  else if (id == "cacheTimestamp")   sortColumn = "timestamp";
+  if      (id == 'cacheLocation')    sortColumn = 'location';
+  else if (id == 'cacheFingerprint') sortColumn = 'fingerprint';
+  else if (id == 'cacheTimestamp')   sortColumn = 'timestamp';
 
-  dump("id: " + id + " column: " + sortColumn + " direction: " + sortDirection + "\n");
+  dump('id: ' + id + ' column: ' + sortColumn + ' direction: ' + sortDirection + '\n');
 
   this.updateCacheSettings(sortColumn, sortDirection);
-  column.setAttribute("sortDirection", sortDirection);
+  column.setAttribute('sortDirection', sortDirection);
 }

@@ -16,13 +16,13 @@
 
 
 /**
- * This class represents a configured notary.  It is responsible for
- * remembering the notary settings (serializing and deserializing them
- * for the SettingsManager), as well as actively talking to the Notary
- * to validate certificates.  It is accessed from both the XPCOM as well
- * as the ChromeWorker contexts, and is serialized across the boundary.
- *
- **/
+  * This class represents a configured notary.  It is responsible for
+  * remembering the notary settings (serializing and deserializing them
+  * for the SettingsManager), as well as actively talking to the Notary
+  * to validate certificates.  It is accessed from both the XPCOM as well
+  * as the ChromeWorker contexts, and is serialized across the boundary.
+  *
+  **/
 
 
 function Notary(serialized) {
@@ -53,9 +53,10 @@ Notary.prototype.getHttpDestinations = function() {
   var destinations = new Array();
 
   for (var i=0;i<this.physicalNotaries.length;i++) {
-    dump("Adding: " + this.physicalNotaries[i].host + " : " + this.physicalNotaries[i].httpPort + "\n");
-    destinations.push({"host" : this.physicalNotaries[i].host ,
-                       "port" : this.physicalNotaries[i].httpPort});
+    dump('Adding: ' + this.physicalNotaries[i].host + ' : ' + this.physicalNotaries[i].httpPort + '\n');
+    destinations.push({
+      'host' : this.physicalNotaries[i].host ,
+      'port' : this.physicalNotaries[i].httpPort });
   }
 
   return destinations;
@@ -73,8 +74,8 @@ Notary.prototype.getSslDestinations = function() {
   var destinations = new Array();
 
   for (var i=0;i<this.physicalNotaries.length;i++) {
-    destinations.push({"host" : this.physicalNotaries[i].host ,
-                       "port" : this.physicalNotaries[i].sslPort});
+    destinations.push({'host' : this.physicalNotaries[i].host ,
+                        'port' : this.physicalNotaries[i].sslPort});
   }
 
   return destinations;
@@ -84,8 +85,9 @@ Notary.prototype.getBouncedDestinations = function() {
   var destinations = new Array();
 
   for (var i=0;i<this.physicalNotaries.length;i++) {
-    destinations.push({"host" : this.physicalNotaries[i].host ,
-                       "port" : 4242});
+    destinations.push({
+      'host' : this.physicalNotaries[i].host ,
+      'port' : 4242 });
   }
 
   return destinations;
@@ -96,14 +98,14 @@ Notary.prototype.makeConnection = function(proxy) {
   var notarySocket;
 
   if (typeof proxy != 'undefined' && proxy != null) {
-    dump("Network proxy for notary: " + this.httpProxy + "\n");
-    dump("Bouncing request through: " + proxy.getHttpDestinations() + " to: " + this.getBouncedDestinations() + "\n");
+    dump('Network proxy for notary: ' + this.httpProxy + '\n');
+    dump('Bouncing request through: ' + proxy.getHttpDestinations() + ' to: ' + this.getBouncedDestinations() + '\n');
     notarySocket = new ConvergenceNotarySocket(proxy.getHttpDestinations(), this.getHttpProxy());
     var proxyConnector = new NotaryProxyConnector();
     proxyConnector.makeConnection(notarySocket, this.getBouncedDestinations());
   } else {
-    dump("Making unbounced request...\n");
-    dump("SSL proxy for notary: " + this.sslProxy + "\n");
+    dump('Making unbounced request...\n');
+    dump('SSL proxy for notary: ' + this.sslProxy + '\n');
     notarySocket = new ConvergenceNotarySocket(this.getSslDestinations(), this.getSslProxy());
   }
 
@@ -116,13 +118,13 @@ Notary.prototype.makeSSLConnection = function(proxy) {
   var notaryCertificateInfo = new CertificateInfo(notaryCertificate);
 
   for (var i=0;i<this.physicalNotaries.length;i++) {
-    dump("Comparing: " + notaryCertificateInfo.sha1 + " and " + this.physicalNotaries[i].sha1Fingerprint + "\n");
+    dump('Comparing: ' + notaryCertificateInfo.sha1 + ' and ' + this.physicalNotaries[i].sha1Fingerprint + '\n');
     if (notaryCertificateInfo.sha1 == this.physicalNotaries[i].sha1Fingerprint) {
       return notarySocket;
     }
   }
 
-  dump("Notary certificate did not match local copy...\n");
+  dump('Notary certificate did not match local copy...\n');
 
   return null;
 };
@@ -132,14 +134,14 @@ Notary.prototype.sendRequest = function(notarySocket, host, port, certificate) {
   var requestBuilder = new HttpRequestBuilder(host, port, certificate.sha1);
   var request = requestBuilder.buildRequest();
 
-  dump("Sending request: " + request + "\n");
+  dump('Sending request: ' + request + '\n');
 
   notarySocket.writeBytes(NSS.lib.buffer(request), request.length);
 };
 
 Notary.prototype.readResponse = function(notarySocket) {
   var response = new HttpParser(notarySocket);
-  dump("Got notary response: " + response.getResponseBody() + "\n");
+  dump('Got notary response: ' + response.getResponseBody() + '\n');
 
   return response;
 };
@@ -148,14 +150,14 @@ Notary.prototype.checkFingerprintList = function(response, certificate) {
   var fingerprintList = response.fingerprintList;
 
   for (var i in fingerprintList) {
-    dump("Checking fingerprint: "  + fingerprintList[i].fingerprint + " == " + certificate.sha1 + "\n");
+    dump('Checking fingerprint: '  + fingerprintList[i].fingerprint + ' == ' + certificate.sha1 + '\n');
     if (fingerprintList[i].fingerprint == certificate.sha1) {
-      dump("Returning success...\n");
+      dump('Returning success...\n');
       return ConvergenceResponseStatus.VERIFICATION_SUCCESS;
     }
   }
 
-  dump("Nothing matched!\n");
+  dump('Nothing matched!\n');
   return ConvergenceResponseStatus.VERIFICATION_FAILURE;
 };
 
@@ -166,7 +168,7 @@ Notary.prototype.checkValidity = function(host, port, certificate, proxy) {
     notarySocket = this.makeSSLConnection(proxy);
 
     if (notarySocket == null) {
-      dump("Failed to construct socket to notary...\n");
+      dump('Failed to construct socket to notary...\n');
       return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
     }
 
@@ -175,20 +177,20 @@ Notary.prototype.checkValidity = function(host, port, certificate, proxy) {
 
     switch (response.getResponseCode()) {
     case 303:
-      dump("Notary response was inconclusive...\n");
+      dump('Notary response was inconclusive...\n');
       return ConvergenceResponseStatus.VERIFICATION_INCONCLUSIVE;
     case 409:
-      dump("Notary failed to find matching fingerprint!\n");
+      dump('Notary failed to find matching fingerprint!\n');
       return ConvergenceResponseStatus.VERIFICATION_FAILURE;
     case 200:
-      dump("Notary indicates match, checking...\n");
+      dump('Notary indicates match, checking...\n');
       return this.checkFingerprintList(response.getResponseBodyJson(), certificate);
     default:
-      dump("Got error notary response code: " + response.getResponseCode() + "\n");
+      dump('Got error notary response code: ' + response.getResponseCode() + '\n');
       return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
     }
   } catch (e) {
-    dump(e + " , " + e.stack);
+    dump(e + ' , ' + e.stack);
     return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
   } finally {
     if (notarySocket != null) {
@@ -198,10 +200,10 @@ Notary.prototype.checkValidity = function(host, port, certificate, proxy) {
 };
 
 Notary.prototype.update = function() {
-  dump("Calling update on: " + this.name + "\n");
+  dump('Calling update on: ' + this.name + '\n');
 
   if (this.bundleLocation == null ||
-      this.bundleLocation.indexOf("https://") != 0)
+      this.bundleLocation.indexOf('https://') != 0)
     return;
 
   var self = this;
@@ -211,15 +213,15 @@ Notary.prototype.update = function() {
     if (notary.version < this.version)
       return;
 
-    dump("Updating notary with new bundle...\n");
+    dump('Updating notary with new bundle...\n');
 
     self.setName(notary.getName());
     self.setBundleLocation(notary.getBundleLocation());
     self.setPhysicalNotaries(notary.getPhysicalNotaries());
 
-    var observerService = Components.classes["@mozilla.org/observer-service;1"]
+    var observerService = Components.classes['@mozilla.org/observer-service;1']
       .getService(Components.interfaces.nsIObserverService);
-    observerService.notifyObservers(observerService, "convergence-notary-updated", null);
+    observerService.notifyObservers(observerService, 'convergence-notary-updated', null);
   });
 };
 
@@ -272,26 +274,27 @@ Notary.prototype.serializeForTransport = function(callback) {
     this.physicalNotaries[i].serializeForTransport(function(spn) {
       serializedPhysicalNotaries.push(spn);
       count--;
-      if(count === 0) callback({'name'              : self.name,
-                                'enabled'           : self.enabled,
-                                'bundle_location'   : self.bundleLocation,
-                                'region'            : self.region,
-                                'physical_notaries' : serializedPhysicalNotaries});
+      if(count === 0) callback({
+        'name' : self.name,
+        'enabled' : self.enabled,
+        'bundle_location' : self.bundleLocation,
+        'region' : self.region,
+        'physical_notaries' : serializedPhysicalNotaries });
     });
   }
 };
 
 
 Notary.prototype.serialize = function(xmlDocument) {
-  var proxyElement = xmlDocument.createElement("logical-notary");
-  proxyElement.setAttribute("name", this.name);
-  proxyElement.setAttribute("enabled", this.enabled);
+  var proxyElement = xmlDocument.createElement('logical-notary');
+  proxyElement.setAttribute('name', this.name);
+  proxyElement.setAttribute('enabled', this.enabled);
 
   if (this.bundleLocation != null)
-    proxyElement.setAttribute("bundle_location", this.bundleLocation);
+    proxyElement.setAttribute('bundle_location', this.bundleLocation);
 
   if (this.region != null)
-    proxyElement.setAttribute("region", this.region);
+    proxyElement.setAttribute('region', this.region);
 
   for (var i=0;i<this.physicalNotaries.length;i++) {
     var physicalElement = this.physicalNotaries[i].serialize(xmlDocument);
@@ -303,16 +306,16 @@ Notary.prototype.serialize = function(xmlDocument) {
 
 Notary.prototype.deserialize = function(logicalElement, version) {
   if (version > 0) {
-    this.name = logicalElement.getAttribute("name");
-    this.enabled = (logicalElement.getAttribute("enabled") == "true");
+    this.name = logicalElement.getAttribute('name');
+    this.enabled = (logicalElement.getAttribute('enabled') == 'true');
 
-    if (logicalElement.hasAttribute("bundle_location"))
-      this.bundleLocation = logicalElement.getAttribute("bundle_location");
+    if (logicalElement.hasAttribute('bundle_location'))
+      this.bundleLocation = logicalElement.getAttribute('bundle_location');
 
-    if (logicalElement.hasAttribute("region"))
-      this.region = logicalElement.getAttribute("region");
+    if (logicalElement.hasAttribute('region'))
+      this.region = logicalElement.getAttribute('region');
 
-    var physicalNotaries = logicalElement.getElementsByTagName("physical-notary");
+    var physicalNotaries = logicalElement.getElementsByTagName('physical-notary');
 
     for (var i=0;i<physicalNotaries.length;i++) {
       var physicalNotaryElement = physicalNotaries.item(i);
@@ -323,8 +326,8 @@ Notary.prototype.deserialize = function(logicalElement, version) {
       this.physicalNotaries.push(physicalNotary);
     }
   } else {
-    this.name = logicalElement.getAttribute("host");
-    this.enabled = (logicalElement.getAttribute("enabled") == "true");
+    this.name = logicalElement.getAttribute('host');
+    this.enabled = (logicalElement.getAttribute('enabled') == 'true');
 
     var physicalNotary = new PhysicalNotary();
     physicalNotary.deserialize(logicalElement);
@@ -377,14 +380,14 @@ Notary.constructFromV0Json = function(notaryJson) {
 };
 
 Notary.constructFromBundle = function(bundlePath) {
-  Components.utils.import("resource://gre/modules/NetUtil.jsm");
+  Components.utils.import('resource://gre/modules/NetUtil.jsm');
 
-  var file = Components.classes["@mozilla.org/file/local;1"]
-             .createInstance(Components.interfaces.nsILocalFile);
+  var file = Components.classes['@mozilla.org/file/local;1']
+    .createInstance(Components.interfaces.nsILocalFile);
   file.initWithPath(bundlePath);
 
-  var inputStream = Components.classes["@mozilla.org/network/file-input-stream;1"]
-                    .createInstance(Components.interfaces.nsIFileInputStream);
+  var inputStream = Components.classes['@mozilla.org/network/file-input-stream;1']
+    .createInstance(Components.interfaces.nsIFileInputStream);
   inputStream.init(file, -1, 0, 0);
 
   var notaryBytes = NetUtil.readInputStreamToString(inputStream, inputStream.available());

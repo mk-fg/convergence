@@ -17,10 +17,10 @@
 
 
 /**
- * This class is a holder for the information we pull out of a certificate,
- * such as its fingerprint.
- *
- **/
+  * This class is a holder for the information we pull out of a certificate,
+  * such as its fingerprint.
+  *
+  **/
 
 
 function CertificateInfo(certificate, serialized) {
@@ -38,7 +38,7 @@ function CertificateInfo(certificate, serialized) {
 
   this.md5 = this.calculateFingerprint(certificate, NSS.lib.SEC_OID_MD5, 16);
   this.sha1 = this.calculateFingerprint(certificate, NSS.lib.SEC_OID_SHA1, 20);
-  dump("Calculating PKI root...\n");
+  dump('Calculating PKI root...\n');
   this.isLocalPki = this.calculateTrustedPkiRoot(certificate);
   this.original = this.encodeOriginalCertificate(certificate);
 }
@@ -60,24 +60,24 @@ CertificateInfo.prototype.calculateTrustedPkiRoot = function(certificate) {
   var rootName = NSS.lib.CERT_GetOrgUnitName(rootCertificate.contents.subject.address());
 
   if (!rootName.isNull()) {
-    dump("Root name: " + rootName.readString() + "\n");
+    dump('Root name: ' + rootName.readString() + '\n');
   }
 
   var slots = NSS.lib.PK11_GetAllSlotsForCert(rootCertificate, null);
 
-  dump("Got slots: " + slots + "\n");
+  dump('Got slots: ' + slots + '\n');
 
   var slotNode = slots.isNull() ? null : slots.contents.head;
   var softwareToken = false;
 
-  dump("SlotNode: " + slotNode + "\n");
+  dump('SlotNode: ' + slotNode + '\n');
 
   while (slotNode != null && !slotNode.isNull()) {
     var tokenName = NSS.lib.PK11_GetTokenName(slotNode.contents.slot).readString();
 
-    dump("Token: " + tokenName + "\n");
+    dump('Token: ' + tokenName + '\n');
 
-    if (tokenName == "Software Security Device") {
+    if (tokenName == 'Software Security Device') {
       softwareToken = true;
       break;
     }
@@ -119,25 +119,26 @@ CertificateInfo.prototype.deserialize = function(serialized) {
 };
 
 CertificateInfo.prototype.serialize = function() {
-  return {'host' : this.destination.host,
-          'port' : this.destination.port,
-          'commonName' : this.commonName,
-          'orgUnitName' : this.orgUnitName,
-          'altNames' : Serialization.serializePointer(this.altNames),
-          'md5' : this.md5,
-          'sha1' : this.sha1};
+  return {
+    'host' : this.destination.host,
+    'port' : this.destination.port,
+    'commonName' : this.commonName,
+    'orgUnitName' : this.orgUnitName,
+    'altNames' : Serialization.serializePointer(this.altNames),
+    'md5' : this.md5,
+    'sha1' : this.sha1};
 };
 
 CertificateInfo.prototype.calculateFingerprint = function(certificate, type, length) {
   var fingerprint = new NSS.lib.ubuffer(20);
 
-  NSS.lib.PK11_HashBuf(type, fingerprint,
-                       certificate.contents.derCert.data,
-                       certificate.contents.derCert.len);
+  NSS.lib.PK11_HashBuf(
+    type, fingerprint,
+    certificate.contents.derCert.data,
+    certificate.contents.derCert.len );
 
-  var secItem = NSS.types.SECItem({'type' : 0,
-                                          'data' : fingerprint,
-                                          'len' : length});
+  var secItem = NSS.types.SECItem({
+    'type' : 0, 'data' : fingerprint, 'len' : length });
   var fingerprintHex = NSS.lib.CERT_Hexify(secItem.address(), 1);
 
   return fingerprintHex.readString();

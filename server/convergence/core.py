@@ -122,10 +122,12 @@ def main(argv=None):
     # This must be done before any other twisted-related stuff:
     if opts.call == 'notary': install_reactor()
 
-    # TODO: proper logging configuration or at least twisted-logging observer
+    # TODO: extended logging configuration
+    from twisted.python import log as twisted_log
     logging.basicConfig(
         level=logging.INFO if not opts.debug else logging.DEBUG,
         format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
+    twisted_log.PythonLoggingObserver().start()
 
     if opts.call == 'notary':
         from convergence.notary import get_backend, run_notary

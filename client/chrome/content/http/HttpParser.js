@@ -78,10 +78,10 @@ HttpParser.prototype.readFully = function(socket) {
     else {
       var headers_end = response.indexOf('\r\n\r\n');
       if (headers_end != -1) {
-        var match = /(^|\r\n)content-length:\s+(\d+)\r\n/i
+        var match = /\r\ncontent-length:\s+(\d+)\r\n/i
           .exec(response.substring(0, headers_end+2));
         if (match) {
-          n = (headers_end + 4 + parseInt(match[2])) - response.length;
+          n = (headers_end + 4 + parseInt(match[1])) - response.length;
         }
       }
     }

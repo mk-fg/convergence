@@ -40,20 +40,18 @@ class NotaryResponse:
         return json.dumps(response)
 
     def sendResponse(self, code, recordRows):
-        self.request.setHeader("Content-Type", "application/json")
-        self.request.setResponseCode(code)
-
         fingerprintList = []
-
         if recordRows is not None:
             for row in recordRows:
                 timestamp = {'start' : str(row[1]), 'finish' : str(row[2])}
                 fingerprint = {'fingerprint' : str(row[0]),
                             'timestamp' : timestamp }
-
                 fingerprintList.append(fingerprint)
+        result = self.signResponse({'fingerprintList' : fingerprintList})
 
-        result = {'fingerprintList' : fingerprintList}
+        self.request.setHeader('Content-Type', 'application/json')
+        self.request.setHeader('Content-Length', str(len(result)))
+        self.request.setResponseCode(code)
 
-        self.request.write(self.signResponse(result))
+        self.request.write(result)
         self.request.finish()

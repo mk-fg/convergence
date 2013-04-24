@@ -28,13 +28,13 @@ SOCKS5Server.prototype.readHello = function() {
     throw "Connect request is not SOCKS5!";
 
   var methodCount = hello[1];
-  var methods     = this.clientSocket.readFully(methodCount);
+  var methods = this.clientSocket.readFully(methodCount);
 
   dump("Read: " + methodCount + " methods...\n");
 
   var response = new NSPR.lib.unsigned_buffer(2);
-  response[0]  = 0x05;
-  response[1]  = 0x00;
+  response[0] = 0x05;
+  response[1] = 0x00;
 
   this.clientSocket.writeBytes(response, 2);
 };
@@ -42,7 +42,7 @@ SOCKS5Server.prototype.readHello = function() {
 SOCKS5Server.prototype.readDestination = function(type) {
   if (type == 0x03) {
     var destinationLength = this.clientSocket.readFully(1);
-    var destination       = this.clientSocket.readFully(destinationLength[0]).readString();
+    var destination = this.clientSocket.readFully(destinationLength[0]).readString();
 
     return destination;
   } else {
@@ -52,15 +52,15 @@ SOCKS5Server.prototype.readDestination = function(type) {
 
 SOCKS5Server.prototype.readPort = function() {
   var portBytes = this.clientSocket.readFully(2);
-  var port      = ctypes.cast(portBytes, ctypes.uint16_t);
-  port          = NSPR.lib.PR_ntohs(port);
+  var port = ctypes.cast(portBytes, ctypes.uint16_t);
+  port = NSPR.lib.PR_ntohs(port);
 
   return port;
 };
 
 SOCKS5Server.prototype.readRequest = function() {
   var header = this.clientSocket.readFully(4);
-  
+
   if (header[0] != 0x05)
     throw "Got SOCKS connect request for non-5!";
 
@@ -68,14 +68,14 @@ SOCKS5Server.prototype.readRequest = function() {
     throw "Got SOCKS5 connect request for strange command!";
 
   var destination = this.readDestination(header[3]);
-  var port        = this.readPort();
+  var port = this.readPort();
 
   dump("SOCKS parsed: " + destination + ":" + port + "\n");
 
-  var endpoint    = new Object();
-  endpoint.host   = destination;
-  endpoint.port   = port;
-  
+  var endpoint = new Object();
+  endpoint.host = destination;
+  endpoint.port = port;
+
   return endpoint;
 };
 

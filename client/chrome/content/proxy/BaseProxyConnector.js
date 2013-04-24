@@ -4,13 +4,13 @@ function BaseProxyConnector(proxy) {
   var self = this;
 
   this.waitForConnection = function(clientSockets, destinations) {
-    var pollfds_t   = ctypes.ArrayType(NSPR.types.PRPollDesc);
-    var pollfds     = new pollfds_t(clientSockets.length);
+    var pollfds_t = ctypes.ArrayType(NSPR.types.PRPollDesc);
+    var pollfds = new pollfds_t(clientSockets.length);
     var activeCount = clientSockets.length;
 
     for (var i=0;i<pollfds.length;i++) {
-      pollfds[i].fd        = clientSockets[i].fd;
-      pollfds[i].in_flags  = NSPR.lib.PR_POLL_READ | NSPR.lib.PR_POLL_EXCEPT;
+      pollfds[i].fd = clientSockets[i].fd;
+      pollfds[i].in_flags = NSPR.lib.PR_POLL_READ | NSPR.lib.PR_POLL_EXCEPT;
       pollfds[i].out_flags = 0;
     }
 
@@ -42,7 +42,7 @@ function BaseProxyConnector(proxy) {
           }
         }
       }
-    }    
+    }
   };
 
   this.makeMultiConnection = function(destinations) {
@@ -67,7 +67,7 @@ function BaseProxyConnector(proxy) {
     }
 
     if (readyIndex != -1) return clientSockets[readyIndex];
-    else                  throw "All SOCKS5 Connection failed!\n";    
+    else                  throw "All SOCKS5 Connection failed!\n";
   };
 
 }

@@ -25,10 +25,10 @@
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-function ConvergenceContentPolicy() { 
-  this.wrappedJSObject    = this;
-  this.notaryExpression   = new RegExp("http[s]?:\/\/.+\\.notary");
-  this.convergenceManager = Components.classes['@thoughtcrime.org/convergence;1'].getService().wrappedJSObject;  
+function ConvergenceContentPolicy() {
+  this.wrappedJSObject = this;
+  this.notaryExpression = new RegExp("http[s]?:\/\/.+\\.notary");
+  this.convergenceManager = Components.classes['@thoughtcrime.org/convergence;1'].getService().wrappedJSObject;
 }
 
 ConvergenceContentPolicy.prototype = {
@@ -43,10 +43,10 @@ ConvergenceContentPolicy.prototype = {
       dump("********* DETECTED NOTARY FILE ***************\n");
 
       ConvergenceUtil.persistUrl(aContentLocation.spec, function(temporaryFile) {
-	  var observerService = Components.classes["@mozilla.org/observer-service;1"]
-	                        .getService(Components.interfaces.nsIObserverService);  
-	  observerService.notifyObservers(observerService, "convergence-add-notary", temporaryFile.path);
-	});
+          var observerService = Components.classes["@mozilla.org/observer-service;1"]
+                                .getService(Components.interfaces.nsIObserverService);
+          observerService.notifyObservers(observerService, "convergence-add-notary", temporaryFile.path);
+        });
 
       return Components.interfaces.nsIContentPolicy.REJECT_REQUEST;
     }
@@ -82,7 +82,7 @@ var loadScript = function(isChrome, subdir, filename) {
     }
 
     if (subdir != null) {
-      path.append(subdir);      
+      path.append(subdir);
     }
 
     path.append(filename);
@@ -91,9 +91,9 @@ var loadScript = function(isChrome, subdir, filename) {
 
     var fileProtocol = Components.classes["@mozilla.org/network/protocol;1?name=file"]
     .getService(Components.interfaces["nsIFileProtocolHandler"]);
-    var loader       = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+    var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
     .getService(Components.interfaces["mozIJSSubScriptLoader"]);
-        
+
     loader.loadSubScript(fileProtocol.getURLSpecFromFile(path));
 
     dump("Loaded!\n");

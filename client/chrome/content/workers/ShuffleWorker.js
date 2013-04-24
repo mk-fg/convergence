@@ -21,7 +21,7 @@
  * 1) Listening to the ListenSocket FD for incoming connection requests,
  * which it then hands off to its parent.
  *
- * 2) Shuffling data between pairs of established SSL connections, 
+ * 2) Shuffling data between pairs of established SSL connections,
  * effectively moving data across the MITM bridge.
  *
  * It is setup by the ConnectionManager in components.
@@ -29,41 +29,41 @@
  **/
 
 importScripts("chrome://convergence/content/ctypes/NSPR.js",
-	      "chrome://convergence/content/ctypes/NSS.js",
-	      "chrome://convergence/content/ctypes/SSL.js",
-	      "chrome://convergence/content/sockets/ConvergenceServerSocket.js",
-	      "chrome://convergence/content/sockets/ConvergenceListenSocket.js",
-	      "chrome://convergence/content/ctypes/Serialization.js",
-	      "chrome://convergence/content/workers/ShuffleWorkerItem.js");
+              "chrome://convergence/content/ctypes/NSS.js",
+              "chrome://convergence/content/ctypes/SSL.js",
+              "chrome://convergence/content/sockets/ConvergenceServerSocket.js",
+              "chrome://convergence/content/sockets/ConvergenceListenSocket.js",
+              "chrome://convergence/content/ctypes/Serialization.js",
+              "chrome://convergence/content/workers/ShuffleWorkerItem.js");
 
 const TYPE_INITIALIZE = 1;
 const TYPE_CONNECTION = 2;
 
 function ShuffleWorker() {
-  this.wakeup          = null;
+  this.wakeup = null;
   this.connectionPairs = new Array();
 }
 
 ShuffleWorker.prototype.initializeDescriptors = function() {
-  var descriptors       = new Object();
+  var descriptors = new Object();
   var connectionsLength = this.connectionPairs.length * 2;
-  var pollfds_t         = ctypes.ArrayType(NSPR.types.PRPollDesc);
-  var pollfds           = new pollfds_t(connectionsLength + 2);
+  var pollfds_t = ctypes.ArrayType(NSPR.types.PRPollDesc);
+  var pollfds = new pollfds_t(connectionsLength + 2);
 
   for (var i=0;i<this.connectionPairs.length;i++) {
-    this.connectionPairs[i].getPollDesc(pollfds[i*2].address(), 
-					pollfds[(i*2)+1].address());
+    this.connectionPairs[i].getPollDesc(pollfds[i*2].address(),
+                                        pollfds[(i*2)+1].address());
   }
 
-  pollfds[connectionsLength].fd            = this.wakeup;
-  pollfds[connectionsLength].in_flags      = NSPR.lib.PR_POLL_READ;
-  pollfds[connectionsLength].out_flags     = 0;
+  pollfds[connectionsLength].fd = this.wakeup;
+  pollfds[connectionsLength].in_flags = NSPR.lib.PR_POLL_READ;
+  pollfds[connectionsLength].out_flags = 0;
 
-  pollfds[connectionsLength + 1].fd        = this.listenSocket.fd;
-  pollfds[connectionsLength + 1].in_flags  = NSPR.lib.PR_POLL_READ;
+  pollfds[connectionsLength + 1].fd = this.listenSocket.fd;
+  pollfds[connectionsLength + 1].in_flags = NSPR.lib.PR_POLL_READ;
   pollfds[connectionsLength + 1].out_flags = 0;
 
-  descriptors.pollfds           = pollfds;
+  descriptors.pollfds = pollfds;
   descriptors.connectionsLength = connectionsLength;
 
   return descriptors;
@@ -74,15 +74,15 @@ ShuffleWorker.prototype.initialize = function(data) {
   NSS.initialize(data.nssFile);
   SSL.initialize(data.sslFile);
 
-  this.buffer       = new NSPR.lib.buffer(512);
-  this.wakeup       = Serialization.deserializeDescriptor(data.fd);
+  this.buffer = new NSPR.lib.buffer(512);
+  this.wakeup = Serialization.deserializeDescriptor(data.fd);
   this.listenSocket = new ConvergenceListenSocket(data.listenSocket);
 };
 
 ShuffleWorker.prototype.addConnection = function(data) {
   var socketOption = NSPR.types.PRSocketOptionData({'option' : 0, 'value' : 1});
-  var client       = Serialization.deserializeDescriptor(data.client);
-  var server       = Serialization.deserializeDescriptor(data.server);
+  var client = Serialization.deserializeDescriptor(data.client);
+  var server = Serialization.deserializeDescriptor(data.server);
 
   NSPR.lib.PR_SetSocketOption(client, socketOption.address());
   NSPR.lib.PR_SetSocketOption(server, socketOption.address());
@@ -94,14 +94,14 @@ ShuffleWorker.prototype.handleConnectionEvents = function(pollfds, connectionsLe
   var modified = false;
 
   for (var i=connectionsLength-2;i>=0;i-=2) {
-    var result = this.connectionPairs[i/2].shuffle(pollfds[i].out_flags, 
-						   pollfds[i+1].out_flags);
+    var result = this.connectionPairs[i/2].shuffle(pollfds[i].out_flags,
+                                                   pollfds[i+1].out_flags);
 
     if (result[0]) { // Closed
       this.connectionPairs[i/2].close();
       this.connectionPairs.splice(i/2, 1);
     }
-    
+
     if (result[0] || result[1]) {
       modified = true;
     }
@@ -115,7 +115,7 @@ ShuffleWorker.prototype.isWakeupEvent = function(flags) {
     var amount = NSPR.lib.PR_Read(this.wakeup, this.buffer, 5);
     return true;
   }
-  
+
   return false;
 };
 
@@ -129,8 +129,8 @@ ShuffleWorker.prototype.handleAcceptEvent = function() {
 };
 
 ShuffleWorker.prototype.processConnections = function() {
-  var descriptors       = this.initializeDescriptors();
-  var pollfds           = descriptors.pollfds;
+  var descriptors = this.initializeDescriptors();
+  var pollfds = descriptors.pollfds;
   var connectionsLength = descriptors.connectionsLength;
 
   while (NSPR.lib.PR_Poll(pollfds, pollfds.length, -1) != -1) {
@@ -143,12 +143,12 @@ ShuffleWorker.prototype.processConnections = function() {
 
     if (this.isAcceptEvent(pollfds[connectionsLength + 1].out_flags)) {
       dump("Handling accept event...\n");
-      this.handleAcceptEvent();	
+      this.handleAcceptEvent();
     }
 
     if (this.handleConnectionEvents(pollfds, connectionsLength)) {
-      descriptors       = this.initializeDescriptors();
-      pollfds           = descriptors.pollfds;
+      descriptors = this.initializeDescriptors();
+      pollfds = descriptors.pollfds;
       connectionsLength = descriptors.connectionsLength;
     }
   }
@@ -173,5 +173,5 @@ onmessage = function(event) {
     dump("ShuffleWorker complete!\n");
   } catch (e) {
     dump("ShuffleWorker exception: " + e + " , " + e.stack + "\n");
-  }  
+  }
 };

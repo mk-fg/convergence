@@ -17,7 +17,7 @@
 
 /**
  * This class manages the current Convergence settings, including the
- * information about configured notaries.  It serializes settings 
+ * information about configured notaries.  It serializes settings
  * to and from disk, and hands out configuration information to the
  * running process.
  *
@@ -25,15 +25,15 @@
 
 
 function SettingsManager() {
-  this.enabled                      = true;
-  this.cacheCertificatesEnabled     = true;
-  this.notaryBounceEnabled          = true;
+  this.enabled = true;
+  this.cacheCertificatesEnabled = true;
+  this.notaryBounceEnabled = true;
   this.connectivityIsFailureEnabled = true;
-  this.privateIpExempt              = true;
-  this.privatePkiExempt             = true;
-  this.maxNotaryQuorum              = 3;
-  this.verificationThreshold        = "majority";
-  this.notaries                     = new Array();
+  this.privateIpExempt = true;
+  this.privatePkiExempt = true;
+  this.maxNotaryQuorum = 3;
+  this.verificationThreshold = "majority";
+  this.notaries = new Array();
 
   this.loadPreferences();
   this.upgradeIfNecessary();
@@ -135,7 +135,7 @@ SettingsManager.prototype.hasEnabledNotary = function() {
 SettingsManager.prototype.getSerializedNotaryList = function(callback) {
   var serialized = new Array();
   var count = 0;
-  
+
   for (var i in this.notaries) {
     if (this.notaries[i].enabled) {
       count++;
@@ -165,7 +165,7 @@ SettingsManager.prototype.getSettingsFile = function() {
 
   var file = directoryService.get("ProfD", Components.interfaces.nsIFile);
   file.append("convergence.xml");
-  
+
   return file;
 };
 
@@ -178,7 +178,7 @@ SettingsManager.prototype.getSettingsInputStream = function(file) {
 };
 
 SettingsManager.prototype.getSettingsOutputStream = function() {
-  var file         = this.getSettingsFile();
+  var file = this.getSettingsFile();
   var outputStream = Components.classes["@mozilla.org/network/file-output-stream;1"].
   createInstance(Components.interfaces.nsIFileOutputStream);
   outputStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0);
@@ -186,13 +186,13 @@ SettingsManager.prototype.getSettingsOutputStream = function() {
 };
 
 SettingsManager.prototype.getInputSettingsObject = function() {
-  var file        = this.getSettingsFile();
+  var file = this.getSettingsFile();
   if (!file.exists()) return null;
-    
+
   var inputStream = this.getSettingsInputStream(file);
-  var parser      = Components.classes["@mozilla.org/xmlextras/domparser;1"]
+  var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
   .createInstance(Components.interfaces.nsIDOMParser);
-  var object      = parser.parseFromStream(inputStream, null, file.fileSize, "text/xml");  
+  var object = parser.parseFromStream(inputStream, null, file.fileSize, "text/xml");
   if (!object || object.documentElement.nodeName == "parsererror") return null;
 
   return object;
@@ -204,9 +204,9 @@ SettingsManager.prototype.removeNotaries = function(notaryNames) {
   for (var i=this.notaries.length-1;i>=0;i--) {
     for (var j in notaryNames) {
       if (this.notaries[i].name == notaryNames[j]) {
-	this.notaries.splice(i, 1);
-	removed = true;
-	break;
+        this.notaries.splice(i, 1);
+        removed = true;
+        break;
       }
     }
   }
@@ -220,21 +220,21 @@ SettingsManager.prototype.upgradeIfNecessary = function() {
       dump("Upgrading notaries\n");
 
       this.removeNotaries(["notary-us.convergence.qualys.com",
-			   "notary-eu.convergence.qualys.com"]);
+                           "notary-eu.convergence.qualys.com"]);
 
       // this.removeNotaries(["convergence.crypto.is",
-      // 	                   "convergence2.crypto.is"]);      
+      //                            "convergence2.crypto.is"]);
 
       this.notaries = this.getDefaultNotaryList().concat(this.notaries);
     } else {
-      if (this.removeNotaries(["notary-us.convergence.qualys.com", 
-    			       "notary-eu.convergence.qualys.com"])) {
-    	this.notaries = this.getDefaultQualysInc().concat(this.notaries);
+      if (this.removeNotaries(["notary-us.convergence.qualys.com",
+                                   "notary-eu.convergence.qualys.com"])) {
+            this.notaries = this.getDefaultQualysInc().concat(this.notaries);
       }
 
       // if (this.removeNotaries(["convergence.crypto.is",
-      // 			       "convergence2.crypto.is"])) {
-      // 	this.notaries = this.getDefaultCryptoProject().concat(this.notaries);
+      //                                "convergence2.crypto.is"])) {
+      //         this.notaries = this.getDefaultCryptoProject().concat(this.notaries);
       // }
     }
   }
@@ -242,12 +242,12 @@ SettingsManager.prototype.upgradeIfNecessary = function() {
 
 SettingsManager.prototype.savePreferences = function() {
   var outputStream = this.getSettingsOutputStream();
-  var serializer   = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
+  var serializer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
   .createInstance(Components.interfaces.nsIDOMSerializer);
-  var xmlDocument  = Components.classes["@mozilla.org/xml/xml-document;1"]
+  var xmlDocument = Components.classes["@mozilla.org/xml/xml-document;1"]
   .createInstance(Components.interfaces.nsIDOMDocument);
 
-  var rootElement    = xmlDocument.createElement("convergence");
+  var rootElement = xmlDocument.createElement("convergence");
   rootElement.setAttribute("enabled", this.enabled);
   rootElement.setAttribute("cache_certificates", this.cacheCertificatesEnabled);
   rootElement.setAttribute("notary_bounce", this.notaryBounceEnabled);
@@ -257,7 +257,7 @@ SettingsManager.prototype.savePreferences = function() {
   rootElement.setAttribute("threshold", this.verificationThreshold);
   rootElement.setAttribute("max_notary_quorum", this.maxNotaryQuorum);
   rootElement.setAttribute("version", 1);
-  
+
   var notariesElement = xmlDocument.createElement("notaries");
   rootElement.appendChild(notariesElement);
 
@@ -271,9 +271,9 @@ SettingsManager.prototype.savePreferences = function() {
 };
 
 SettingsManager.prototype.getDefaultThoughtcrimeLabs = function() {
-  var thoughtcrime      = new Notary();
+  var thoughtcrime = new Notary();
   var thoughtcrimeNodes = new Array();
-  
+
   var notaryOne = new PhysicalNotary();
   notaryOne.setHost("notary.thoughtcrime.org");
   notaryOne.setSSLPort(443);
@@ -298,9 +298,9 @@ SettingsManager.prototype.getDefaultThoughtcrimeLabs = function() {
 };
 
 SettingsManager.prototype.getDefaultQualysInc = function() {
-  var qualys      = new Notary();
+  var qualys = new Notary();
   var qualysNodes = new Array();
-  
+
   var notaryOne = new PhysicalNotary();
   notaryOne.setHost("notary-us.convergence.qualys.com");
   notaryOne.setSSLPort(443);
@@ -325,9 +325,9 @@ SettingsManager.prototype.getDefaultQualysInc = function() {
 };
 
 // SettingsManager.prototype.getDefaultCryptoProject = function() {
-//   var crypto      = new Notary();
+//   var crypto = new Notary();
 //   var cryptoNodes = new Array();
-  
+
 //   var notaryOne = new PhysicalNotary();
 //   notaryOne.setHost("convergence.crypto.is");
 //   notaryOne.setSSLPort(8843);
@@ -352,10 +352,10 @@ SettingsManager.prototype.getDefaultQualysInc = function() {
 // };
 
 SettingsManager.prototype.getDefaultNotaryList = function() {
-  var notaryList   = new Array();
+  var notaryList = new Array();
   var thoughtcrime = this.getDefaultThoughtcrimeLabs();
-  var qualys       = this.getDefaultQualysInc();
-  // var crypto       = this.getDefaultCryptoProject();
+  var qualys = this.getDefaultQualysInc();
+  // var crypto = this.getDefaultCryptoProject();
 
   notaryList.push(thoughtcrime);
   notaryList.push(qualys);
@@ -372,16 +372,16 @@ SettingsManager.prototype.loadPreferences = function() {
     return;
   }
 
-  var rootElement                   = settings.getElementsByTagName("convergence");
-  this.enabled                      = (rootElement.item(0).getAttribute("enabled") == "true");
-  this.cacheCertificatesEnabled     = (rootElement.item(0).getAttribute("cache_certificates") == "true");
-  this.notaryBounceEnabled          = (rootElement.item(0).getAttribute("notary_bounce") == "true");
+  var rootElement = settings.getElementsByTagName("convergence");
+  this.enabled = (rootElement.item(0).getAttribute("enabled") == "true");
+  this.cacheCertificatesEnabled = (rootElement.item(0).getAttribute("cache_certificates") == "true");
+  this.notaryBounceEnabled = (rootElement.item(0).getAttribute("notary_bounce") == "true");
   this.connectivityIsFailureEnabled = (rootElement.item(0).getAttribute("connectivity_failure") == "true");
-  this.privateIpExempt              = (rootElement.item(0).getAttribute("private_ip_exempt") == "true");
-  this.privatePkiExempt             = (rootElement.item(0).getAttribute("private_pki_exempt") == "true");
-  this.verificationThreshold        = rootElement.item(0).getAttribute("threshold");
-  this.maxNotaryQuorum              = rootElement.item(0).getAttribute("max_notary_quorum");
-  this.version                      = rootElement.item(0).getAttribute("version");
+  this.privateIpExempt = (rootElement.item(0).getAttribute("private_ip_exempt") == "true");
+  this.privatePkiExempt = (rootElement.item(0).getAttribute("private_pki_exempt") == "true");
+  this.verificationThreshold = rootElement.item(0).getAttribute("threshold");
+  this.maxNotaryQuorum = rootElement.item(0).getAttribute("max_notary_quorum");
+  this.version = rootElement.item(0).getAttribute("version");
 
   if (!rootElement.item(0).hasAttribute("cache_certificates")) {
     this.cacheCertificatesEnabled = true;
@@ -405,7 +405,7 @@ SettingsManager.prototype.loadPreferences = function() {
 
   if (!rootElement.item(0).hasAttribute("threshold")) {
     this.verificationThreshold = "majority";
-  }  
+  }
 
   if (!rootElement.item(0).hasAttribute("max_notary_quorum")) {
     this.maxNotaryQuorum = 3;
@@ -420,7 +420,7 @@ SettingsManager.prototype.loadPreferences = function() {
   if (this.version > 0) {
     notaryElements = settings.getElementsByTagName("logical-notary");
   } else {
-    notaryElements = settings.getElementsByTagName("notary");    
+    notaryElements = settings.getElementsByTagName("notary");
   }
 
   for (var i=0;i<notaryElements.length;i++) {

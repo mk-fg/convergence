@@ -29,20 +29,20 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
     return;
   }
 
-  var addrInfo = NSPR.lib.PR_GetAddrInfoByName(proxy == null ? host : proxy.host, 
-					       NSPR.lib.PR_AF_INET, 
-					       NSPR.lib.PR_AI_ADDRCONFIG);
+  var addrInfo = NSPR.lib.PR_GetAddrInfoByName(proxy == null ? host : proxy.host,
+                                               NSPR.lib.PR_AF_INET,
+                                               NSPR.lib.PR_AI_ADDRCONFIG);
 
   if (addrInfo == null || addrInfo.isNull()) {
     throw "DNS lookup failed: " + NSPR.lib.PR_GetError() + "\n";
   }
 
   var netAddressBuffer = NSPR.lib.PR_Malloc(1024);
-  var netAddress       = ctypes.cast(netAddressBuffer, NSPR.types.PRNetAddr.ptr);
+  var netAddress = ctypes.cast(netAddressBuffer, NSPR.types.PRNetAddr.ptr);
 
   NSPR.lib.PR_EnumerateAddrInfo(null, addrInfo, 0, netAddress);
-  NSPR.lib.PR_SetNetAddr(NSPR.lib.PR_IpAddrNull, NSPR.lib.PR_AF_INET, 
-			 proxy == null ? port : proxy.port, netAddress);
+  NSPR.lib.PR_SetNetAddr(NSPR.lib.PR_IpAddrNull, NSPR.lib.PR_AF_INET,
+                         proxy == null ? port : proxy.port, netAddress);
 
   this.fd = NSPR.lib.PR_OpenTCPSocket(NSPR.lib.PR_AF_INET);
 
@@ -69,7 +69,7 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
   NSPR.lib.PR_FreeAddrInfo(addrInfo);
 
   this.host = host;
-  this.port = port;  
+  this.port = port;
 }
 
 function allGoodAuth(arg, fd, foo, bar) {
@@ -83,16 +83,16 @@ function clientAuth(arg, fd, caNames, retCert, retKey) {
 }
 
 ConvergenceClientSocket.prototype.negotiateSSL = function() {
-  this.fd              = SSL.lib.SSL_ImportFD(null, this.fd);
+  this.fd = SSL.lib.SSL_ImportFD(null, this.fd);
   var callbackFunction = SSL.types.SSL_AuthCertificate(allGoodAuth);
-  var status           = SSL.lib.SSL_AuthCertificateHook(this.fd, callbackFunction, null);
+  var status = SSL.lib.SSL_AuthCertificateHook(this.fd, callbackFunction, null);
 
   if (status == -1) {
     throw "Error setting auth certificate hook!";
   }
 
   // var callbackFunction = SSL.types.SSLGetClientAuthData(clientAuth);
-  // var status           = SSL.lib.SSL_GetClientAuthDataHook(this.fd, callbackFunction, null);
+  // var status = SSL.lib.SSL_GetClientAuthDataHook(this.fd, callbackFunction, null);
 
   // if (status == -1) {
   //   throw "Error setting client auth certificate hook!";
@@ -107,7 +107,7 @@ ConvergenceClientSocket.prototype.negotiateSSL = function() {
   var status;
 
   while (((status = SSL.lib.SSL_ForceHandshakeWithTimeout(this.fd, NSPR.lib.PR_SecondsToInterval(10))) == -1) &&
-	 (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
+         (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
   {
     dump("Polling on handshake...\n");
     if (!this.waitForInput(10000))
@@ -133,8 +133,8 @@ ConvergenceClientSocket.prototype.readString = function() {
   var buffer = new NSPR.lib.buffer(4096);
   var read;
 
-  while (((read = NSPR.lib.PR_Read(this.fd, buffer, 4095)) == -1) && 
-	 (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
+  while (((read = NSPR.lib.PR_Read(this.fd, buffer, 4095)) == -1) &&
+         (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
   {
     dump("polling on read...\n");
     if (!this.waitForInput(-1))
@@ -154,8 +154,8 @@ ConvergenceClientSocket.prototype.readFully = function(length) {
   var buffer = new NSPR.lib.buffer(length);
   var read;
 
-  while (((read = NSPR.lib.PR_Read(this.fd, buffer, length)) == -1) && 
-	 (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
+  while (((read = NSPR.lib.PR_Read(this.fd, buffer, length)) == -1) &&
+         (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
   {
     if (!this.waitForInput(-1))
       return null;
@@ -173,14 +173,14 @@ ConvergenceClientSocket.prototype.close = function() {
 };
 
 ConvergenceClientSocket.prototype.waitForInput = function(timeoutMillis) {
-  var pollfds_t        = ctypes.ArrayType(NSPR.types.PRPollDesc);
-  var pollfds          = new pollfds_t(1);
-  pollfds[0].fd        = this.fd;
-  pollfds[0].in_flags  = NSPR.lib.PR_POLL_READ | NSPR.lib.PR_POLL_EXCEPT | NSPR.lib.PR_POLL_ERR;
+  var pollfds_t = ctypes.ArrayType(NSPR.types.PRPollDesc);
+  var pollfds = new pollfds_t(1);
+  pollfds[0].fd = this.fd;
+  pollfds[0].in_flags = NSPR.lib.PR_POLL_READ | NSPR.lib.PR_POLL_EXCEPT | NSPR.lib.PR_POLL_ERR;
   pollfds[0].out_flags = 0;
 
   var status = NSPR.lib.PR_Poll(pollfds, 1, timeoutMillis);
-  
+
   if (status == -1 || status == 0) {
     return false;
   }

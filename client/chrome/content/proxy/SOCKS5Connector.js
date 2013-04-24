@@ -43,13 +43,13 @@ SOCKS5Connector.prototype.readServerHello = function(proxySocket) {
 SOCKS5Connector.prototype.sendConnectRequest = function(proxySocket, host, port) {
   dump("Sending connect request for: " + host + ":" + port + "\n");
   var request = [String.fromCharCode(0x05), String.fromCharCode(0x01),
-		 String.fromCharCode(0x00), String.fromCharCode(0x03),
-		 String.fromCharCode(host.length)];
+                 String.fromCharCode(0x00), String.fromCharCode(0x03),
+                 String.fromCharCode(host.length)];
 
-  var status    = proxySocket.writeBytes(NSPR.lib.buffer(request.join('')), 5);
-  var status    = proxySocket.writeBytes(NSPR.lib.buffer(host), host.length);
+  var status = proxySocket.writeBytes(NSPR.lib.buffer(request.join('')), 5);
+  var status = proxySocket.writeBytes(NSPR.lib.buffer(host), host.length);
   var portBytes = [ctypes.unsigned_char((port >> 8) & 0xFF), ctypes.unsigned_char(port & 0xFF)];
-  var status    = proxySocket.writeBytes(NSPR.lib.unsigned_buffer(portBytes), 2);
+  var status = proxySocket.writeBytes(NSPR.lib.unsigned_buffer(portBytes), 2);
 };
 
 SOCKS5Connector.prototype.readConnectResponse = function(proxySocket, host) {
@@ -68,7 +68,7 @@ SOCKS5Connector.prototype.readConnectResponse = function(proxySocket, host) {
     proxySocket.readFully(18);
   } else if (response[3] == 0x03) {
     var domainLength = proxySocket.readFully(1);
-    domainLength     = ctypes.cast(domainLength[0], ctypes.int32_t);
+    domainLength = ctypes.cast(domainLength[0], ctypes.int32_t);
     proxySocket.readFully(domainLength+2);
   } else {
     proxySocket.close();

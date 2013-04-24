@@ -53,60 +53,60 @@ var Convergence = {
     }
 
     var responseStatus = new ConvergenceResponseStatus(status.details);
-    panel.tooltipText  = responseStatus.toString();
+    panel.tooltipText = responseStatus.toString();
   },
 
   displayCertificateFailureNotification: function(status) {
-    var message = 'Convergence Certificate Verification Failure';  
-    var nb      = gBrowser.getNotificationBox();  
-    var n       = nb.getNotificationWithValue('convergence-certificate-error');  
+    var message = 'Convergence Certificate Verification Failure';
+    var nb = gBrowser.getNotificationBox();
+    var n = nb.getNotificationWithValue('convergence-certificate-error');
 
-    if(n) {  
-      n.label = message;  
-    } else {  
-      var buttons = [{  
-	  label: 'View Details',  
-	  accessKey: null,  
-	  popup: null,
-          callback: function() {  
-	    var argument = {"returnCode" : false, "status" : status};
-	    window.openDialog('chrome://convergence/content/exceptionDialog.xul', 
-			      'dialog', 'modal', argument);
+    if(n) {
+      n.label = message;
+    } else {
+      var buttons = [{
+          label: 'View Details',
+          accessKey: null,
+          popup: null,
+          callback: function() {
+            var argument = {"returnCode" : false, "status" : status};
+            window.openDialog('chrome://convergence/content/exceptionDialog.xul',
+                              'dialog', 'modal', argument);
 
-	    if (argument["returnCode"]) {
-	      gBrowser.contentDocument.location.reload();
-	    }
-	    
-	    return false;
-          }  
-        }];  
-      
-      const priority = nb.PRIORITY_WARNING_MEDIUM;  
-      nb.appendNotification(message, 'convergence-certificate-error',  
-			    'chrome://global/skin/icons/warning-16.png',
-			    priority, buttons);  
-    }  
+            if (argument["returnCode"]) {
+              gBrowser.contentDocument.location.reload();
+            }
+
+            return false;
+          }
+        }];
+
+      const priority = nb.PRIORITY_WARNING_MEDIUM;
+      nb.appendNotification(message, 'convergence-certificate-error',
+                            'chrome://global/skin/icons/warning-16.png',
+                            priority, buttons);
+    }
   },
 
   initializeTabWatcher: function() {
-    var container         = gBrowser.tabContainer;
-    var convergence       = this;
+    var container = gBrowser.tabContainer;
+    var convergence = this;
 
     container.addEventListener("TabSelect", function(event) {
-	dump("On tab selected..\n");
-	try {
-	  var status = convergence.certificateStatus.getCurrentTabStatus();	  
-	  convergence.setToolTip(status);
-	} catch (e) {
-	  dump(e + " , " + e.stack);
-	}
+        dump("On tab selected..\n");
+        try {
+          var status = convergence.certificateStatus.getCurrentTabStatus();
+          convergence.setToolTip(status);
+        } catch (e) {
+          dump(e + " , " + e.stack);
+        }
       }, false);
   },
 
   initializeConvergenceManager: function() {
     this.convergenceManager = Components.classes['@thoughtcrime.org/convergence;1']
     .getService().wrappedJSObject;
-    this.certificateStatus  = new CertificateStatus(this.convergenceManager);
+    this.certificateStatus = new CertificateStatus(this.convergenceManager);
   },
 
   initializeObserver: function() {
@@ -130,13 +130,13 @@ var Convergence = {
 
     var settingsManager = this.convergenceManager.getSettingsManager();
 
-    var promptService   = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+    var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                           .getService(Components.interfaces.nsIPromptService);
 
-    var status          = promptService.confirm(null, "Trust This Notary?", 
-						"Are you sure that you would like to trust this notary: \n\n" +
-						notary.name + "\n\n" +
-						"...to verify the authenticity of your secure communication?");
+    var status = promptService.confirm(null, "Trust This Notary?",
+                                                "Are you sure that you would like to trust this notary: \n\n" +
+                                                notary.name + "\n\n" +
+                                                "...to verify the authenticity of your secure communication?");
 
     if (status) {
       settingsManager.addNotary(notary);
@@ -156,22 +156,22 @@ var Convergence = {
 
   onToolBarClick: function(event) {
     if (event.target.id == 'convergence-button' ||
-	event.target.id == 'convergence-menu-toggle') 
+        event.target.id == 'convergence-menu-toggle')
     {
-      dump("onToolBarClick\n");    
+      dump("onToolBarClick\n");
       this.updateSystemStatus();
       this.updateLocalStatus();
     }
   },
 
   onContentLoad: function(event) {
-    var status = this.certificateStatus.getCurrentTabStatus();	  
-    this.setToolTip(status);    
+    var status = this.certificateStatus.getCurrentTabStatus();
+    this.setToolTip(status);
   },
 
   updateSystemStatus: function() {
     if (!this.convergenceManager.isEnabled() &&
-	!this.convergenceManager.getSettingsManager().hasEnabledNotary()) 
+        !this.convergenceManager.getSettingsManager().hasEnabledNotary())
     {
       alert("Unable to activate Convergence, no configured notaries are enabled.");
       return;
@@ -186,29 +186,29 @@ var Convergence = {
 
   setEnabledStatus: function() {
     document.getElementById("convergence-menu-toggle").label = "Disable";
-    document.getElementById("convergence-button").image      = "chrome://convergence/content/images/status-enabled.png";
+    document.getElementById("convergence-button").image = "chrome://convergence/content/images/status-enabled.png";
   },
 
   setDisabledStatus: function() {
     document.getElementById("convergence-menu-toggle").label = "Enable";
-    document.getElementById("convergence-button").image      = "chrome://convergence/content/images/status-disabled.png";
+    document.getElementById("convergence-button").image = "chrome://convergence/content/images/status-disabled.png";
   },
 
   installToolbarIcon: function() {
     var toolbutton = document.getElementById("convergence-button");
     if (toolbutton && toolbutton.parentNode.localName != "toolbarpalette")
       return;
-	  
+
     var toolbar = document.getElementById("nav-bar");
     if (!toolbar || typeof toolbar.insertItem != "function")
       return;
 
-    toolbar.insertItem("convergence-button", null, null, false);    
+    toolbar.insertItem("convergence-button", null, null, false);
     toolbar.setAttribute("currentset", toolbar.currentSet);
     document.persist(toolbar.id, "currentset");
   },
 };
 
 
-window.addEventListener("load", function(e) { Convergence.onLoad(e); }, false); 
+window.addEventListener("load", function(e) { Convergence.onLoad(e); }, false);
 window.document.addEventListener("DOMContentLoaded", function(e) {Convergence.onContentLoad(e);}, true);

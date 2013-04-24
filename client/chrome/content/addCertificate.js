@@ -21,9 +21,9 @@ function onDialogLoad() {
 }
 
 
-function onDialogOK() {  
-  var host        = document.getElementById("host").value;
-  var port        = document.getElementById("port").value;
+function onDialogOK() {
+  var host = document.getElementById("host").value;
+  var port = document.getElementById("port").value;
   var fingerprint = document.getElementById("fingerprint").value;
 
   if (!host || !port || !fingerprint) {
@@ -67,4 +67,3 @@ function onDialogOK() {
 
   return true;
 }
-

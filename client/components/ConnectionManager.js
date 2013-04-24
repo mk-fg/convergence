@@ -21,12 +21,12 @@
  * The pattern is this:
  *
  * 1) We can't have non-blocking I/O with NSS, so for every outbound SSL
- * connection, we spin up a ChromeWorker (ConnectionWorker.js) that does 
- * the blocking work of establishing an SSL link to the destination server, 
- * to the notaries if necessary, and to the local browser.  If the connection 
- * is successful (ie: no network errors and the certificates check out), 
- * this ChromeWorker should return with two sockets -- one established SSL 
- * socket to the local browser, and one established SSL socket to the 
+ * connection, we spin up a ChromeWorker (ConnectionWorker.js) that does
+ * the blocking work of establishing an SSL link to the destination server,
+ * to the notaries if necessary, and to the local browser.  If the connection
+ * is successful (ie: no network errors and the certificates check out),
+ * this ChromeWorker should return with two sockets -- one established SSL
+ * socket to the local browser, and one established SSL socket to the
  * destination server.
  *
  * 2) There is another ChromeWorker (ShuffleWorker.js) which runs all the
@@ -37,8 +37,8 @@
  * initiations.
  *
  * So new connections are accept()ed in ShuffleWorker, passed off to the
- * ConnectionWorker for connection setup, and then moved back to the 
- * ShuffleWorker for shuffling data across the MITM gap.  This class, 
+ * ConnectionWorker for connection setup, and then moved back to the
+ * ShuffleWorker for shuffling data across the MITM gap.  This class,
  * ConnectionManager, has to broker all of these transitions, since there
  * appear to be major problems with passing messages between ChromeWorkers
  * directly.
@@ -49,22 +49,22 @@
 const TYPE_INITIALIZE = 1;
 const TYPE_CONNECTION = 2;
 
-function ConnectionManager(listenSocket, nssFile, sslFile, nsprFile, sqliteFile, 
-			   cacheFile, certificateManager, settingsManager) 
+function ConnectionManager(listenSocket, nssFile, sslFile, nsprFile, sqliteFile,
+                           cacheFile, certificateManager, settingsManager)
 {
-  this.certificateManager    = certificateManager;
-  this.settingsManager       = settingsManager;
-  this.nsprFile              = nsprFile;
-  this.nssFile               = nssFile;
-  this.sslFile               = sslFile;
-  this.sqliteFile            = sqliteFile;
-  this.cacheFile             = cacheFile;
-  this.listenSocket          = listenSocket;
-  this.proxyInfo             = null;
-  this.buffer                = new NSPR.lib.buffer(5);
+  this.certificateManager = certificateManager;
+  this.settingsManager = settingsManager;
+  this.nsprFile = nsprFile;
+  this.nssFile = nssFile;
+  this.sslFile = sslFile;
+  this.sqliteFile = sqliteFile;
+  this.cacheFile = cacheFile;
+  this.listenSocket = listenSocket;
+  this.proxyInfo = null;
+  this.buffer = new NSPR.lib.buffer(5);
 
-  this.workerFactory         = this.initializeWorkerFactory();
-  this.shuffleWorker         = this.initializeShuffleWorker();
+  this.workerFactory = this.initializeWorkerFactory();
+  this.shuffleWorker = this.initializeShuffleWorker();
 }
 
 ConnectionManager.prototype.shutdown = function() {
@@ -79,8 +79,8 @@ ConnectionManager.prototype.setProxyTunnel = function(proxyInfo) {
   }
 
   this.proxyInfo = {'host' : proxyInfo.host,
-		    'port' : proxyInfo.port,
-		    'type' : proxyInfo.type};
+                    'port' : proxyInfo.port,
+                    'type' : proxyInfo.type};
 };
 
 ConnectionManager.prototype.initializeWorkerFactory = function() {
@@ -105,35 +105,35 @@ ConnectionManager.prototype.spawnConnection = function(clientSocket) {
   }
 
   var connectionManager = this;
-  worker.onmessage      = function(event) {
-    connectionManager.shuffleWorker.postMessage({'type' : TYPE_CONNECTION, 
-      	                                         'client' : event.data.clientFd,
-      	                                         'server' : event.data.serverFd});
+  worker.onmessage = function(event) {
+    connectionManager.shuffleWorker.postMessage({'type' : TYPE_CONNECTION,
+                                                       'client' : event.data.clientFd,
+                                                       'server' : event.data.serverFd});
 
     NSPR.lib.PR_Write(connectionManager.wakeupWrite, connectionManager.buffer, 5);
   };
 
   var self = this;
   this.settingsManager.getSerializedNotaryList(function(nl) {
-      worker.postMessage({'nsprFile' : self.nsprFile.path, 
-                      'nssFile' : self.nssFile.path, 
+      worker.postMessage({'nsprFile' : self.nsprFile.path,
+                      'nssFile' : self.nssFile.path,
                       'sslFile' : self.sslFile.path,
                       'sqliteFile' : self.sqliteFile.path,
                       'cacheFile' : self.cacheFile.path,
                       'notaries' : nl,
-                      'clientSocket' : clientSocket, 
+                      'clientSocket' : clientSocket,
                       'settings' : self.settingsManager.getSerializedSettings(),
                       'proxy' : self.proxyInfo,
                       'certificates' : self.certificateManager.serialize()});
   });
 
-  dump("Posted message to ConnectionWorker!\n");  
+  dump("Posted message to ConnectionWorker!\n");
 };
 
 ConnectionManager.prototype.initializeShuffleWorker = function() {
   dump("Initializing shuffleworker...\n");
-  var socketPair = NSPR.types.PRFileDescPtrArray(2);  
-  var status     = NSPR.lib.PR_NewTCPSocketPair(socketPair);
+  var socketPair = NSPR.types.PRFileDescPtrArray(2);
+  var status = NSPR.lib.PR_NewTCPSocketPair(socketPair);
 
   if (status == -1) {
     throw "Error constructing pipe!";
@@ -141,7 +141,7 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
 
   this.wakeupRead = socketPair[0];
   this.wakeupWrite = socketPair[1];
-  
+
   var connectionManager = this;
   var shuffleWorker;
 
@@ -160,12 +160,12 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
   dump("Posting...\n");
 
   try {
-    shuffleWorker.postMessage({'type' : TYPE_INITIALIZE, 
-	  'fd' : Serialization.serializePointer(this.wakeupRead),
-	  'listenSocket' : this.listenSocket.serialize(),
-	  'nssFile' : this.nssFile.path,
-	  'sslFile' : this.sslFile.path,
-	  'nsprFile' : this.nsprFile.path});
+    shuffleWorker.postMessage({'type' : TYPE_INITIALIZE,
+          'fd' : Serialization.serializePointer(this.wakeupRead),
+          'listenSocket' : this.listenSocket.serialize(),
+          'nssFile' : this.nssFile.path,
+          'sslFile' : this.sslFile.path,
+          'nsprFile' : this.nsprFile.path});
   } catch (e) {
     dump("Posting error: " + e + " , " + e.stack + "\n");
   }

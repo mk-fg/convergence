@@ -27,7 +27,7 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://gre/modules/ctypes.jsm");
 
-function Convergence() { 
+function Convergence() {
   try {
     this.wrappedJSObject = this;
     this.initializeCtypes();
@@ -55,7 +55,7 @@ Convergence.prototype = {
   contractID:         "@thoughtcrime.org/convergence;1",
   QueryInterface:     XPCOMUtils.generateQI([Components.interfaces.nsIClassInfo]),
   extensionVersion:   "0.0",
-  enabled:            true, 
+  enabled:            true,
   localProxy:         null,
   flags:              Components.interfaces.nsIClassInfo.THREADSAFE,
   nsprFile:           null,
@@ -114,15 +114,15 @@ Convergence.prototype = {
                               "(^172\\.3[0-1]\\.\\d{1,3}\\.\\d{1,3}$)|"  +
                               "(^192\\.168\\.\\d{1,3}\\.\\d{1,3}$)");
   },
-  
+
   initializeLocalProxy: function() {
     this.localProxy = new LocalProxy();
   },
 
   initializeSettingsManager: function() {
     try {
-      this.settingsManager   = new SettingsManager();
-      this.enabled           = this.settingsManager.isEnabled();
+      this.settingsManager = new SettingsManager();
+      this.enabled = this.settingsManager.isEnabled();
     } catch (e) {
       dump("Error initializing notary manager: " + e + "\n");
       throw e;
@@ -131,17 +131,17 @@ Convergence.prototype = {
 
   initializeCertificateManager: function() {
     dump("Configuring cache...\n");
-    SSL.lib.SSL_ConfigServerSessionIDCache(1000, 60, 60, null); 
+    SSL.lib.SSL_ConfigServerSessionIDCache(1000, 60, 60, null);
 
     try {
       this.certificateManager = new CertificateManager();
     } catch (e) {
       dump("User declined password entry, disabling convergence...\n");
       this.certificateManager = null;
-      this.enabled            = false;
+      this.enabled = false;
       return false;
     }
-    
+
     if (this.certificateManager.needsReboot) {
       Components.classes["@mozilla.org/toolkit/app-startup;1"].getService(Components.interfaces.nsIAppStartup)
         .quit(Components.interfaces.nsIAppStartup.eRestart | Components.interfaces.nsIAppStartup.eAttemptQuit);
@@ -151,10 +151,10 @@ Convergence.prototype = {
   },
 
   initializeCertificateCache: function() {
-    this.cacheFile = Components.classes["@mozilla.org/file/directory_service;1"]  
-      .getService(Components.interfaces.nsIProperties)  
-      .get("ProfD", Components.interfaces.nsIFile);  
-    
+    this.cacheFile = Components.classes["@mozilla.org/file/directory_service;1"]
+      .getService(Components.interfaces.nsIProperties)
+      .get("ProfD", Components.interfaces.nsIFile);
+
     this.cacheFile.append("convergence.sqlite");
 
     var databaseHelper = new DatabaseHelper(this.cacheFile);
@@ -188,10 +188,10 @@ Convergence.prototype = {
   },
 
   setEnabled: function(value) {
-    if (value && (this.certificateManager == null)) {      
+    if (value && (this.certificateManager == null)) {
       if (this.initializeCertificateManager())
         this.initializeConnectionManager();
-      else 
+      else
         return;
     }
 
@@ -244,7 +244,7 @@ Convergence.prototype = {
     if (topic == 'quit-application') {
       dump("Got application shutdown request...\n");
       if (this.connectionManager != null)
-        this.connectionManager.shutdown();      
+        this.connectionManager.shutdown();
     } else if (topic == 'network:offline-status-changed') {
       if (data == 'online') {
         dump("Got network state change, shutting down listensocket...\n");
@@ -264,7 +264,7 @@ Convergence.prototype = {
 
   handleNotaryUpdates: function() {
     var notaries = this.settingsManager.getNotaryList();
-    
+
     for (var i in notaries) {
       notaries[i].update();
     }
@@ -274,7 +274,7 @@ Convergence.prototype = {
 
   isNotaryUri: function(uri) {
     var notaries = this.settingsManager.getNotaryList();
-    var uriPort  = uri.port;
+    var uriPort = uri.port;
 
     if (uriPort == -1)
       uriPort = 443;
@@ -283,8 +283,8 @@ Convergence.prototype = {
       var physicalNotaries = notaries[i].getPhysicalNotaries();
 
       for (var j in physicalNotaries) {
-        if ((physicalNotaries[j].host == uri.host) && 
-            ((physicalNotaries[i].httpPort == uriPort) || 
+        if ((physicalNotaries[j].host == uri.host) &&
+            ((physicalNotaries[i].httpPort == uriPort) ||
              (physicalNotaries[i].sslPort == uriPort)))
         {
           return true;
@@ -299,10 +299,10 @@ Convergence.prototype = {
     return uri.host == "localhost"        ||
            uri.host == "127.0.0.1"        ||
            uri.host == "aus3.mozilla.org" ||
-           (this.settingsManager.getPrivateIpExempt() && 
+           (this.settingsManager.getPrivateIpExempt() &&
             this.rfc1918.test(uri.host));
   },
-  
+
   applyFilter : function(protocolService, uri, proxy) {
     if (!this.enabled)
       return proxy;
@@ -356,7 +356,7 @@ var loadScript = function(isChrome, subdir, filename) {
     }
 
     if (subdir != null) {
-      path.append(subdir);      
+      path.append(subdir);
     }
 
     path.append(filename);
@@ -365,9 +365,9 @@ var loadScript = function(isChrome, subdir, filename) {
 
     var fileProtocol = Components.classes["@mozilla.org/network/protocol;1?name=file"]
       .getService(Components.interfaces["nsIFileProtocolHandler"]);
-    var loader       = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+    var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
       .getService(Components.interfaces["mozIJSSubScriptLoader"]);
-    
+
     loader.loadSubScript(fileProtocol.getURLSpecFromFile(path));
 
     dump("Loaded!\n");

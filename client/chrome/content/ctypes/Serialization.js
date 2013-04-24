@@ -33,19 +33,19 @@ Serialization.serializeAddress = function(addr) {
 };
 
 Serialization.deserializeAddress = function(serializedAddress) {
-  return NSPR.types.PRNetAddr({'family' : serializedAddress[0], 
-  			       'port' : serializedAddress[1], 
-  			       'ip' : serializedAddress[2], 
-  			       'pad' : [0,0,0,0,0,0,0,0]});
+  return NSPR.types.PRNetAddr({'family' : serializedAddress[0],
+                                 'port' : serializedAddress[1],
+                                 'ip' : serializedAddress[2],
+                                 'pad' : [0,0,0,0,0,0,0,0]});
 };
 
 // XXX Address 32bit systems!
 Serialization.serializePointer = function(fd) {
-  var fdString     = fd.toString();
+  var fdString = fd.toString();
   var addressStart = fdString.indexOf("0x");
-  var addressEnd   = fdString.indexOf("\"", addressStart);
-  var address      = fdString.substring(addressStart, addressEnd);
-  
+  var addressEnd = fdString.indexOf("\"", addressStart);
+  var address = fdString.substring(addressStart, addressEnd);
+
   return address;
 };
 

@@ -21,10 +21,10 @@ function onDialogLoad() {
 
 function onBrowse() {
   var nsIFilePicker = Components.interfaces.nsIFilePicker;
-  var fp            = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+  var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
   fp.init(window, "Select a .notary bundle", nsIFilePicker.modeOpen);
   fp.appendFilter("Notary Bundles", "*.notary");
-  
+
   var res = fp.show();
   if (res == nsIFilePicker.returnOK){
     document.getElementById("notary-local").value = fp.file.path;
@@ -36,7 +36,7 @@ function handleLocalNotaryBundle(bundlePath) {
   var convergence = Components.classes['@thoughtcrime.org/convergence;1']
                     .getService().wrappedJSObject;
 
-  var retvalue    = window.arguments[0];
+  var retvalue = window.arguments[0];
 
   try {
     retvalue.notary = convergence.getNewNotaryFromBundle(bundlePath);
@@ -55,20 +55,20 @@ function handleRemoteNotaryBundle(bundleUrl) {
   ConvergenceUtil.persistUrl(bundleUrl, function(temporaryFile) {
       dialog.asyncInProgress = false;
       handleLocalNotaryBundle(temporaryFile.path);
-      dialog.asyncComplete   = true;
+      dialog.asyncComplete = true;
       dialog.acceptDialog();
     });
 
   return false;
 }
 
-function onDialogOK() {  
+function onDialogOK() {
   if (document.getElementById("convergence-add-notary").asyncComplete)
     return true;
 
   if (document.getElementById("convergence-add-notary").asyncInProgress)
     return false;
-  
+
   var localNotaryPath = document.getElementById("notary-local").value.replace(/^\s+|\s+$/g, "");
   var remoteNotaryUrl = document.getElementById("notary-remote").value.replace(/^\s+|\s+$/g, "");
 
@@ -77,8 +77,7 @@ function onDialogOK() {
   } else if (remoteNotaryUrl.length != 0) {
     return handleRemoteNotaryBundle(remoteNotaryUrl);
   } else {
-    alert("Whoops, you must specify a local or remote path!");    
+    alert("Whoops, you must specify a local or remote path!");
     return false;
   }
 }
-

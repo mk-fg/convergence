@@ -26,7 +26,7 @@
 
 function HttpProxyServer(clientSocket) {
   this.wrappedJSObject = this;
-  this.clientSocket    = clientSocket;
+  this.clientSocket = clientSocket;
 }
 
 HttpProxyServer.prototype.readHttpHeaders = function() {
@@ -41,7 +41,7 @@ HttpProxyServer.prototype.readHttpHeaders = function() {
     headers  += buf;
 
     dump("Total headers: " + headers + "\n");
-    
+
     if (headers.indexOf("\r\n\r\n") != -1)
       return headers;
   }
@@ -53,13 +53,13 @@ HttpProxyServer.prototype.parseDestination = function(httpHeaders) {
   }
 
   var destination = httpHeaders.substring(8, httpHeaders.indexOf(" ", 9));
-  var splitIndex  = destination.indexOf(":");
+  var splitIndex = destination.indexOf(":");
 
   if (splitIndex == -1) {
     throw "Not a well formatted destination: " + destination;
   }
 
-  var endpoint  = new Object();
+  var endpoint = new Object();
   endpoint.host = destination.substring(0, splitIndex);
   endpoint.port = parseInt(destination.substring(splitIndex+1));
 
@@ -73,4 +73,3 @@ HttpProxyServer.prototype.getConnectDestination = function() {
   dump("Read http headers: " + httpHeaders + "\n");
   return this.parseDestination(httpHeaders);
 };
-

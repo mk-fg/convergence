@@ -24,8 +24,8 @@
 
 function ConnectResponseParser(convergenceSocket) {
   this.convergenceSocket = convergenceSocket;
-  
-  var headers       = this.readHeaders();
+
+  var headers = this.readHeaders();
   this.responseCode = this.parseResponseCode(headers);
 }
 
@@ -40,7 +40,7 @@ ConnectResponseParser.prototype.parseResponseCode = function(response) {
     return 500;
   }
 
-  var firstLine           = response.substring(0, firstLineDelimiter);
+  var firstLine = response.substring(0, firstLineDelimiter);
   var firstLineComponents = firstLine.split(" ");
 
   if (firstLineComponents[0].indexOf("HTTP") != 0) {
@@ -53,7 +53,7 @@ ConnectResponseParser.prototype.parseResponseCode = function(response) {
 
 ConnectResponseParser.prototype.readHeaders = function() {
   var headers = "";
-  var buf     = null;
+  var buf = null;
 
   while ((buf = this.convergenceSocket.readString()) != null) {
     headers += buf;

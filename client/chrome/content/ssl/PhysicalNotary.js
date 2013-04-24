@@ -1,19 +1,19 @@
 
 function PhysicalNotary(serialized) {
   if (typeof serialized == 'undefined') {
-    this.host            = null;
-    this.httpPort        = -1;
-    this.sslPort         = -1;
-    this.certificate     = null;
+    this.host = null;
+    this.httpPort = -1;
+    this.sslPort = -1;
+    this.certificate = null;
     this.sha1Fingerprint = null;
   } else {
     dump("Deserializing across transport: " + serialized.host + " : " + serialized.http_port +"\n");
-    this.host            = serialized.host;
-    this.httpPort        = parseInt(serialized.http_port);
-    this.sslPort         = parseInt(serialized.ssl_port);
+    this.host = serialized.host;
+    this.httpPort = parseInt(serialized.http_port);
+    this.sslPort = parseInt(serialized.ssl_port);
     this.sha1Fingerprint = serialized.fingerprint;
-    this.httpProxy       = serialized.http_proxy;
-    this.sslProxy        = serialized.ssl_proxy;
+    this.httpProxy = serialized.http_proxy;
+    this.sslProxy = serialized.ssl_proxy;
   }
 }
 
@@ -23,10 +23,10 @@ PhysicalNotary.prototype.extractRawCert = function(certificate) {
   var beginIndex = certificate.indexOf("-----BEGIN CERTIFICATE-----");
   beginIndex    += "-----BEGIN CERTIFICATE-----".length + 1;
 
-  var endIndex   = certificate.indexOf("-----END CERTIFICATE-----") - 1;
-  var rawCert    = certificate.substring(beginIndex, endIndex);
-  rawCert        = rawCert.replace(/^\s*(\S*(\s+\S+)*)\s*$/, "$1");
-  rawCert        = rawCert.replace(/\n/g, "");
+  var endIndex = certificate.indexOf("-----END CERTIFICATE-----") - 1;
+  var rawCert = certificate.substring(beginIndex, endIndex);
+  rawCert = rawCert.replace(/^\s*(\S*(\s+\S+)*)\s*$/, "$1");
+  rawCert = rawCert.replace(/\n/g, "");
 
   return rawCert;
 };
@@ -39,7 +39,7 @@ PhysicalNotary.prototype.parseSha1Fingerprint = function(certificate) {
   .getService(Components.interfaces.nsIX509CertDB);
 
   var rawCert = this.extractRawCert(certificate);
-  var x509    = certDB.constructX509FromBase64(rawCert);
+  var x509 = certDB.constructX509FromBase64(rawCert);
   return x509.sha1Fingerprint;
 };
 
@@ -48,7 +48,7 @@ PhysicalNotary.prototype.getSha1Fingerprint = function() {
 };
 
 PhysicalNotary.prototype.setCertificate = function(certificate) {
-  this.certificate     = certificate;
+  this.certificate = certificate;
   this.sha1Fingerprint = this.parseSha1Fingerprint(certificate);
 };
 
@@ -84,12 +84,12 @@ PhysicalNotary.prototype.getProxiesForNotary = function(callback) {
   var result = { };
   var ioService = Components.classes["@mozilla.org/network/io-service;1"]
   .getService(Components.interfaces.nsIIOService);
-  
+
   var proxyService = Components.classes["@mozilla.org/network/protocol-proxy-service;1"]
   .getService(Components.interfaces.nsIProtocolProxyService);
 
-  var httpUri             = ioService.newURI("http://" + this.host + ":" + this.httpPort, null, null);
-  var sslUri              = ioService.newURI("https://" + this.host + ":" + this.sslPort, null, null);
+  var httpUri = ioService.newURI("http://" + this.host + ":" + this.httpPort, null, null);
+  var sslUri = ioService.newURI("https://" + this.host + ":" + this.sslPort, null, null);
 
   proxyService.asyncResolve(httpUri, null, { onProxyAvailable: function(aRequest, anURI, httpProxy, aStatus) {
     result['http_proxy'] = Serialization.serializeProxyInfo(httpProxy);
@@ -106,10 +106,10 @@ PhysicalNotary.prototype.serializeForTransport = function(callback) {
   this.getProxiesForNotary(function(proxies) {
     callback({'host'        : self.host,
               'ssl_port'    : self.sslPort,
-  		      'http_port'   : self.httpPort,
-  		      'fingerprint' : self.sha1Fingerprint,
-		      'http_proxy'  : proxies['http_proxy'],
-		      'ssl_proxy'   : proxies['ssl_proxy']});
+                        'http_port'   : self.httpPort,
+                        'fingerprint' : self.sha1Fingerprint,
+                      'http_proxy'  : proxies['http_proxy'],
+                      'ssl_proxy'   : proxies['ssl_proxy']});
   });
 };
 
@@ -126,11 +126,11 @@ PhysicalNotary.prototype.serialize = function(xmlDocument) {
 };
 
 PhysicalNotary.prototype.deserialize = function(element) {
-  this.host            = element.getAttribute("host");
-  this.sslPort         = element.getAttribute("ssl-port");
-  this.httpPort        = element.getAttribute("http-port");
-  var certificateNode  = element.childNodes[0];
-  this.certificate     = certificateNode.nodeValue;
+  this.host = element.getAttribute("host");
+  this.sslPort = element.getAttribute("ssl-port");
+  this.httpPort = element.getAttribute("http-port");
+  var certificateNode = element.childNodes[0];
+  this.certificate = certificateNode.nodeValue;
   this.sha1Fingerprint = this.parseSha1Fingerprint(this.certificate);
 
   dump("Deserialized physical notary: " + this.host + " : " + this.httpPort + "\n");

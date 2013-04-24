@@ -4,10 +4,10 @@ function ConvergenceResponseStatus(details) {
 }
 
 ConvergenceResponseStatus.VERIFICATION_INCONCLUSIVE = -2;
-ConvergenceResponseStatus.ANONYMIZATION_RELAY       = -1;
-ConvergenceResponseStatus.VERIFICATION_SUCCESS      = 0;
-ConvergenceResponseStatus.VERIFICATION_FAILURE      = 1;
-ConvergenceResponseStatus.CONNECTIVITY_FAILURE      = 2;
+ConvergenceResponseStatus.ANONYMIZATION_RELAY = -1;
+ConvergenceResponseStatus.VERIFICATION_SUCCESS = 0;
+ConvergenceResponseStatus.VERIFICATION_FAILURE = 1;
+ConvergenceResponseStatus.CONNECTIVITY_FAILURE = 2;
 
 ConvergenceResponseStatus.prototype.toString = function() {
   var result = "";
@@ -30,5 +30,3 @@ ConvergenceResponseStatus.prototype.stringifyResponseCode = function(responseCod
 
   return "Unknown";
 };
-
-

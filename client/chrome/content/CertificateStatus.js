@@ -53,7 +53,7 @@ CertificateStatus.prototype.getCertificateForCurrentTab = function() {
     return null;
 
   var securityProvider = browser.securityUI.QueryInterface(Components.interfaces.nsISSLStatusProvider);
-    
+
   if (securityProvider.SSLStatus != null) {
     return securityProvider.SSLStatus.serverCert;
   } else {
@@ -63,30 +63,30 @@ CertificateStatus.prototype.getCertificateForCurrentTab = function() {
 };
 
 CertificateStatus.prototype.getVerificationStatus = function(certificate) {
-  var len                 = {};
-  var derEncoding         = certificate.getRawDER(len);
+  var len = {};
+  var derEncoding = certificate.getRawDER(len);
 
-  var derItem             = NSS.types.SECItem();
-  derItem.data            = NSS.lib.ubuffer(derEncoding);
-  derItem.len             = len.value;
+  var derItem = NSS.types.SECItem();
+  derItem.data = NSS.lib.ubuffer(derEncoding);
+  derItem.len = len.value;
 
   var completeCertificate = NSS.lib.CERT_DecodeDERCertificate(derItem.address(), 1, null);
 
   var extItem = NSS.types.SECItem();
-  var status  = NSS.lib.CERT_FindCertExtension(completeCertificate, 
-					       NSS.lib.SEC_OID_NS_CERT_EXT_COMMENT, 
-					       extItem.address());
+  var status = NSS.lib.CERT_FindCertExtension(completeCertificate,
+                                               NSS.lib.SEC_OID_NS_CERT_EXT_COMMENT,
+                                               extItem.address());
 
   if (status != -1) {
     var encoded = '';
     var asArray = ctypes.cast(extItem.data, ctypes.ArrayType(ctypes.unsigned_char, extItem.len).ptr).contents;
-    var marker  = false;
+    var marker = false;
 
     for (var i=0;i<asArray.length;i++) {
       if (marker) {
-	encoded += String.fromCharCode(asArray[i]);
+        encoded = String.fromCharCode(asArray[i]);
       } else if (asArray[i] == 0x00) {
-	marker = true;
+        marker = true;
       }
     }
 
@@ -96,7 +96,7 @@ CertificateStatus.prototype.getVerificationStatus = function(certificate) {
 
 CertificateStatus.prototype.getCurrentTabStatus = function() {
   dump("Getting current tab status...\n");
-  var certificate = this.getCertificateForCurrentTab();  
+  var certificate = this.getCertificateForCurrentTab();
 
   if (certificate != null) {
     return this.getVerificationStatus(certificate);
@@ -104,4 +104,3 @@ CertificateStatus.prototype.getCurrentTabStatus = function() {
 
   return null;
 };
-

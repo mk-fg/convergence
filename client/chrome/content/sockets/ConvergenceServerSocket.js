@@ -27,27 +27,27 @@ function ConvergenceServerSocket(fd, serialized) {
     this.fd = Serialization.deserializeDescriptor(serialized);
   } else {
     this.fd = fd;
-  }  
+  }
 }
 
 ConvergenceServerSocket.prototype.negotiateSSL = function(certificateManager, certificateInfo) {
   var material = certificateManager.generatePeerCertificate(certificateInfo);
 
-  this.fd      = SSL.lib.SSL_ImportFD(null, this.fd); 
+  this.fd = SSL.lib.SSL_ImportFD(null, this.fd);
 
-  if (this.fd  == null || this.fd.isNull()) {
+  if (this.fd == null || this.fd.isNull()) {
     throw "Bad SSL FD!";
   }
- 
-  var status   = SSL.lib.SSL_ConfigSecureServer(this.fd, material.certificate, material.key,
-						SSL.lib.NSS_FindCertKEAType(material.certificate));
+
+  var status = SSL.lib.SSL_ConfigSecureServer(this.fd, material.certificate, material.key,
+                                                SSL.lib.NSS_FindCertKEAType(material.certificate));
 
   if (status == -1) {
     throw "Error on SSL_ConfigSecureServer!";
   }
-  
+
   var status = SSL.lib.SSL_ResetHandshake(this.fd, NSPR.lib.PR_TRUE);
-  
+
   if (status == -1) {
     throw "Error on SSL_RestHandshake!";
   }
@@ -70,7 +70,7 @@ ConvergenceServerSocket.prototype.writeBytes = function(buffer, length) {
 };
 
 // ConvergenceServerSocket.prototype.readBytes = function(buffer) {
-//   var read   = NSPR.lib.PR_Read(this.fd, buffer, 4096);
+//   var read = NSPR.lib.PR_Read(this.fd, buffer, 4096);
 
 //   if (read == -1) {
 //     if (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR) {
@@ -88,12 +88,12 @@ ConvergenceServerSocket.prototype.readFully = function(length) {
   var buffer = new NSPR.lib.unsigned_buffer(length);
   var offset = 0;
 
-  while (offset < length) { 
+  while (offset < length) {
     var read = NSPR.lib.PR_Read(this.fd, buffer.addressOfElement(offset), length-offset);
 
     if (read < 0)
       return null;
-    
+
     offset += read;
   }
 
@@ -103,7 +103,7 @@ ConvergenceServerSocket.prototype.readFully = function(length) {
 ConvergenceServerSocket.prototype.readString = function() {
   dump("Reading from FD: " + this.fd + "\n");
   var buffer = new NSPR.lib.buffer(4096);
-  var read   = NSPR.lib.PR_Read(this.fd, buffer, 4095);
+  var read = NSPR.lib.PR_Read(this.fd, buffer, 4095);
 
   if (read <= 0) {
     return null;

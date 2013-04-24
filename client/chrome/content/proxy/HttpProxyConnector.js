@@ -29,7 +29,7 @@ function HttpProxyConnector(proxy) {
 
 HttpProxyConnector.prototype.readResponse = function(proxySocket) {
   var headers = new ConnectResponseParser(proxySocket);
-  
+
   if (headers.getResponseCode() != 200) {
     proxySocket.close();
     throw "Proxy connect failed! " + headers.getResponseCode();
@@ -37,8 +37,8 @@ HttpProxyConnector.prototype.readResponse = function(proxySocket) {
 };
 
 HttpProxyConnector.prototype.sendRequest = function(proxySocket, host, port) {
-  var request = 
-  "CONNECT " + host + ":" + port + " HTTP/1.1\r\n" + 
+  var request =
+  "CONNECT " + host + ":" + port + " HTTP/1.1\r\n" +
   "Host: " + host + "\r\n\r\n";
 
   proxySocket.writeBytes(NSPR.lib.buffer(request), request.length);

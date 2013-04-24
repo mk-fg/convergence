@@ -2,10 +2,10 @@
 function ConvergenceNotarySocket(destinations, proxy) {
   if (typeof proxy == 'undefined' || proxy == null) {
     var multiConnector = new MultiDestinationConnector();
-    this.connection    = multiConnector.makeConnection(destinations);
+    this.connection = multiConnector.makeConnection(destinations);
   } else {
     var proxyConnector = new ProxyConnector(proxy);
-    this.connection    = proxyConnector.makeMultiConnection(destinations);
+    this.connection = proxyConnector.makeMultiConnection(destinations);
   }
 }
 

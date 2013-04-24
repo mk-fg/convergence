@@ -22,8 +22,8 @@
 
 
 function HttpRequestBuilder(host, port, fingerprint) {
-  this.host        = host; 
-  this.port        = port;
+  this.host = host;
+  this.port = port;
   this.fingerprint = fingerprint;
   dump("Constructed!\n");
 }

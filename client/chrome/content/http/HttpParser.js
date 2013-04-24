@@ -24,7 +24,7 @@
 
 
 function HttpParser(socket) {
-  var response      = this.readFully(socket);
+  var response = this.readFully(socket);
   this.responseCode = this.parseResponseCode(response);
   this.responseBody = this.parseResponseBody(response);
 }
@@ -70,7 +70,7 @@ HttpParser.prototype.parseResponseCode = function(response) {
 
 HttpParser.prototype.readFully = function(socket) {
   var response = "";
-  var buf      = null;
+  var buf = null;
 
   while ((buf = socket.readString()) != null) {
     response += buf;

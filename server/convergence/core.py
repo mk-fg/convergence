@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-
 from __future__ import print_function
 
 
@@ -27,7 +26,10 @@ USA
 '''
 
 
-import os, sys
+from contextlib import contextmanager, closing
+from os.path import exists, dirname, realpath
+import os, sys, logging
+
 
 # Check python version
 if sys.version_info < (2, 7):
@@ -37,44 +39,24 @@ if sys.version_info < (2, 7):
 # Extend sys.path, if run from the checkout tree
 try: import convergence
 except ImportError:
-    from os.path import dirname, realpath
     sys.path.insert(0, dirname(dirname(realpath(__file__))))
     import convergence
 
-
-# BSD and Mac OS X, kqueue
-try:
-    from twisted.internet import kqreactor as event_reactor
-except:
-    # Linux 2.6 and newer, epoll
-    try:
-        from twisted.internet import epollreactor as event_reactor
-    except:
-        # Linux pre-2.6, poll
-        from twisted.internet import pollreactor as event_reactor
-
-event_reactor.install()
-
-
-from convergence.TargetPage import TargetPage
-from convergence.ConnectChannel import ConnectChannel
-from convergence.ConnectRequest import ConnectRequest
-
-from convergence.verifier.NetworkPerspectiveVerifier import NetworkPerspectiveVerifier
-from convergence.verifier.DNSVerifier import DNSVerifier
 from convergence import __version__
 
-from twisted.enterprise import adbapi
-from twisted.web import http
-from twisted.web.server import Site
-from twisted.web.resource import Resource
-from twisted.internet import reactor, endpoints
-from twisted.application import strports
 
-from OpenSSL import SSL
-
-from contextlib import contextmanager
-import logging
+def install_reactor():
+    # BSD and Mac OS X, kqueue
+    try:
+        from twisted.internet import kqreactor as event_reactor
+    except:
+        # Linux 2.6 and newer, epoll
+        try:
+            from twisted.internet import epollreactor as event_reactor
+        except:
+            # Linux pre-2.6, poll
+            from twisted.internet import pollreactor as event_reactor
+    event_reactor.install()
 
 
 def main(argv=None):
@@ -92,6 +74,8 @@ def main(argv=None):
         cmd.set_defaults(call=name)
         yield cmd
 
+    default_db_path = '/var/lib/convergence/convergence.db'
+
     with subcommand('notary', help='Start notary daemon.') as cmd:
         cmd.add_argument('-p', '--http-port', type=int, metavar='port', default=80,
             help='HTTP port to listen on (default %(default)s).')
@@ -104,54 +88,112 @@ def main(argv=None):
         cmd.add_argument('-c', '--cert', metavar='path', required=True, help='TLS certificate path.')
         cmd.add_argument('-k', '--cert-key', metavar='path',
             help='TLS private key path. Not necessary if also contained in the --cert file.')
-        cmd.add_argument('-d', '--db',
-            metavar='path', default='/var/lib/convergence/convergence.db',
+        cmd.add_argument('-d', '--db', metavar='path', default=default_db_path,
             help='SQLite database path (default: %(default)s).')
         cmd.add_argument('-b', '--backend',
             metavar='perspective|dns:<host>', default='perspective',
             help='Verifier backend (default: %(default)s). Available backends: perspective, dns.')
 
-    # TODO: all the other convergence-* commands here
+    with subcommand('bundle',
+            help='Produce notary "bundles", which can be easily imported to a web browser.') as cmd:
+        cmd.add_argument('output_file',
+            nargs='?', default='mynotarybundle.notary',
+            help='Path to write resulting bundle to (default: %(default)s).')
+
+    with subcommand('createdb', help='Construct Convergence Notary database.') as cmd:
+        cmd.add_argument('db_path', nargs='?', default=default_db_path,
+            help='SQLite database path (default: %(default)s).')
+
+    with subcommand('gencert', help='Generates TLS certificates.') as cmd:
+        cmd.add_argument('-c', '--cert', metavar='path', default='mynotary.pem',
+            help='Generated TLS certificate path (default: %(default)s.')
+        cmd.add_argument('-k', '--cert-key', metavar='path',
+            help='Generated TLS certificate private key path'
+                ' (defaults to --cert name + ".key", e.g. "mynotary.key").')
+        cmd.add_argument('-s', '--cert-subject', metavar='tls_subject',
+            help='Subject of a generated TLS cert (default: prompt interactively).')
+        cmd.add_argument('-b', '--rsa-key-size', metavar='bits', type=int, default=2048,
+            help='Size of the generated cert RSA key in bits (e.g. 2048 or 4096, default: %(default)s).')
+        cmd.add_argument('--cert-expire', metavar='days', type=int, default=14600,
+            help='Expiration period for generated cert in days (default: %(default)s).')
 
     opts = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
-    if opts.backend == 'perspective': backend = NetworkPerspectiveVerifier()
-    elif opts.backend.startswith('dns:'): backend = DNSVerifier(opts.backend.split(':')[1])
-    else: raise parser.error('Invalid backend: {}'.format(opts.backend))
-
-    cert_key_path = opts.cert_key or opts.cert
-    cert_key = open(opts.cert_key or opts.cert).read() # TODO: is it really used?
-    database = adbapi.ConnectionPool('sqlite3', opts.db, cp_max=1, cp_min=1)
-
-    connectFactory = http.HTTPFactory(timeout=10)
-    connectFactory.protocol = ConnectChannel
-
-    notary = Resource()
-    notary.putChild('target', TargetPage(database, cert_key, backend))
-    notaryFactory = Site(notary)
-
-    # It'd be easier and more flexible to specify endpoints in config, but we don't have one yet
-    ep_interface = '' if not opts.interface else ':interface={}'.format(opts.interface)
-    svc_http = strports.service('tcp:{}{}'.format(opts.http_port, ep_interface), connectFactory)
-    tls_endpoint = ( 'tcp:{{}}{}'.format(ep_interface) if opts.no_https else
-            'ssl:{{}}{}:certKey={}:privateKey={}'.format(ep_interface, opts.cert, cert_key_path) )\
-        .format(opts.tls_port)
-    svc_tls = strports.service(tls_endpoint, notaryFactory)
-
-    # TODO: make sure these are used in endpoints' tls setup
-    # ctx = SSL.Context(SSL.SSLv23_METHOD)
-    # ctx.set_options(SSL.OP_NO_SSLv2)
-
-    svc_http.startService()
-    svc_tls.startService()
+    # This must be done before any other twisted-related stuff:
+    if opts.call == 'notary': install_reactor()
 
     # TODO: proper logging configuration or at least twisted-logging observer
     logging.basicConfig(
-        logging.INFO if not opts.debug else logging.DEBUG,
+        level=logging.INFO if not opts.debug else logging.DEBUG,
         format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
-    logging.info('Convergence Notary started...')
 
-    reactor.run()
+    if opts.call == 'notary':
+        from convergence.notary import pick_backend, run_notary
+        backend = pick_backend(opts.backend)
+        if not backend: parser.error('Invalid backend: {}'.format(opts.backend))
+        return run_notary(opts, backend)
+
+    elif opts.call == 'bundle':
+        from convergence.bundle import promptForBundleInfo, writeBundle
+
+        # Try to provide nicer prompt with editing/history
+        try:
+            import readline
+            readline.parse_and_bind('tab: complete')
+        except: pass
+
+        bundle = promptForBundleInfo()
+        return writeBundle(bundle, opts.output_file)
+
+    elif opts.call == 'createdb':
+        from sqlite3 import connect
+
+        db_dir = dirname(opts.db_path)
+        if not exists(db_dir): os.makedirs(db_dir)
+
+        with connect(opts.db_path) as connection,\
+                closing(connection.cursor()) as cursor:
+            return cursor.execute(
+                'CREATE TABLE fingerprints (id integer'
+                ' primary key, location TEXT, fingerprint TEXT, timestamp_start'
+                ' INTEGER, timestamp_finish INTEGER)' )
+
+    elif opts.call == 'gencert':
+        from subprocess import Popen, PIPE
+        from tempfile import NamedTemporaryFile
+
+        with open(os.devnull, 'w') as devnull:
+            if Popen(['openssl', 'version'], stdout=devnull).wait():
+                return print('Failed to run "openssl" binary. You must install OpenSSL first!')
+
+        if opts.cert_key is None:
+            opts.cert_key = '{}.key'.format(opts.cert.rsplit('.', 1)[0])
+
+        def run_command(*argv):
+            argv = map(bytes, argv)
+            err = Popen(argv).wait()
+            if err:
+                raise RuntimeError( 'Failed running'
+                    ' command (exit code: {}): {}'.format(err, ' '.join(argv)) )
+
+        key_path, csr_path = None, NamedTemporaryFile(dir='.', delete=False).name
+        try:
+            # RSA key
+            run_command('openssl', 'genrsa', '-out', opts.cert_key, opts.rsa_key_size)
+            key_path = opts.cert_key
+            # Certificate request
+            cmd = ['openssl', 'req', '-new', '-key', key_path, '-out', csr_path]
+            if opts.cert_subject: cmd.extend(['-subj', opts.cert_subject])
+            run_command(*cmd)
+            # Sign the request
+            run_command( 'openssl', 'x509', '-req', '-days',
+                opts.cert_expire, '-in', csr_path, '-signkey', opts.cert_key, '-out', opts.cert )
+        except RuntimeError as err:
+            if key_path: os.unlink(key_path)
+            return print(err.message, file=sys.stderr)
+        finally: os.unlink(csr_path)
+
+        return print('Certificate and key generated in {} and {}'.format(opts.cert, key_path))
 
 
 if __name__ == '__main__': main()

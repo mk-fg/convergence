@@ -18,7 +18,7 @@
 
 
 from setuptools import setup, find_packages
-import os, glob
+import os
 
 pkg_root = os.path.dirname(__file__)
 
@@ -67,10 +67,4 @@ setup(
     include_package_data = True,
     zip_safe = False,
 
-    entry_points = dict(console_scripts=(
-        ['convergence = convergence.core:main'] +
-        sorted(
-            '{} = {}:main'.format(link, target[:-3].replace(os.sep, '.'))
-            for link, target in
-                ((link, os.readlink(link)) for link in glob.glob('convergence-*'))
-            if target.endswith('.py') ))) )
+    entry_points = dict(console_scripts=['convergence = convergence.core:main']) )

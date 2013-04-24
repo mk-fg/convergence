@@ -1,18 +1,8 @@
-Convergence
+Convergence notary
 --------------------
 
-This is a fork of Moxie Marlinspike's Convergence tool: http://convergence.io/
-
-Good high-level overview of the tool can be found in Moxie's "SSL And The Future
-Of Authenticity" talk at BlackHat USA 2011: http://www.youtube.com/watch?v=Z7Wl2FW2TcA
-
-### This fork
-
-Short-term goals of the fork is to integrate existing non-merged third-party
-fixes/enhancements and extend client compatibility to newer firefox versions.
-
-More long-term goal is to extend backends for integration with
-[CrossBear](https://pki.net.in.tum.de/), OONI and related projects.
+This is a "server" part of Convergence, responsible for providing client with an
+SSL/TLS certificate signature for requested domain.
 
 
 Installation
@@ -20,17 +10,23 @@ Installation
 
  - Install the dependencies (example for debian/ubuntu):
 
-	% sudo apt-get install python python-twisted-web \
-	  python-twisted-names python-m2crypto python-openssl
+```bash
+% sudo apt-get install python python-twisted-web \
+  python-twisted-names python-m2crypto python-openssl
+```
 
  - Get the notary source:
 
-	% git clone https://github.com/mk-fg/convergence
+```bash
+% git clone https://github.com/mk-fg/convergence
+```
 
  - Run the install script:
 
-	% cd convergence/server
-	% sudo python setup.py install
+```bash
+% cd convergence/server
+% sudo python setup.py install
+```
 
 Alternatively, "./convergence-cli" can be used right from the checkout tree
 without system-wide installation (as per last step).
@@ -51,8 +47,10 @@ Configuration
 
  - Start the server:
 
-	% sudo convergence notary \
-	  -c path/to/certificate.pem -k path/to/key.key
+```bash
+% sudo convergence notary \
+  -c path/to/certificate.pem -k path/to/key.key
+```
 
 
 Publish

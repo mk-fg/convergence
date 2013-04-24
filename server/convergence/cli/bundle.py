@@ -24,6 +24,9 @@ USA
 
 """
 
+from cli_checks import prerun_checks
+prerun_checks(__file__)
+
 import sys, getopt, textwrap, json
 
 regionCodes = ["AF", "AX", "AL", "DZ", "AS", "AD", "AO", "AI", "AQ", "AG", "AR", "AM", "AW",

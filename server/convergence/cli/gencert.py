@@ -23,6 +23,9 @@ USA
 
 """
 
+from cli_checks import prerun_checks
+prerun_checks(__file__)
+
 import os, tempfile, sys, getopt
 
 

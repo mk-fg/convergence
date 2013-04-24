@@ -42,6 +42,9 @@ USA
 
 """
 
+from cli_checks import prerun_checks
+prerun_checks(__file__)
+
 from sqlite3 import *
 import sys, os.path, os
 

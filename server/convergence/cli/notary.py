@@ -23,10 +23,8 @@ USA
 
 """
 
-import sys
-if sys.version_info < (2, 6):
-    print "Sorry, convergence requires at least Python 2.6"
-    sys.exit(3)
+from cli_checks import prerun_checks
+prerun_checks(__file__)
 
 # BSD and Mac OS X, kqueue
 try:

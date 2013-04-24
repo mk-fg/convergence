@@ -108,16 +108,17 @@ ConvergenceClientSocket.prototype.negotiateSSL = function() {
 
   var status;
 
-  while (((status = SSL.lib.SSL_ForceHandshakeWithTimeout(this.fd, NSPR.lib.PR_SecondsToInterval(10))) == -1) &&
-         (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
-  {
-    dump("Polling on handshake...\n");
+  while (
+      ((status = SSL.lib.SSL_ForceHandshakeWithTimeout(
+        this.fd, NSPR.lib.PR_SecondsToInterval(10) )) == -1)
+      && (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR) ) {
+    dump('Polling on handshake...\n');
     if (!this.waitForInput(10000))
-      throw "SSL handshake failed!";
+      throw 'SSL handshake failed!';
   }
 
   if (status == -1) {
-    throw "SSL handshake failed!";
+    throw 'SSL handshake failed!';
   }
 
   return SSL.lib.SSL_PeerCertificate(this.fd);
@@ -131,20 +132,20 @@ ConvergenceClientSocket.prototype.writeBytes = function(buffer, length) {
   return NSPR.lib.PR_Write(this.fd, buffer, length);
 };
 
-ConvergenceClientSocket.prototype.readString = function() {
-  var buffer = new NSPR.lib.buffer(4096);
-  var read;
+ConvergenceClientSocket.prototype.readString = function(n) {
+  if (n === null) n = 4095;
+  else if (n <= 0) return null;
 
-  while (((read = NSPR.lib.PR_Read(this.fd, buffer, 4095)) == -1) &&
-         (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
-  {
-    dump("polling on read...\n");
-    if (!this.waitForInput(-1))
-      return null;
+  var read, buffer = new NSPR.lib.buffer(n+1);
+
+  while (((read = NSPR.lib.PR_Read(this.fd, buffer, n)) == -1) &&
+      (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR)) {
+    dump('polling on read...\n');
+    if (!this.waitForInput(8000)) return null; // TODO: hardcoded fail-timeout
   }
 
   if (read <= 0) {
-    dump("Error read: " + read + " , " + NSPR.lib.PR_GetError() + "\n");
+    dump('Error read: ' + read + ' , ' + NSPR.lib.PR_GetError() + '\n');
     return null;
   }
 
@@ -152,38 +153,35 @@ ConvergenceClientSocket.prototype.readString = function() {
   return buffer.readString();
 };
 
-ConvergenceClientSocket.prototype.readFully = function(length) {
-  var buffer = new NSPR.lib.buffer(length);
-  var read;
+ConvergenceClientSocket.prototype.readFully = function(n) {
+  var response = '';
 
-  while (((read = NSPR.lib.PR_Read(this.fd, buffer, length)) == -1) &&
-         (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR))
-  {
-    if (!this.waitForInput(-1))
-      return null;
+  while ((buf = this.readString(n)) != null) {
+    response += buf;
+    n -= buf.length;
   }
 
-  if (read != length) {
-    throw "Assertion error on read fully (" + read + ", " + length + ")!";
+  if (response.length != n) {
+    throw 'Assertion error on read fully (' + read + ', ' + length + ')!';
   }
 
-  return buffer;
+  return response;
 };
 
 ConvergenceClientSocket.prototype.close = function() {
   NSPR.lib.PR_Close(this.fd);
 };
 
-ConvergenceClientSocket.prototype.waitForInput = function(timeoutMillis) {
+ConvergenceClientSocket.prototype.waitForInput = function(timeout_ms, timeout_ok) {
   var pollfds_t = ctypes.ArrayType(NSPR.types.PRPollDesc);
   var pollfds = new pollfds_t(1);
   pollfds[0].fd = this.fd;
-  pollfds[0].in_flags = NSPR.lib.PR_POLL_READ | NSPR.lib.PR_POLL_EXCEPT | NSPR.lib.PR_POLL_ERR;
+  pollfds[0].in_flags = NSPR.lib.PR_POLL_READ | NSPR.lib.PR_POLL_EXCEPT;
   pollfds[0].out_flags = 0;
 
-  var status = NSPR.lib.PR_Poll(pollfds, 1, timeoutMillis);
+  var status = NSPR.lib.PR_Poll(pollfds, 1, timeout_ms);
 
-  if (status == -1 || status == 0) {
+  if (status == -1 || (!timeout_ok && status == 0)) {
     return false;
   }
 

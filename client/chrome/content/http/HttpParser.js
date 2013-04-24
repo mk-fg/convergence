@@ -69,12 +69,22 @@ HttpParser.prototype.parseResponseCode = function(response) {
 };
 
 HttpParser.prototype.readFully = function(socket) {
-  var response = "";
-  var buf = null;
+  var response = '', buff = null, n = null;
 
-  while ((buf = socket.readString()) != null) {
-    response += buf;
-    dump("Read: " + buf + "\n");
+  while ((buff = socket.readString(n)) != null) {
+    response += buff;
+
+    if (n != null) n -= buff.length;
+    else {
+      var headers_end = response.indexOf('\r\n\r\n');
+      if (headers_end != -1) {
+        var match = /(^|\r\n)content-length:\s+(\d+)\r\n/i
+          .exec(response.substring(0, headers_end+2));
+        if (match) {
+          n = (headers_end + 4 + parseInt(match[2])) - response.length;
+        }
+      }
+    }
   }
 
   return response;

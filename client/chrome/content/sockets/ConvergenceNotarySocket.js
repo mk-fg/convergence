@@ -21,12 +21,12 @@ ConvergenceNotarySocket.prototype.writeBytes = function(buffer, length) {
   return this.connection.writeBytes(buffer, length);
 };
 
-ConvergenceNotarySocket.prototype.readString = function() {
-  return this.connection.readString();
+ConvergenceNotarySocket.prototype.readString = function(n) {
+  return this.connection.readString(n);
 };
 
-ConvergenceNotarySocket.prototype.readFully = function(length) {
-  return this.connection.readFully(length);
+ConvergenceNotarySocket.prototype.readFully = function(n) {
+  return this.connection.readFully(n);
 };
 
 ConvergenceNotarySocket.prototype.close = function() {

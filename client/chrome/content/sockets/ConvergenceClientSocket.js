@@ -153,15 +153,15 @@ ConvergenceClientSocket.prototype.readString = function(n) {
   return buffer.readString();
 };
 
-ConvergenceClientSocket.prototype.readFully = function(n) {
-  var response = '';
+ConvergenceClientSocket.prototype.readFully = function(length) {
+  var buff, response = '', n = length;
 
-  while ((buf = this.readString(n)) != null) {
-    response += buf;
-    n -= buf.length;
+  while ((buff = this.readString(n)) != null) {
+    response += buff;
+    n -= buff.length;
   }
 
-  if (response.length != n) {
+  if (response.length != length) {
     throw 'Assertion error on read fully (' + read + ', ' + length + ')!';
   }
 

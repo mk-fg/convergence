@@ -18,7 +18,7 @@
 
 
 from setuptools import setup, find_packages
-import os
+import os, glob
 
 pkg_root = os.path.dirname(__file__)
 
@@ -67,4 +67,11 @@ setup(
     include_package_data = True,
     zip_safe = False,
 
-    entry_points = dict(console_scripts=['convergence = convergence.core:main']) )
+    package_data = {'convergence.verifier': ['InfoNode.html']},
+    entry_points = {
+        'console_scripts': ['convergence = convergence.core:main'] } )
+
+        # 'convergence.verifier': (
+        # 	'{0} = convergence.verifier.{0}'.format(name[:-3])
+        # 	for name in map( os.path.basename,
+        # 		glob.iglob(os.path.join(pkg_root, 'convergence', 'verifier', '[!_]*.py' )) ) ) } )

@@ -28,7 +28,6 @@ class ConnectChannel(HTTPChannel):
 
     def __init__(self):
         self.proxyConnection = None
-        self.requestFactory.getVerifier = lambda _: self.factory.verifier
         HTTPChannel.__init__(self)
 
     def rawDataReceived(self, data):

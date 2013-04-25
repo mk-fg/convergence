@@ -16,16 +16,19 @@
 # USA
 #
 
-import os, logging
+from os.path import dirname, join
+
 
 class Verifier:
-    """The base class for all verifier back ends."""
+    '''The base class for all verifier back ends.'''
+
 
     def __init__(self):
         pass
 
+
     def verify(self, host, port, fingerprint):
-        """
+        '''
         Verify whether are fingerprint is valid for a given target.
 
         This is an asynchronous call, and implementations return a Deferred
@@ -40,25 +43,67 @@ class Verifier:
 
         :Returns Type:
         Deferred
+        '''
+        raise NotImplementedError('Abstract method!')
 
-        """
-        raise NotImplementedError("Abstract method!")
 
-    def getDescription(self):
-        """
-        getDescription is called if a GET request is received on the unencrypted port.
-        The purpose of this is to inform the user about the notary.
+    infonode_template = join(dirname(__file__), 'InfoNode.html')
+
+    def getInfoNode(self, request):
+        '''
+        getDescription is called for GET requests.
+        The purpose of this is to provide some information about the notary, if necessary.
+
+        :Parameters:
+        - `request` (twisted.web.server.Request) - GET request info object.
 
         :Returns Type:
-            String
-        """
+        - String - Will be sent as an html response.
+        - IRenderable - Will be rendered.
+        - NOT_DONE_YET - For manual request.write(...)/finish() later.
+
+        :Raises:
+        - NotImplementedError - To serve generic info instead.
+        '''
+
         try:
-            self.htmlFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.__class__.__name__ + ".html")
-            logging.debug("Trying to serve file: " + self.htmlFile + "...")
-            self.fh = open(self.htmlFile)
-            self.content = self.fh.read()
-            self.fh.close()
-            return self.content
-        except IOError:
-            logging.debug("Did not find file, serving class name")
-            return None
+            from twisted.web.template import Element, renderer, XMLFile, XMLString
+            from twisted.web.iweb import IRenderable
+        except ImportError:
+            try: return open(self.infonode_template).read()
+            except (OSError, IOError): raise NotImplementedError()
+        else:
+            verifier = self
+
+            def Verbatim(data):
+                return Element(XMLString((
+                    '<t:transparent xmlns:t="'
+                        'http://twistedmatrix.com/ns/twisted.web.template/0.1">'
+                    '{0}</t:transparent>' ).format(data) ))
+
+            class Template(Element):
+                loader = XMLFile(self.infonode_template)
+
+                @renderer
+                def description(self, request, tag):
+                    html = verifier.getDescription()
+                    if not IRenderable.providedBy(html): html = Verbatim(html)
+                    return tag(html)
+
+            return Template()
+
+
+    #: HTML description to render for GET requests (using default canvas-template).
+    html_description = None
+
+    def getDescription(self):
+        '''
+        getDescription is called for GET requests.
+        Should provide some dynamic information about the notary, if necessary.
+        For static description text, just use html_description attribute.
+
+        :Returns Type:
+        - String - Will be rendered as notary description html.
+        '''
+        return self.html_description\
+            or '<p>Notary Type: {0}</p>'.format(self.__class__.__name__)

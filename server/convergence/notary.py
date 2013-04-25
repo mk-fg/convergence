@@ -26,6 +26,7 @@ USA
 
 
 from convergence.TargetPage import TargetPage
+from convergence.InfoPage import InfoPage
 from convergence.ConnectChannel import ConnectChannel
 
 from convergence.verifier.NetworkPerspectiveVerifier import NetworkPerspectiveVerifier
@@ -43,7 +44,7 @@ import logging
 
 def get_backend(name):
     if name == 'perspective': return NetworkPerspectiveVerifier()
-    elif name.startswith('dns:'): return DNSVerifier(opts.backend.split(':')[1])
+    elif name.startswith('dns:'): return DNSVerifier(name.split(':')[1])
 
 
 def run_notary(opts, backend, log=None):
@@ -58,6 +59,7 @@ def run_notary(opts, backend, log=None):
     connectFactory.verifier = backend
 
     notary = Resource()
+    notary.putChild('', InfoPage(backend))
     notary.putChild('target', TargetPage(database, cert_key, backend))
     notaryFactory = Site(notary)
 

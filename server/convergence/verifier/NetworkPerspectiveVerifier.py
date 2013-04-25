@@ -33,6 +33,19 @@ class NetworkPerspectiveVerifier(Verifier):
     match across network perspective.
     """
 
+    html_description = '''
+        <p>This notary uses the NetworkPerspective verifier.</p>
+        <p>Given a pair of an url and a certificate,
+                the notary will confirm the authenticity in the following cases:
+            <ol>
+                <li>It has successfully verified the authenticity
+                    before and still has the result in its cache.</li>
+                <li>The server presents the same certificate to the notary as it did to you.</li>
+            </ol>
+        </p>
+        <p>Otherwise the notary will <strong>not</strong> confirm the authenticity.</p>
+    '''
+
     def __init__(self):
         Verifier.__init__(self)
 

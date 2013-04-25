@@ -46,12 +46,6 @@ class ConnectRequest(Request):
 
         return method.strip() == "CONNECT"
 
-    def isValidGetRequest(self, method):
-        if (method is None):
-            return False
-
-        return method.strip() == "GET"
-
     def getDestinations(self):
         destinations = []
 
@@ -72,12 +66,9 @@ class ConnectRequest(Request):
 
         destinations = self.getDestinations()
 
-        if (self.isValidConnectRequest(self.method, destinations)):
+        if self.isValidConnectRequest(self.method, destinations):
             logging.debug("Got connect request...")
             self.proxyRequest(destinations);
-        elif (self.isValidGetRequest(self.method)):
-            logging.debug("Got get request...")
-            self.handleGetRequest(self.getVerifier())
         else:
             logging.debug("Denying request...")
             self.denyRequest()
@@ -103,14 +94,6 @@ class ConnectRequest(Request):
         self.write('<html>The request you issued is not an authorized Convergence Notary request.\n')
         self.finish()
 
-    def handleGetRequest(self, verifier):
-        self.description = verifier.getDescription()
-        self.setHeader("Connection", "close")
-        if self.description is None:
-            self.write('<html>' + verifier.__class__.__name__ + '</html>')
-        else:
-            self.write(self.description)
-        self.finish()
 
 # This class is resonsible for setting up the proxy tunnel to another
 # notary.

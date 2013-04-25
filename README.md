@@ -45,6 +45,11 @@ browser extension.
    - Renders basic info about the node on GET requests from e.g. browsers (based
      on upstream [PR #120](https://github.com/moxie0/Convergence/pull/120)).
 
+   - Does not implement any
+     [daemonization](http://0pointer.de/public/systemd-man/daemon.html) - can be
+     done either naively from shell, with os-specific "start-stop-daemon" in
+     init-scripts or proper init like upstart or systemd.
+
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.
 

@@ -56,19 +56,21 @@ def run_notary(opts, verifier):
 
     # It'd be easier and more flexible to specify endpoints in config, but we don't have one yet
     ep_interface = '' if not opts.interface else ':interface={}'.format(opts.interface)
-    svc_http = strports.service('tcp:{}{}'.format(opts.http_port, ep_interface), connectFactory)
-    tls_endpoint = ( 'tcp:{{}}{}'.format(ep_interface) if opts.no_https else
-            'ssl:{{}}{}:certKey={}:privateKey={}'.format(ep_interface, opts.cert, cert_key_path) )\
-        .format(opts.tls_port)
-    svc_tls = strports.service(tls_endpoint, notaryFactory)
+    tls_endpoint = 'tcp:{{}}{}'.format(ep_interface) if opts.no_https else\
+        'ssl:{{}}{}:certKey={}:privateKey={}'.format(ep_interface, opts.cert, cert_key_path)
+
+    svc_channel = strports.service('tcp:{}{}'.format(opts.proxy_port, ep_interface), connectFactory)
+    svc_tls = strports.service(tls_endpoint.format(opts.tls_port), notaryFactory)
+    svc_tls_proxied = strports.service(tls_endpoint.format(opts.tls_port_proxied), notaryFactory)
 
     # TODO: make sure these are used in endpoints' tls setup
     # from OpenSSL import SSL
     # ctx = SSL.Context(SSL.SSLv23_METHOD)
     # ctx.set_options(SSL.OP_NO_SSLv2)
 
-    svc_http.startService()
+    svc_channel.startService()
     svc_tls.startService()
+    svc_tls_proxied.startService()
 
     log.debug('Convergence Notary started...')
     reactor.run()

@@ -101,12 +101,17 @@ def main(argv=None):
         yield cmd
 
     with subcommand('notary', help='Start notary daemon.') as cmd:
-        cmd.add_argument('-p', '--http-port', type=int, metavar='port', default=80,
-            help='HTTP port to listen on (default %(default)s).')
+        cmd.add_argument('-p', '--proxy-port', type=int, metavar='port', default=80,
+            help='Port to listen on for CONNECT requests'
+                ' to act as proxy to other notaries (default: %(default)s).')
         cmd.add_argument('-s', '--tls-port', type=int, metavar='port', default=443,
-            help='TLS port to listen on (default %(default)s).')
+            help='Port to listen on for direct TLS connections (default: %(default)s).')
+        cmd.add_argument('-x', '--tls-port-proxied',
+            type=int, metavar='port', default=4242,
+            help='Port to listen on for proxied TLS connections (default: %(default)s).'
+                ' Must be 4242 for the outside world, because proxies only accept that one.')
         cmd.add_argument('--no-https', action='store_true',
-            help='Turn off TLS wrapping for --tls-port, e.g. to put Twisted behind Nginx.')
+            help='Turn off TLS wrapping for all sockets, e.g. to put Twisted behind Nginx.')
         cmd.add_argument('-i', '--interface', metavar='ip_or_hostname',
             help='Interface (IP address or hostname) to listen on for incoming connections (optional).')
         cmd.add_argument('-c', '--cert', metavar='path', required=True, help='TLS certificate path.')

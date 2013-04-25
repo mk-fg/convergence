@@ -290,5 +290,8 @@ def main(argv=None):
 
         return print('Certificate and key generated in {} and {}'.format(opts.cert, key_path))
 
+    else: raise NotImplementedError(opts.call)
+    raise AssertionError('Command {!r} did not return.'.format(opts.call))
+
 
 if __name__ == '__main__': main()

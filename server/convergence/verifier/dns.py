@@ -23,6 +23,8 @@ from convergence.verifier import Verifier, OptionsError
 import twisted.names.client
 import logging
 
+log = logging.getLogger(__name__)
+
 
 class DNSVerifier(Verifier):
     '''
@@ -37,11 +39,11 @@ class DNSVerifier(Verifier):
         self.host = host
 
     def _dnsLookupComplete(self, result, fingerprint):
-        logging.debug('Catalog result: ' + str(result[0][0].payload.data[0]))
+        log.debug('Catalog result: ' + str(result[0][0].payload.data[0]))
         return (200, fingerprint)
 
     def _dnsLookupError(self, error):
-        logging.debug('Catalog resolution failure: ' + str(error))
+        log.debug('Catalog resolution failure: ' + str(error))
         return (409, None)
 
     def verify(self, host, port, fingerprint):

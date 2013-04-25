@@ -21,6 +21,9 @@ from ConnectRequest import ConnectRequest
 
 import logging
 
+log = logging.getLogger(__name__)
+
+
 # The HTTPChannel for incoming CONNECT requests to other notaries.
 
 class ConnectChannel(HTTPChannel):
@@ -31,11 +34,11 @@ class ConnectChannel(HTTPChannel):
         HTTPChannel.__init__(self)
 
     def rawDataReceived(self, data):
-        logging.debug("Shuffling raw data...")
+        log.debug('Shuffling raw data...')
         self.proxyConnection.transport.write(data)
 
     def connectionLost(self, reason):
-        logging.debug("Connection lost from client: " + str(reason))
+        log.debug('Connection lost from client: ' + str(reason))
         if (self.proxyConnection is not None):
             self.proxyConnection.transport.loseConnection()
 

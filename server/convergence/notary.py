@@ -38,10 +38,10 @@ from twisted.application import strports
 
 import logging
 
+log = logging.getLogger(__name__)
 
-def run_notary(opts, verifier, log=None):
-    if log is None: log = logging.getLogger(__name__)
 
+def run_notary(opts, verifier):
     cert_key_path = opts.cert_key or opts.cert
     cert_key = open(opts.cert_key or opts.cert).read() # TODO: is it really used?
     database = adbapi.ConnectionPool('sqlite3', opts.db, cp_max=1, cp_min=1)

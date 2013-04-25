@@ -18,6 +18,9 @@
 
 import logging
 
+log = logging.getLogger(__name__)
+
+
 # This class is responsible for updating the notary's certificate
 # cache.  It is initiated on a cache-miss or a cache-mismatch,
 # and queries the target, then puts the target certificate's
@@ -33,11 +36,11 @@ class CacheUpdater:
         return (code, recordRows)
 
     def updateRecordsError(self, error, deferred):
-        logging.warning("Update records error: " + str(error))
+        log.warning('Update records error: ' + str(error))
         return error
 
     def handleVerifyCertificateComplete(self, (responseCode, fingerprint), host, port):
-        logging.debug("Got fingerprint: " + str(fingerprint))
+        log.debug('Got fingerprint: ' + str(fingerprint))
 
         if fingerprint is None:
             return (responseCode, None)
@@ -49,7 +52,7 @@ class CacheUpdater:
             return deferred
 
     def handleVerifyCertificateError(self, error):
-        logging.warning("Fetch certificate error: " + str(error))
+        log.warning('Fetch certificate error: ' + str(error))
         return error
 
     def updateCache(self, host, port, submittedFingerprint):

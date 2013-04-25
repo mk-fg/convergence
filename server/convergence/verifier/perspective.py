@@ -27,7 +27,10 @@ from twisted.internet.ssl import ContextFactory
 
 from OpenSSL.SSL import ( Context, SSLv23_METHOD, TLSv1_METHOD,
     VERIFY_PEER, VERIFY_FAIL_IF_NO_PEER_CERT, OP_NO_SSLv2 )
+
 import logging
+
+log = logging.getLogger(__name__)
 
 
 class NetworkPerspectiveVerifier(Verifier):
@@ -55,7 +58,7 @@ class NetworkPerspectiveVerifier(Verifier):
         factory = CertificateFetcherClientFactory(deferred)
         contextFactory = CertificateContextFactory(deferred, fingerprint)
 
-        logging.debug('Fetching certificate from: ' + host + ':' + str(port))
+        log.debug('Fetching certificate from: ' + host + ':' + str(port))
 
         reactor.connectSSL(host, int(port), factory, contextFactory)
         return deferred
@@ -66,7 +69,7 @@ class CertificateFetcherClient(Protocol):
         pass
 
     def connectionMade(self):
-        logging.debug('Connection made...')
+        log.debug('Connection made...')
 
 
 class CertificateFetcherClientFactory(ClientFactory):
@@ -78,14 +81,14 @@ class CertificateFetcherClientFactory(ClientFactory):
         return CertificateFetcherClient()
 
     def clientConnectionFailed(self, connector, reason):
-        logging.warning('Connection to destination failed...')
+        log.warning('Connection to destination failed...')
         self.deferred.errback(Exception('Connection failed'))
 
     def clientConnectionLost(self, connector, reason):
-        logging.debug('Connection lost...')
+        log.debug('Connection lost...')
 
         if not self.deferred.called:
-            logging.warning('Lost before verification callback...')
+            log.warning('Lost before verification callback...')
             self.deferred.errback(Exception('Connection lost'))
 
 
@@ -103,7 +106,7 @@ class CertificateContextFactory(ContextFactory):
         return ctx
 
     def verifyCertificate(self, connection, x509, errno, depth, preverifyOK):
-        logging.debug('Verifying certificate...')
+        log.debug('Verifying certificate...')
 
         if depth != 0:
             return True

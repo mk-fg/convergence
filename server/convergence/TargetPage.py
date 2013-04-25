@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 # Copyright (c) 2011 Moxie Marlinspike
 #
 # This program is free software; you can redistribute it and/or
@@ -16,20 +18,24 @@
 # USA
 #
 
-import hashlib, json, base64, logging
-from M2Crypto import BIO, RSA
+from convergence.FingerprintDatabase import FingerprintDatabase
+from convergence.CacheUpdater import CacheUpdater
+from convergence.NotaryResponse import NotaryResponse
 
 from twisted.web.resource import Resource
 from twisted.protocols.basic import FileSender
 from twisted.python.log import err
 from twisted.web.server import NOT_DONE_YET
 
-from FingerprintDatabase import FingerprintDatabase
-from CacheUpdater import CacheUpdater
-from NotaryResponse import NotaryResponse
+from M2Crypto import BIO, RSA
+
+import hashlib, json, base64, logging
+
+log = logging.getLogger(__name__)
+
 
 # This class is responsible for responding to actions
-# on the REST noun "target," which results in triggering
+# on the REST noun 'target,' which results in triggering
 # verification or returning certificate histories for
 # a destination target.
 
@@ -46,11 +52,11 @@ class TargetPage(Resource):
         self.sendResponse(request, code, recordRows)
 
     def cacheUpdateError(self, error, request):
-        logging.warning("Cache update error: " + str(error))
-        self.sendErrorResponse(request, 503, "Internal Error")
+        log.warning('Cache update error: ' + str(error))
+        self.sendErrorResponse(request, 503, 'Internal Error')
 
     def handleCacheMiss(self, request, host, port, submittedFingerprint):
-        logging.debug("Handling cache miss...")
+        log.debug('Handling cache miss...')
         deferred = self.cacheUpdater.updateCache(host, port, submittedFingerprint)
         deferred.addCallback(self.cacheUpdateComplete, request)
         deferred.addErrback(self.cacheUpdateError, request)
@@ -85,33 +91,33 @@ class TargetPage(Resource):
         self.sendResponse(request, 200, recordRows)
 
     def getRecordsError(self, error, request):
-        logging.warning("Get records error: " + str(error))
-        self.sendErrorResponse(request, 503, "Error retrieving records.")
+        log.warning('Get records error: ' + str(error))
+        self.sendErrorResponse(request, 503, 'Error retrieving records.')
 
     def render(self, request):
-        if request.method != "POST" and request.method != "GET":
-            self.sendErrorResponse(request, 405, "Unsupported method.")
+        if request.method != 'POST' and request.method != 'GET':
+            self.sendErrorResponse(request, 405, 'Unsupported method.')
             return
 
         if len(request.postpath) == 0:
-            self.sendErrorResponse(request, 400, "You must specify a target.")
+            self.sendErrorResponse(request, 400, 'You must specify a target.')
             return
 
         target = request.postpath[0]
 
-        if target.find("+") == -1:
-            self.sendErrorResponse(request, 400, "You must specify a destination port.")
+        if target.find('+') == -1:
+            self.sendErrorResponse(request, 400, 'You must specify a destination port.')
             return
 
-        (host, port) = target.split("+")
+        (host, port) = target.split('+')
         fingerprint = None
 
-        if (('fingerprint' not in request.args) and (request.method == "POST")):
-            self.sendErrorResponse(request, 400, "You must specify a fingerprint.")
+        if (('fingerprint' not in request.args) and (request.method == 'POST')):
+            self.sendErrorResponse(request, 400, 'You must specify a fingerprint.')
             return
-        elif request.method == "POST":
+        elif request.method == 'POST':
             fingerprint = request.args['fingerprint'][0]
-            logging.debug("Fingerprint: " + str(fingerprint))
+            log.debug('Fingerprint: ' + str(fingerprint))
 
         deferred = self.database.getRecordsFor(host, port)
         deferred.addCallback(self.getRecordsComplete, request, host, port, fingerprint)

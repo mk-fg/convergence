@@ -61,6 +61,8 @@ def install_reactor():
             # Linux pre-2.6, poll
             from twisted.internet import pollreactor as event_reactor
     event_reactor.install()
+    from twisted.internet import reactor
+    return reactor
 
 
 def get_backend_list():
@@ -83,6 +85,45 @@ def get_backend_list():
             dict(name=name, load=lambda s,mod=mod: mod) )()
 
     return backends
+
+
+def build_notary(opts, verifier):
+    from convergence.pages import TargetPage, InfoPage
+    from convergence.ConnectChannel import ConnectChannel
+
+    from twisted.web import http, server, resource
+    from twisted.application import strports, service
+    from twisted.enterprise import adbapi
+
+    cert_key_path = opts.cert_key or opts.cert
+    cert_key = open(opts.cert_key or opts.cert).read() # TODO: is it really used?
+    database = adbapi.ConnectionPool('sqlite3', opts.db, cp_max=1, cp_min=1)
+
+    connectFactory = http.HTTPFactory(timeout=10)
+    connectFactory.protocol = ConnectChannel
+
+    notary = resource.Resource()
+    notary.putChild('', InfoPage(verifier))
+    notary.putChild('target', TargetPage(database, cert_key, verifier))
+    notaryFactory = server.Site(notary)
+
+    # It'd be easier and more flexible to specify endpoints in config, but we don't have one yet
+    ep_interface = '' if not opts.interface else ':interface={}'.format(opts.interface)
+    tls_endpoint = 'tcp:{{}}{}'.format(ep_interface) if opts.no_https else\
+        'ssl:{{}}{}:certKey={}:privateKey={}'.format(ep_interface, opts.cert, cert_key_path)
+
+    app = service.MultiService()
+    strports\
+        .service('tcp:{}{}'.format(opts.proxy_port, ep_interface), connectFactory)\
+        .setServiceParent(app)
+    strports\
+        .service(tls_endpoint.format(opts.tls_port), notaryFactory)\
+        .setServiceParent(app)
+    strports\
+        .service(tls_endpoint.format(opts.tls_port_proxied), notaryFactory)\
+        .setServiceParent(app)
+
+    return app
 
 
 def main(argv=None):
@@ -151,7 +192,7 @@ def main(argv=None):
     opts = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
     # This must be done before any other twisted-related stuff:
-    if opts.call == 'notary': install_reactor()
+    if opts.call == 'notary': reactor = install_reactor()
 
     # TODO: extended logging configuration
     from twisted.python import log as twisted_log
@@ -159,9 +200,9 @@ def main(argv=None):
         level=logging.INFO if not opts.debug else logging.DEBUG,
         format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
     twisted_log.PythonLoggingObserver().start()
+    log = logging.getLogger(__name__)
 
     if opts.call == 'notary':
-        from convergence.notary import run_notary
         from convergence.verifier import OptionsError
 
         # To present list of these in CLI help
@@ -179,7 +220,13 @@ def main(argv=None):
                 .format(', '.join(backends), opts.backend) )
         try: backend = backend.load().verifier(opts.backend_options)
         except OptionsError as err: parser.error(err.message)
-        return run_notary(opts, backend)
+
+        build_notary(opts, backend).startService()
+
+        log.debug('Convergence Notary started...')
+        reactor.run()
+        log.debug('Convergence Notary stopped')
+        return
 
     elif opts.call == 'bundle':
         from convergence.bundle import promptForBundleInfo, writeBundle

@@ -42,7 +42,8 @@ browser extension.
 
    - Allows more stuff to be configurable.
 
-   - Renders basic info about the node on GET requests from e.g. browsers.
+   - Renders basic info about the node on GET requests from e.g. browsers (based
+     on upstream [PR #120](https://github.com/moxie0/Convergence/pull/120)).
 
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.

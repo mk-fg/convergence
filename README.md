@@ -42,6 +42,8 @@ browser extension.
 
    - Allows more stuff to be configurable.
 
+   - Renders basic info about the node on GET requests from e.g. browsers.
+
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.
 

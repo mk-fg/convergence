@@ -19,12 +19,12 @@ browser extension.
      - Fixed major issue with extension hanging forever polling on connection to
        notary after receiving http response (bbdc538).
 
-         TODO: upstream pull request
+         Upstream [PR #173](https://github.com/moxie0/Convergence/pull/173).
 
      - Minor issue with displaying cached fingerprint timestamps as NaN-NaN-NaN
        (816c74e).
 
-         TODO: upstream pull request
+         Upstream [PR #174](https://github.com/moxie0/Convergence/pull/174).
 
    - Bumped plugin version, max ff version is 50.* and automatic upstream
      updates are disabled.

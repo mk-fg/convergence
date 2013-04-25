@@ -29,9 +29,6 @@ from convergence.TargetPage import TargetPage
 from convergence.InfoPage import InfoPage
 from convergence.ConnectChannel import ConnectChannel
 
-from convergence.verifier.NetworkPerspectiveVerifier import NetworkPerspectiveVerifier
-from convergence.verifier.DNSVerifier import DNSVerifier
-
 from twisted.enterprise import adbapi
 from twisted.web import http
 from twisted.web.server import Site
@@ -42,12 +39,7 @@ from twisted.application import strports
 import logging
 
 
-def get_backend(name):
-    if name == 'perspective': return NetworkPerspectiveVerifier()
-    elif name.startswith('dns:'): return DNSVerifier(name.split(':')[1])
-
-
-def run_notary(opts, backend, log=None):
+def run_notary(opts, verifier, log=None):
     if log is None: log = logging.getLogger(__name__)
 
     cert_key_path = opts.cert_key or opts.cert
@@ -56,11 +48,10 @@ def run_notary(opts, backend, log=None):
 
     connectFactory = http.HTTPFactory(timeout=10)
     connectFactory.protocol = ConnectChannel
-    connectFactory.verifier = backend
 
     notary = Resource()
-    notary.putChild('', InfoPage(backend))
-    notary.putChild('target', TargetPage(database, cert_key, backend))
+    notary.putChild('', InfoPage(verifier))
+    notary.putChild('target', TargetPage(database, cert_key, verifier))
     notaryFactory = Site(notary)
 
     # It'd be easier and more flexible to specify endpoints in config, but we don't have one yet

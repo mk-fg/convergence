@@ -69,9 +69,8 @@ setup(
 
     package_data = {'convergence.verifier': ['InfoNode.html']},
     entry_points = {
-        'console_scripts': ['convergence = convergence.core:main'] } )
-
-        # 'convergence.verifier': (
-        # 	'{0} = convergence.verifier.{0}'.format(name[:-3])
-        # 	for name in map( os.path.basename,
-        # 		glob.iglob(os.path.join(pkg_root, 'convergence', 'verifier', '[!_]*.py' )) ) ) } )
+        'console_scripts': ['convergence = convergence.core:main'],
+        'convergence.verifier': list(
+            '{0} = convergence.verifier.{0}'.format(name[:-3])
+            for name in map( os.path.basename,
+                glob.iglob(os.path.join(pkg_root, 'convergence', 'verifier', '[!_]*.py' )) ) ) } )

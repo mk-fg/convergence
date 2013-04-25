@@ -40,8 +40,6 @@ browser extension.
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.
 
-   - Allows more stuff to be configurable.
-
    - Renders basic info about the node on GET requests from e.g. browsers (based
      on upstream [PR #120](https://github.com/moxie0/Convergence/pull/120)).
 
@@ -49,6 +47,10 @@ browser extension.
      [daemonization](http://0pointer.de/public/systemd-man/daemon.html) - can be
      done either naively from shell, with os-specific "start-stop-daemon" in
      init-scripts or proper init like upstart or systemd.
+
+   - Allows more stuff to be configurable.
+
+   - Verifier backends can be installed as a "convergence.verifier" entry points.
 
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.

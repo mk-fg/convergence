@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 # Copyright (c) 2011 Moxie Marlinspike
 #
 # This program is free software; you can redistribute it and/or
@@ -16,34 +18,40 @@
 # USA
 #
 
+from convergence.verifier import Verifier, OptionsError
+
 import twisted.names.client
 import logging
 
-from Verifier import Verifier
 
 class DNSVerifier(Verifier):
-    """
+    '''
     This class is responsible for checking a certificate fingerprint
     via a DNS-based certificate catalog
-    """
+    '''
 
     def __init__(self, host):
-        Verifier.__init__(self)
+        if host is None:
+            raise OptionsError('DNS host to query must be specified as a backend option.')
+        super(DNSVerifier, self).__init__()
         self.host = host
 
     def _dnsLookupComplete(self, result, fingerprint):
-        logging.debug("Catalog result: " + str(result[0][0].payload.data[0]))
+        logging.debug('Catalog result: ' + str(result[0][0].payload.data[0]))
         return (200, fingerprint)
 
     def _dnsLookupError(self, error):
-        logging.debug("Catalog resolution failure: " + str(error))
+        logging.debug('Catalog resolution failure: ' + str(error))
         return (409, None)
 
     def verify(self, host, port, fingerprint):
-        formatted = "".join(fingerprint.split(":")).lower()
-        deferred = twisted.names.client.lookupText("%s.%s" % (formatted, self.host))
+        formatted = ''.join(fingerprint.split(':')).lower()
+        deferred = twisted.names.client.lookupText('%s.%s' % (formatted, self.host))
 
         deferred.addCallback(self._dnsLookupComplete, fingerprint)
         deferred.addErrback(self._dnsLookupError)
 
         return deferred
+
+
+verifier = DNSVerifier

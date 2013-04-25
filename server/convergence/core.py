@@ -28,7 +28,7 @@ USA
 
 from contextlib import contextmanager, closing
 from os.path import exists, dirname, realpath
-import os, sys, logging
+import os, sys, logging, pkg_resources
 
 
 # Check python version
@@ -45,6 +45,10 @@ except ImportError:
 from convergence import __version__
 
 
+default_db_path = '/var/lib/convergence/convergence.db'
+default_backend = 'perspective'
+
+
 def install_reactor():
     # BSD and Mac OS X, kqueue
     try:
@@ -57,6 +61,28 @@ def install_reactor():
             # Linux pre-2.6, poll
             from twisted.internet import pollreactor as event_reactor
     event_reactor.install()
+
+
+def get_backend_list():
+    from os.path import join, dirname, basename
+    from convergence import verifier
+    import glob, importlib
+
+    base_verifiers = set( basename(p)[:-3] for p in
+        glob.iglob(join(dirname(verifier.__file__), '[!_]*.py')) )
+    backends = dict( (ep.name, ep)
+        for ep in pkg_resources.iter_entry_points('convergence.verifier') )
+
+    # If convergence is ran from a checkout tree,
+    #  shipped entry_points won't be found, so make sure they are
+    base_verifiers.difference_update(backends)
+
+    for name in base_verifiers:
+        mod = importlib.import_module('convergence.verifier.{}'.format(name))
+        backends[name] = type( 'EntryPoint', (object,),
+            dict(name=name, load=lambda s,mod=mod: mod) )()
+
+    return backends
 
 
 def main(argv=None):
@@ -74,8 +100,6 @@ def main(argv=None):
         cmd.set_defaults(call=name)
         yield cmd
 
-    default_db_path = '/var/lib/convergence/convergence.db'
-
     with subcommand('notary', help='Start notary daemon.') as cmd:
         cmd.add_argument('-p', '--http-port', type=int, metavar='port', default=80,
             help='HTTP port to listen on (default %(default)s).')
@@ -90,9 +114,11 @@ def main(argv=None):
             help='TLS private key path. Not necessary if also contained in the --cert file.')
         cmd.add_argument('-d', '--db', metavar='path', default=default_db_path,
             help='SQLite database path (default: %(default)s).')
-        cmd.add_argument('-b', '--backend',
-            metavar='perspective|dns:<host>', default='perspective',
-            help='Verifier backend (default: %(default)s). Available backends: perspective, dns.')
+        cmd.add_argument('-b', '--backend', metavar='name',
+            help='Verifier backend (default: %(default)s).'
+                ' Specify "help" or "list" to list available backends.')
+        cmd.add_argument('-o', '--backend-options', metavar='data',
+            help='Backend-specific options-string (e.g. host to query for "dns" backend).')
 
     with subcommand('bundle',
             help='Produce notary "bundles", which can be easily imported to a web browser.') as cmd:
@@ -130,9 +156,24 @@ def main(argv=None):
     twisted_log.PythonLoggingObserver().start()
 
     if opts.call == 'notary':
-        from convergence.notary import get_backend, run_notary
-        backend = get_backend(opts.backend)
-        if not backend: parser.error('Invalid backend: {}'.format(opts.backend))
+        from convergence.notary import run_notary
+        from convergence.verifier import OptionsError
+
+        # To present list of these in CLI help
+        backends = get_backend_list()
+        if not opts.backend and default_backend in backends:
+            opts.backend = default_backend
+        if not opts.backend or opts.backend in ['help', 'list']:
+            parser.error(( 'Available backends: {}.'
+                ' Use --backend option to pick one.' ).format(', '.join(backends)))
+
+        try: backend = backends[opts.backend]
+        except KeyError:
+            parser.error(
+                'Invalid backend (available: {}): {}'\
+                .format(', '.join(backends), opts.backend) )
+        try: backend = backend.load().verifier(opts.backend_options)
+        except OptionsError as err: parser.error(err.message)
         return run_notary(opts, backend)
 
     elif opts.call == 'bundle':

@@ -1,5 +1,4 @@
 #-*- coding: utf-8 -*-
-from __future__ import print_function
 
 from twisted.web.resource import Resource
 from twisted.web.error import UnsupportedMethod

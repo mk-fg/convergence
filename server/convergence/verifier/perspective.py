@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 # Copyright (c) 2011 Moxie Marlinspike
 #
 # This program is free software; you can redistribute it and/or
@@ -16,6 +18,8 @@
 # USA
 #
 
+from convergence.verifier import Verifier
+
 from twisted.internet import reactor, defer
 from twisted.internet import ssl, reactor
 from twisted.internet.protocol import ClientFactory, Protocol
@@ -23,15 +27,15 @@ from twisted.internet.ssl import ContextFactory
 
 from OpenSSL.SSL import ( Context, SSLv23_METHOD, TLSv1_METHOD,
     VERIFY_PEER, VERIFY_FAIL_IF_NO_PEER_CERT, OP_NO_SSLv2 )
-from Verifier import Verifier
 import logging
 
+
 class NetworkPerspectiveVerifier(Verifier):
-    """
+    '''
     This class is responsible for verifying a target fingerprint
     by connecting to the same target and checking if the fingerprints
     match across network perspective.
-    """
+    '''
 
     html_description = '''
         <p>This notary uses the NetworkPerspective verifier.</p>
@@ -46,25 +50,24 @@ class NetworkPerspectiveVerifier(Verifier):
         <p>Otherwise the notary will <strong>not</strong> confirm the authenticity.</p>
     '''
 
-    def __init__(self):
-        Verifier.__init__(self)
-
     def verify(self, host, port, fingerprint):
         deferred = defer.Deferred()
         factory = CertificateFetcherClientFactory(deferred)
         contextFactory = CertificateContextFactory(deferred, fingerprint)
 
-        logging.debug("Fetching certificate from: " + host + ":" + str(port))
+        logging.debug('Fetching certificate from: ' + host + ':' + str(port))
 
         reactor.connectSSL(host, int(port), factory, contextFactory)
         return deferred
+
 
 class CertificateFetcherClient(Protocol):
     def __init__(self):
         pass
 
     def connectionMade(self):
-        logging.debug("Connection made...")
+        logging.debug('Connection made...')
+
 
 class CertificateFetcherClientFactory(ClientFactory):
 
@@ -75,15 +78,16 @@ class CertificateFetcherClientFactory(ClientFactory):
         return CertificateFetcherClient()
 
     def clientConnectionFailed(self, connector, reason):
-        logging.warning("Connection to destination failed...")
-        self.deferred.errback(Exception("Connection failed"))
+        logging.warning('Connection to destination failed...')
+        self.deferred.errback(Exception('Connection failed'))
 
     def clientConnectionLost(self, connector, reason):
-        logging.debug("Connection lost...")
+        logging.debug('Connection lost...')
 
         if not self.deferred.called:
-            logging.warning("Lost before verification callback...")
-            self.deferred.errback(Exception("Connection lost"))
+            logging.warning('Lost before verification callback...')
+            self.deferred.errback(Exception('Connection lost'))
+
 
 class CertificateContextFactory(ContextFactory):
     isClient = True
@@ -99,12 +103,12 @@ class CertificateContextFactory(ContextFactory):
         return ctx
 
     def verifyCertificate(self, connection, x509, errno, depth, preverifyOK):
-        logging.debug("Verifying certificate...")
+        logging.debug('Verifying certificate...')
 
         if depth != 0:
             return True
 
-        fingerprintSeen = x509.digest("sha1")
+        fingerprintSeen = x509.digest('sha1')
 
         if fingerprintSeen == self.fingerprint:
             self.deferred.callback((200, fingerprintSeen))
@@ -112,3 +116,6 @@ class CertificateContextFactory(ContextFactory):
             self.deferred.callback((409, fingerprintSeen))
 
         return False
+
+
+verifier = NetworkPerspectiveVerifier

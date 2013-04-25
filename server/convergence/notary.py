@@ -63,11 +63,6 @@ def run_notary(opts, verifier):
     svc_tls = strports.service(tls_endpoint.format(opts.tls_port), notaryFactory)
     svc_tls_proxied = strports.service(tls_endpoint.format(opts.tls_port_proxied), notaryFactory)
 
-    # TODO: make sure these are used in endpoints' tls setup
-    # from OpenSSL import SSL
-    # ctx = SSL.Context(SSL.SSLv23_METHOD)
-    # ctx.set_options(SSL.OP_NO_SSLv2)
-
     svc_channel.startService()
     svc_tls.startService()
     svc_tls_proxied.startService()

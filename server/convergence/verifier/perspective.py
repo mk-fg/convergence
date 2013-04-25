@@ -25,7 +25,8 @@ from twisted.internet import ssl, reactor
 from twisted.internet.protocol import ClientFactory, Protocol
 from twisted.internet.ssl import ContextFactory
 
-from OpenSSL.SSL import ( Context, SSLv23_METHOD, TLSv1_METHOD,
+from OpenSSL.SSL import (
+    Context, SSLv23_METHOD, TLSv1_METHOD,
     VERIFY_PEER, VERIFY_FAIL_IF_NO_PEER_CERT, OP_NO_SSLv2 )
 
 import logging

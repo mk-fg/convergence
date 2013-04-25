@@ -74,6 +74,8 @@ class CertificateFetcherClient(Protocol):
 
 class CertificateFetcherClientFactory(ClientFactory):
 
+    noisy = False
+
     def __init__(self, deferred):
         self.deferred = deferred
 

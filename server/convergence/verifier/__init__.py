@@ -113,3 +113,8 @@ class Verifier(object):
         '''
         return self.html_description\
             or '<p>Notary Type: {0}</p>'.format(self.__class__.__name__)
+
+
+# Entry point modules must include "verifier" attribute with
+#  backend implementation constructor (e.g. class) assigned to it
+verifier = Verifier

@@ -98,7 +98,10 @@ def build_notary(opts, verifier):
 
     cert_key_path = opts.cert_key or opts.cert
     cert_key = open(opts.cert_key or opts.cert).read() # TODO: is it really used?
-    database = adbapi.ConnectionPool('sqlite3', opts.db, cp_max=1, cp_min=1)
+    # See http://twistedmatrix.com/trac/ticket/3629
+    #  for the rationale behind check_same_thread=False
+    database = adbapi.ConnectionPool( 'sqlite3',
+        opts.db, cp_max=1, cp_min=1, check_same_thread=False )
 
     connectFactory = http.HTTPFactory(timeout=10)
     connectFactory.protocol = ConnectChannel

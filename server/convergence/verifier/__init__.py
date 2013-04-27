@@ -27,6 +27,11 @@ class Verifier(object):
     '''The base class for all verifier backends.'''
 
 
+    #: Optional user-oriented textual description of backend
+    #:  and backend-specific options_string allowed, for the CLI.
+    description = None
+    options_description = None
+
     def __init__(self, options_string=None):
         if options_string is not None:
             name = self.__class__.__name__
@@ -111,8 +116,12 @@ class Verifier(object):
         :Returns Type:
         - String - Will be rendered as notary description html.
         '''
-        return self.html_description\
-            or '<p>Notary Type: {0}</p>'.format(self.__class__.__name__)
+        if self.html_description: return self.html_description
+        description = '<p>Notary Type: {0}</p>'.format(self.__class__.__name__)
+        if self.description:
+            from twisted.web.server import escape
+            description += '<pre>{}</pre>'.format(escape(self.description))
+        return description
 
 
 # Entry point modules must include "verifier" attribute with

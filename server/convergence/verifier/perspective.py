@@ -18,7 +18,7 @@
 # USA
 #
 
-from convergence.verifier import Verifier
+from convergence.verifier import Verifier, OptionsError
 
 from twisted.internet import reactor, defer
 from twisted.internet import ssl, reactor
@@ -29,7 +29,7 @@ from OpenSSL.SSL import (
     Context, SSLv23_METHOD, TLSv1_METHOD,
     VERIFY_PEER, VERIFY_FAIL_IF_NO_PEER_CERT, OP_NO_SSLv2 )
 
-import logging
+import re, logging
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +40,19 @@ class NetworkPerspectiveVerifier(Verifier):
     by connecting to the same target and checking if the fingerprints
     match across network perspective.
     '''
+
+    flags_supported = {'verify_ca'}
+    flags_default = {}
+
+    description = (
+        'Check if remote presents the same certificate to the notary as it did to client,'
+        ' optionally also performing verification against OpenSSL CA list (on the notary host).' )
+
+    options_description = '\n'.join([
+        'Optional list of flags, separated by any non-word characters,'
+            ' optionally prefixed by "-" to disable that flag instead of enabling.',
+        'Default flags: {};'.format(', '.join(flags_default) or '(none)'),
+        'supported flags: {}.'.format(', '.join(flags_supported)) ])
 
     html_description = '''
         <p>This notary uses the NetworkPerspective verifier.</p>
@@ -52,12 +65,28 @@ class NetworkPerspectiveVerifier(Verifier):
             </ol>
         </p>
         <p>Otherwise the notary will <strong>not</strong> confirm the authenticity.</p>
+        <p>Optionally, it can also be enabled to do verification against OpenSSL CA list.</p>
     '''
+
+    def __init__(self, flags):
+        self.flags = set(self.flags_default)
+        if flags:
+            flags = re.findall(r'\b[-+=\w]+\b', flags)
+            for flag in flags:
+                disable = False
+                if flag[0] == '-': flag, disable = flag[1:], True
+                if flag not in self.flags_supported:
+                    raise OptionsError(( 'Passed flag {!r} is not supported.'
+                        ' Full list of supported flags: {}' ).format(flag, ', '.join(self.flags_supported)))
+                if disable: self.flags.discard(flag)
+                else: self.flags.add(flag)
+        log.debug('Enabled options: {}'.format(', '.join(self.flags)))
 
     def verify(self, host, port, fingerprint):
         deferred = defer.Deferred()
         factory = CertificateFetcherClientFactory(deferred)
-        contextFactory = CertificateContextFactory(deferred, fingerprint)
+        contextFactory = CertificateContextFactory(
+            deferred, fingerprint, verify_ca='verify_ca' in self.flags )
 
         log.debug('Fetching certificate from: ' + host + ':' + str(port))
 
@@ -97,9 +126,8 @@ class CertificateContextFactory(ContextFactory):
 
     isClient = True
 
-    def __init__(self, deferred, fingerprint):
-        self.deferred = deferred
-        self.fingerprint = fingerprint
+    def __init__(self, deferred, fingerprint, verify_ca):
+        self.deferred, self.fingerprint, self.verify_ca = deferred, fingerprint, verify_ca
 
     def getContext(self):
         ctx = Context(SSLv23_METHOD)
@@ -108,13 +136,11 @@ class CertificateContextFactory(ContextFactory):
         return ctx
 
     def verifyCertificate(self, connection, x509, errno, depth, preverify_ok):
+        if depth != 0: return True
         log.debug('Verifying certificate...')
 
-        if depth != 0:
-            return True
-
-        fingerprintSeen = x509.digest('sha1')
-
+        fingerprintSeen = x509.digest('sha1')\
+            if not self.verify_ca or preverify_ok else None
         if fingerprintSeen == self.fingerprint:
             self.deferred.callback((200, fingerprintSeen))
         else:

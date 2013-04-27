@@ -88,3 +88,32 @@ port, fingerprint)` method, returning `(responseCode, fingerprintToCache)` tuple
 via deferred callback.
 
 See `convergence.verifier.Verifier` class for more details.
+
+
+Included verifier backends
+--------------------
+
+Full list with descriptions can be acquired using "notary --backend help" on the
+command line.
+
+Here's a possibly-obsolete list it provides (on 2013-04-27):
+
+	  - perspective
+
+	    Description:
+	      Check if remote presents the same certificate to the notary as it did to
+	      client, optionally also performing verification against OpenSSL CA list
+	      (on the notary host).
+
+	    Options:
+	      Optional list of flags, separated by any non-word characters, optionally
+	      prefixed by "-" to disable that flag instead of enabling. Default flags:
+	      (none); supported flags: verify_ca.
+
+	  - dns
+
+	    Description:
+	      Check certificate fingerprint via a DNS-based certificate catalog.
+
+	    Options:
+	      Hostname of the DNS server to query (required).

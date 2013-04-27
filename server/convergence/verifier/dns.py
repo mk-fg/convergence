@@ -32,6 +32,9 @@ class DNSVerifier(Verifier):
     via a DNS-based certificate catalog
     '''
 
+    description = 'Check certificate fingerprint via a DNS-based certificate catalog.'
+    options_description = 'Hostname of the DNS server to query (required).'
+
     def __init__(self, host):
         if host is None:
             raise OptionsError('DNS host to query must be specified as a backend option.')

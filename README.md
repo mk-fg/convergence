@@ -52,10 +52,13 @@ browser extension.
 
    - Verifier backends can be installed as a "convergence.verifier" entry points.
 
+   - "perspective" verifier has "verify_ca" option (disabled by default) to also
+     perform OpenSSL verification of the server certificate chain, allowing to
+     combine network perspectives with an old-style CA-list verification (and
+     whatever other backends).
+
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.
-
-   - TODO: Local openssl or mozilla CA-list verifier.
 
    - TODO: Statistics on queries.
 

@@ -162,9 +162,10 @@ def main(argv=None):
             help='SQLite database path (default: %(default)s).')
         cmd.add_argument('-b', '--backend', metavar='name',
             help='Verifier backend (default: %(default)s).'
-                ' Specify "help" or "list" to list available backends.')
+                ' Specify "help" or "list" to list available backends and their options.')
         cmd.add_argument('-o', '--backend-options', metavar='data',
-            help='Backend-specific options-string (e.g. host to query for "dns" backend).')
+            help='Backend-specific options-string (e.g. host to query'
+                ' for "dns" backend), use "-b help" to get more info on these.')
 
     with subcommand('bundle',
             help='Produce notary "bundles", which can be easily imported to a web browser.') as cmd:
@@ -200,7 +201,7 @@ def main(argv=None):
         level=logging.INFO if not opts.debug else logging.DEBUG,
         format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
     twisted_log.PythonLoggingObserver().start()
-    log = logging.getLogger(__name__)
+    log = logging.getLogger('convergence.core')
 
     if opts.call == 'notary':
         from convergence.verifier import OptionsError
@@ -210,8 +211,22 @@ def main(argv=None):
         if not opts.backend and default_backend in backends:
             opts.backend = default_backend
         if not opts.backend or opts.backend in ['help', 'list']:
-            parser.error(( 'Available backends: {}.'
-                ' Use --backend option to pick one.' ).format(', '.join(backends)))
+            import textwrap
+            indent = 2
+            print('Available verifier backends:')
+            for name, ep in backends.viewitems():
+                print('\n{}- {}'.format(' '*indent, name))
+                backend = ep.load().verifier
+                for k, desc in [
+                        ('Description', backend.description),
+                        ('Options', backend.options_description) ]:
+                    if desc:
+                        print('\n{}{}:'.format(' '*indent*2, k))
+                        print(textwrap.fill( desc.strip(), width=78,
+                            initial_indent=' '*indent*3, subsequent_indent=' '*indent*3 ))
+            print()
+            if not opts.backend: parser.error('Backend name must be specified.')
+            return
 
         try: backend = backends[opts.backend]
         except KeyError:

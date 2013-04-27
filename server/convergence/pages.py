@@ -19,20 +19,14 @@
 #
 
 from convergence.FingerprintDatabase import FingerprintDatabase
-from convergence.CacheUpdater import CacheUpdater
 from convergence.NotaryResponse import NotaryResponse
 
-from twisted.web.resource import Resource
 from twisted.protocols.basic import FileSender
-from twisted.python.log import err
-from twisted.web.server import NOT_DONE_YET
-from twisted.web.error import UnsupportedMethod
-from twisted.web.iweb import IRenderable
+from twisted.internet import defer
+from twisted.web import resource, server, error, iweb
 
 try: from twisted.web.template import renderElement
 except ImportError: renderElement = None
-
-from M2Crypto import BIO, RSA
 
 import hashlib, json, base64, types, logging
 
@@ -44,40 +38,13 @@ log = logging.getLogger(__name__)
 # verification or returning certificate histories for
 # a destination target.
 
-class TargetPage(Resource):
+class TargetPage(resource.Resource):
 
     isLeaf = True
 
     def __init__(self, databaseConnection, privateKey, verifier):
         self.database = FingerprintDatabase(databaseConnection)
-        self.cacheUpdater = CacheUpdater(self.database, verifier)
-        self.privateKey = privateKey
-
-    def cacheUpdateComplete(self, (code, recordRows), request):
-        self.sendResponse(request, code, recordRows)
-
-    def cacheUpdateError(self, error, request):
-        log.warning('Cache update error: ' + str(error))
-        self.sendErrorResponse(request, 503, 'Internal Error')
-
-    def handleCacheMiss(self, request, host, port, submittedFingerprint):
-        log.debug('Handling cache miss...')
-        deferred = self.cacheUpdater.updateCache(host, port, submittedFingerprint)
-        deferred.addCallback(self.cacheUpdateComplete, request)
-        deferred.addErrback(self.cacheUpdateError, request)
-
-    def isCacheMiss(self, recordRows, fingerprint):
-        if (recordRows == None or len(recordRows) == 0):
-            return True
-
-        if (fingerprint == None):
-            return False
-
-        for row in recordRows:
-            if row[0] == fingerprint:
-                return False
-
-        return True
+        self.verifier, self.privateKey = verifier, privateKey
 
     def sendErrorResponse(self, request, code, message):
         request.setResponseCode(code)
@@ -88,15 +55,43 @@ class TargetPage(Resource):
         response = NotaryResponse(request, self.privateKey)
         response.sendResponse(code, recordRows)
 
+    def isCacheMiss(self, recordRows, fingerprint):
+        if not recordRows: return True
+        if fingerprint == None: return False
+        for row in recordRows:
+            if row[0] == fingerprint: return False
+        return True
+
+    @defer.inlineCallbacks
+    def updateCache(self, host, port, submittedFingerprint):
+        try:
+            responseCode, fingerprint =\
+                yield self.verifier.verify(host, int(port), submittedFingerprint)
+        except Exception as err:
+            log.warn('Fetch certificate error: {}'.format(err))
+            raise
+
+        log.debug('Got fingerprint: {}'.format(fingerprint))
+        if fingerprint is None: defer.returnValue((responseCode, None))
+        else:
+            try:
+                recordRows = yield self.database.updateRecordsFor(host, port, fingerprint)
+            except Exception as err:
+                log.warn('Update records error: {}'.format(err))
+                raise
+            else: defer.returnValue((code, recordRows))
+
+    @defer.inlineCallbacks
     def getRecordsComplete(self, recordRows, request, host, port, fingerprint):
         if self.isCacheMiss(recordRows, fingerprint):
-            self.handleCacheMiss(request, host, port, fingerprint)
-            return
-
-        self.sendResponse(request, 200, recordRows)
+            log.debug('Handling cache miss...')
+            try: code, recordRows = yield self.updateCache(host, port, fingerprint)
+            except: self.sendErrorResponse(request, 503, 'Internal Error')
+            else: self.sendResponse(request, code, recordRows)
+        else: self.sendResponse(request, 200, recordRows)
 
     def getRecordsError(self, error, request):
-        log.warning('Get records error: ' + str(error))
+        log.warn('Get records error: {}'.format(error))
         self.sendErrorResponse(request, 503, 'Error retrieving records.')
 
     def render(self, request):
@@ -108,30 +103,30 @@ class TargetPage(Resource):
             self.sendErrorResponse(request, 400, 'You must specify a target.')
             return
 
-        target = request.postpath[0]
+        target, fingerprint = request.postpath[0], None
 
-        if target.find('+') == -1:
-            self.sendErrorResponse(request, 400, 'You must specify a destination port.')
+        if '+' not in target:
+            self.sendErrorResponse(request, 400, 'Destination port must be specified.')
             return
 
         host, port = target.split('+')
-        fingerprint = None
 
-        if 'fingerprint' not in request.args and request.method == 'POST':
-            self.sendErrorResponse(request, 400, 'You must specify a fingerprint.')
-            return
-        elif request.method == 'POST':
-            fingerprint = request.args['fingerprint'][0]
-            log.debug('Fingerprint: ' + str(fingerprint))
+        if request.method == 'POST':
+            if 'fingerprint' not in request.args:
+                self.sendErrorResponse(request, 400, 'Fingerprint must be specified.')
+                return
+            else:
+                fingerprint = request.args['fingerprint'][0]
+                log.debug('Fingerprint: {}'.format(fingerprint))
 
         deferred = self.database.getRecordsFor(host, port)
         deferred.addCallback(self.getRecordsComplete, request, host, port, fingerprint)
         deferred.addErrback(self.getRecordsError, request)
 
-        return NOT_DONE_YET
+        return server.NOT_DONE_YET
 
 
-class InfoPage(Resource):
+class InfoPage(resource.Resource):
 
     isLeaf = True
 
@@ -140,7 +135,7 @@ class InfoPage(Resource):
 
     def render(self, request):
         if request.method != 'GET':
-            raise UnsupportedMethod()
+            raise error.UnsupportedMethod()
 
         try: description = self.verifier.getInfoNode(request)
         except NotImplementedError:
@@ -149,7 +144,7 @@ class InfoPage(Resource):
 
         if not isinstance(description, types.StringTypes):
             if not renderElement or\
-                not IRenderable.providedBy(description): description = str(description)
+                not iweb.IRenderable.providedBy(description): description = str(description)
             else: return renderElement(request, description)
 
         return description

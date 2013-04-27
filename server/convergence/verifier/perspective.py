@@ -20,10 +20,8 @@
 
 from convergence.verifier import Verifier, OptionsError
 
-from twisted.internet import reactor, defer
-from twisted.internet import ssl, reactor
+from twisted.internet import reactor, defer, ssl
 from twisted.internet.protocol import ClientFactory, Protocol
-from twisted.internet.ssl import ContextFactory
 
 from OpenSSL.SSL import (
     Context, SSLv23_METHOD, TLSv1_METHOD,
@@ -84,7 +82,7 @@ class NetworkPerspectiveVerifier(Verifier):
 
     def verify(self, host, port, fingerprint):
         deferred = defer.Deferred()
-        factory = CertificateFetcherClientFactory(deferred)
+        factory = CertificateFetcherClientFactory(deferred, host, port)
         contextFactory = CertificateContextFactory(
             deferred, fingerprint, verify_ca='verify_ca' in self.flags )
 
@@ -100,29 +98,35 @@ class CertificateFetcherClient(Protocol):
         log.debug('Connection made...')
 
 
+class CertificateFetcherError(Exception): pass
+
 class CertificateFetcherClientFactory(ClientFactory):
 
     noisy = False
 
-    def __init__(self, deferred):
-        self.deferred = deferred
+    def __init__(self, deferred, host, port):
+        self.deferred, self.host, self.port = deferred, host, port
 
     def buildProtocol(self, addr):
         return CertificateFetcherClient()
 
     def clientConnectionFailed(self, connector, reason):
-        log.warning('Connection to destination failed...')
-        self.deferred.errback(Exception('Connection failed'))
+        try:
+            raise CertificateFetcherError(
+                'Connection to ({!r}, {!r}) failed - {}'\
+                .format(self.host, self.port, reason.getErrorMessage()) )
+        except: self.deferred.errback()
 
     def clientConnectionLost(self, connector, reason):
-        log.debug('Connection lost...')
+        log.debug('Connection lost')
 
         if not self.deferred.called:
-            log.warning('Lost before verification callback...')
-            self.deferred.errback(Exception('Connection lost'))
+            log.debug('Lost before verification callback')
+            try: raise CertificateFetcherError('Connection lost')
+            except: self.deferred.errback()
 
 
-class CertificateContextFactory(ContextFactory):
+class CertificateContextFactory(ssl.ContextFactory):
 
     isClient = True
 

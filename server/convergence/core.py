@@ -130,8 +130,10 @@ def main(argv=None):
     import argparse
     parser = argparse.ArgumentParser(
         description='Convergence {} by Moxie Marlinspike.'.format(__version__))
+    parser.add_argument('-v', '--verbose',
+        action='store_true', help='Verbose operation mode (most logging from twisted).')
     parser.add_argument('--debug',
-        action='store_true', help='Verbose operation mode.')
+        action='store_true', help='Even more verbose operation than with --verbose.')
     cmds = parser.add_subparsers(
         title='Supported operations (have their own suboptions as well)')
 
@@ -197,8 +199,10 @@ def main(argv=None):
 
     # TODO: extended logging configuration
     from twisted.python import log as twisted_log
-    logging.basicConfig(
-        level=logging.INFO if not opts.debug else logging.DEBUG,
+    if opts.debug: log = logging.DEBUG
+    elif opts.verbose: log = logging.INFO
+    else: log = logging.WARNING
+    logging.basicConfig( level=log,
         format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
     twisted_log.PythonLoggingObserver().start()
     log = logging.getLogger('convergence.core')

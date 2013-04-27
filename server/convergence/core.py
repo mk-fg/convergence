@@ -253,7 +253,8 @@ def main(argv=None):
         except: pass
 
         bundle = promptForBundleInfo()
-        return writeBundle(bundle, opts.output_file)
+        writeBundle(bundle, opts.output_file)
+        return
 
     elif opts.call == 'createdb':
         from sqlite3 import connect
@@ -263,10 +264,11 @@ def main(argv=None):
 
         with connect(opts.db_path) as connection,\
                 closing(connection.cursor()) as cursor:
-            return cursor.execute(
+            cursor.execute(
                 'CREATE TABLE fingerprints (id integer'
                 ' primary key, location TEXT, fingerprint TEXT, timestamp_start'
                 ' INTEGER, timestamp_finish INTEGER)' )
+        return
 
     elif opts.call == 'gencert':
         from subprocess import Popen, PIPE

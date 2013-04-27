@@ -60,6 +60,8 @@ browser extension.
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.
 
+   - TODO: Add option to serve bundle for browsers at some URL.
+
    - TODO: Statistics on queries.
 
    - TODO: Look into integration with OONI, EFF Observatory, Sovereign Keys and

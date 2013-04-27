@@ -61,13 +61,11 @@ class NetworkPerspectiveVerifier(Verifier):
 
         log.debug('Fetching certificate from: ' + host + ':' + str(port))
 
-        reactor.connectSSL(host, int(port), factory, contextFactory)
+        reactor.connectSSL(host, port, factory, contextFactory)
         return deferred
 
 
 class CertificateFetcherClient(Protocol):
-    def __init__(self):
-        pass
 
     def connectionMade(self):
         log.debug('Connection made...')
@@ -96,6 +94,7 @@ class CertificateFetcherClientFactory(ClientFactory):
 
 
 class CertificateContextFactory(ContextFactory):
+
     isClient = True
 
     def __init__(self, deferred, fingerprint):
@@ -108,7 +107,7 @@ class CertificateContextFactory(ContextFactory):
         ctx.set_options(OP_NO_SSLv2)
         return ctx
 
-    def verifyCertificate(self, connection, x509, errno, depth, preverifyOK):
+    def verifyCertificate(self, connection, x509, errno, depth, preverify_ok):
         log.debug('Verifying certificate...')
 
         if depth != 0:

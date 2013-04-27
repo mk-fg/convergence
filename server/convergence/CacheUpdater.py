@@ -56,7 +56,7 @@ class CacheUpdater:
         return error
 
     def updateCache(self, host, port, submittedFingerprint):
-        deferred = self.verifier.verify(host, port, submittedFingerprint)
+        deferred = self.verifier.verify(host, int(port), submittedFingerprint)
         deferred.addCallback(self.handleVerifyCertificateComplete, host, port)
         deferred.addErrback(self.handleVerifyCertificateError)
 

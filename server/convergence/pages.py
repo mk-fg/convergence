@@ -89,7 +89,7 @@ class TargetPage(Resource):
         response.sendResponse(code, recordRows)
 
     def getRecordsComplete(self, recordRows, request, host, port, fingerprint):
-        if (self.isCacheMiss(recordRows, fingerprint)):
+        if self.isCacheMiss(recordRows, fingerprint):
             self.handleCacheMiss(request, host, port, fingerprint)
             return
 
@@ -114,10 +114,10 @@ class TargetPage(Resource):
             self.sendErrorResponse(request, 400, 'You must specify a destination port.')
             return
 
-        (host, port) = target.split('+')
+        host, port = target.split('+')
         fingerprint = None
 
-        if (('fingerprint' not in request.args) and (request.method == 'POST')):
+        if 'fingerprint' not in request.args and request.method == 'POST':
             self.sendErrorResponse(request, 400, 'You must specify a fingerprint.')
             return
         elif request.method == 'POST':

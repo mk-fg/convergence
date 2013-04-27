@@ -96,24 +96,35 @@ Included verifier backends
 Full list with descriptions can be acquired using "notary --backend help" on the
 command line.
 
-Here's a possibly-obsolete list it provides (on 2013-04-27):
+Here's a possibly-obsolete list it provides (as of 2013-04-27):
 
-	  - perspective
+	- dns
 
-	    Description:
-	      Check if remote presents the same certificate to the notary as it did to
-	      client, optionally also performing verification against OpenSSL CA list
-	      (on the notary host).
+	  Description:
+	    Check certificate fingerprint via a DNS-based certificate catalog.
 
-	    Options:
-	      Optional list of flags, separated by any non-word characters, optionally
-	      prefixed by "-" to disable that flag instead of enabling. Default flags:
-	      (none); supported flags: verify_ca.
+	  Options:
+	    Hostname of the DNS server to query (required).
 
-	  - dns
+	- perspective
 
-	    Description:
-	      Check certificate fingerprint via a DNS-based certificate catalog.
+	  Description:
+	    Check if remote presents the same certificate to the notary as it did to
+	    client, optionally also performing verification against OpenSSL CA list
+	    (on the notary host).
 
-	    Options:
-	      Hostname of the DNS server to query (required).
+	  Options:
+	    Optional list of flags, separated by any non-word characters, optionally
+	    prefixed by "-" to disable that flag instead of enabling. Default flags:
+	    (none); supported flags: verify_ca.
+
+	- test_negative
+
+	  Description:
+	    Verifier that always returns negative result. For testing purposes only.
+
+	- test_positive
+
+	  Description:
+	    Verifier that always returns positive result and the same fingerprint as
+	    was passed to it. For testing purposes only.

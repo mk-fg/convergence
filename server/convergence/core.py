@@ -214,7 +214,7 @@ def main(argv=None):
             import textwrap
             indent = 2
             print('Available verifier backends:')
-            for name, ep in backends.viewitems():
+            for name, ep in sorted(backends.viewitems()):
                 print('\n{}- {}'.format(' '*indent, name))
                 backend = ep.load().verifier
                 for k, desc in [

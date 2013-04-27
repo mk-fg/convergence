@@ -123,7 +123,7 @@ def build_notary(opts, verifier):
     strports\
         .service(tls_endpoint.format(opts.tls_port), notaryFactory)\
         .setServiceParent(app)
-    if opts.tls_port_proxied:
+    if opts.tls_port_proxied and not opts.tls_port == opts.tls_port_proxied:
         strports\
             .service(tls_endpoint.format(opts.tls_port_proxied), notaryFactory)\
             .setServiceParent(app)

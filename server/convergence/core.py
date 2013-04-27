@@ -117,12 +117,14 @@ def build_notary(opts, verifier):
         'ssl:{{}}{}:certKey={}:privateKey={}'.format(ep_interface, opts.cert, cert_key_path)
 
     app = service.MultiService()
-    strports\
-        .service('tcp:{}{}'.format(opts.proxy_port, ep_interface), connectFactory)\
-        .setServiceParent(app)
-    strports\
-        .service(tls_endpoint.format(opts.tls_port), notaryFactory)\
-        .setServiceParent(app)
+    if opts.proxy_port:
+        strports\
+            .service('tcp:{}{}'.format(opts.proxy_port, ep_interface), connectFactory)\
+            .setServiceParent(app)
+    if opts.tls_port:
+        strports\
+            .service(tls_endpoint.format(opts.tls_port), notaryFactory)\
+            .setServiceParent(app)
     if opts.tls_port_proxied and not opts.tls_port == opts.tls_port_proxied:
         strports\
             .service(tls_endpoint.format(opts.tls_port_proxied), notaryFactory)\
@@ -151,12 +153,12 @@ def main(argv=None):
     with subcommand('notary', help='Start notary daemon.') as cmd:
         cmd.add_argument('-p', '--proxy-port', type=int, metavar='port', default=80,
             help='Port to listen on for CONNECT requests'
-                ' to act as proxy to other notaries (default: %(default)s).')
+                ' to act as proxy to other notaries (default: %(default)s, 0 - disable).')
         cmd.add_argument('-s', '--tls-port', type=int, metavar='port', default=443,
-            help='Port to listen on for direct TLS connections (default: %(default)s).')
+            help='Port to listen on for direct TLS connections (default: %(default)s, 0 - disable).')
         cmd.add_argument('-x', '--tls-port-proxied', type=int, metavar='port',
             help=( 'Port to listen on for proxied TLS connections'
-                        ' (default: {}, unless --no-https is specified).'
+                        ' (default: {}, unless --no-https is specified, 0 - disable explicitly).'
                     ' Must be 4242 for the outside world, because proxies only accept that one.'
                     ' Disabled (unless explicitly specified) if --no-https is also used -- reverse-proxy'
                         ' should be set to pass connections to --tls-port in that case instead.' )\

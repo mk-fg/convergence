@@ -47,6 +47,7 @@ from convergence import __version__
 
 default_db_path = '/var/lib/convergence/convergence.db'
 default_backend = 'perspective'
+default_proxied_tls_port = 4242
 
 
 def install_reactor():
@@ -119,9 +120,10 @@ def build_notary(opts, verifier):
     strports\
         .service(tls_endpoint.format(opts.tls_port), notaryFactory)\
         .setServiceParent(app)
-    strports\
-        .service(tls_endpoint.format(opts.tls_port_proxied), notaryFactory)\
-        .setServiceParent(app)
+    if opts.tls_port_proxied:
+        strports\
+            .service(tls_endpoint.format(opts.tls_port_proxied), notaryFactory)\
+            .setServiceParent(app)
 
     return app
 
@@ -149,12 +151,17 @@ def main(argv=None):
                 ' to act as proxy to other notaries (default: %(default)s).')
         cmd.add_argument('-s', '--tls-port', type=int, metavar='port', default=443,
             help='Port to listen on for direct TLS connections (default: %(default)s).')
-        cmd.add_argument('-x', '--tls-port-proxied',
-            type=int, metavar='port', default=4242,
-            help='Port to listen on for proxied TLS connections (default: %(default)s).'
-                ' Must be 4242 for the outside world, because proxies only accept that one.')
+        cmd.add_argument('-x', '--tls-port-proxied', type=int, metavar='port',
+            help=( 'Port to listen on for proxied TLS connections'
+                        ' (default: {}, unless --no-https is specified).'
+                    ' Must be 4242 for the outside world, because proxies only accept that one.'
+                    ' Disabled (unless explicitly specified) if --no-https is also used -- reverse-proxy'
+                        ' should be set to pass connections to --tls-port in that case instead.' )\
+                .format(default_proxied_tls_port))
         cmd.add_argument('--no-https', action='store_true',
-            help='Turn off TLS wrapping for all sockets, e.g. to put Twisted behind Nginx.')
+            help='Turn off TLS wrapping for all sockets, e.g. to put Twisted behind Nginx.'
+                ' Also disables --tls-port-proxied (unless explicitly specified) as redundant'
+                    ' -- these connections should be proxied to the same --tls-port instead.')
         cmd.add_argument('-i', '--interface', metavar='ip_or_hostname',
             help='Interface (IP address or hostname) to listen on for incoming connections (optional).')
         cmd.add_argument('-c', '--cert', metavar='path', required=True, help='TLS certificate path.')
@@ -208,6 +215,9 @@ def main(argv=None):
     log = logging.getLogger('convergence.core')
 
     if opts.call == 'notary':
+        if opts.tls_port_proxied is None and not opts.no_https:
+            opts.tls_port_proxied = default_proxied_tls_port # stays disabled otherwise
+
         from convergence.verifier import OptionsError
 
         # To present list of these in CLI help

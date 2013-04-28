@@ -29,6 +29,15 @@ browser extension.
    - Bumped plugin version, max ff version is 50.* and automatic upstream
      updates are disabled.
 
+   - Backends' "isNotaryUri" check seem to have typo bugs (c96d242), messing up
+     results (silently with >1 notaries).
+
+   - Bugfix in nsIWebBrowserPersist.saveURI call (b5dbb50), preventing adding
+     notaries from URL (at least in newer ff).
+
+   - Supress unhandled non-critical JS errors here and there, mostly to keep JS
+     console clean.
+
    - TODO: Checkbox for option to always query enabled localhost notaries first.
 
    - TODO: Make hardcoded check timeouts configurable.

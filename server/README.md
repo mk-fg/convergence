@@ -59,7 +59,7 @@ without system-wide installation (as per last step).
 
 ### Publish
 
- - Generate a notary bundle: `convergence-bundle`
+ - Generate a notary bundle: `convergence bundle`
  - Publish the resulting file on your website, with a ".notary" extension.
  - You're done! Anyone can use your notary by clicking on the link to your ".notary" file.
 

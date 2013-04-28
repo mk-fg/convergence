@@ -40,6 +40,7 @@ without system-wide installation (as per last step).
  - [Twisted](https://pypi.python.org/pypi/Twisted)
  - [pyOpenSSL](https://pypi.python.org/pypi/pyOpenSSL)
  - [M2Crypto](https://pypi.python.org/pypi/M2Crypto)
+ - (optional) [PyYAML](http://pyyaml.org/) - only if -c/--config option is used.
 
 
 ## Configuration
@@ -102,6 +103,60 @@ Here's a possibly-obsolete list it provides (as of 2013-04-27):
 	  Description:
 	    Verifier that always returns positive result and the same fingerprint as
 	    was passed to it. For testing purposes only.
+
+
+
+Configuration files
+--------------------
+
+Allow to specify all the parameters that are allowed on the command-line and
+extended [logging configuration](http://docs.python.org/library/logging.config.html).
+Multiple config files (e.g. `-c file1 -c file2`) are stacked (with
+[shipped one](https://github.com/mk-fg/convergence/blob/master/server/convergence/core.yaml)
+being the baseline) - values set in latter ones overriding the ones from former.
+
+For example:
+
+	notary:
+	  proxy_port: 8080
+	  tls_port: 8443
+	  interface: localhost
+	  cert: notary.crt
+	  cert_key: notary.key
+	  db: notary.db
+	  backend: test_positive
+
+Running `convergence -c example.yaml notary` will then start notary with all the
+parameters specified above (in the "example.yaml" file).
+
+As noted, config also can contain extended logging setup
+(see also [baseline config](https://github.com/mk-fg/convergence/blob/master/server/convergence/core.yaml)),
+for example:
+
+```yaml
+logging:
+  handlers:
+    # To be able to access verbose log on any problems
+    debug_logfile:
+      class: logging.handlers.RotatingFileHandler
+      filename: /var/log/convergence/debug.log
+      formatter: basic
+      encoding: utf-8
+      maxBytes: 5_242_880 # 5 MiB
+      backupCount: 2
+      level: DEBUG
+  loggers:
+    # Supress verbose output from a specific logger
+    convergence.verifier.perspective:
+      handlers: [console]
+      level: WARNING
+  root:
+    level: DEBUG
+    handlers: [console, debug_logfile]
+```
+
+Requires [PyYAML](http://pyyaml.org/) module to be installed (e.g. `pip install
+pyyaml` - it's optional, so not pulled-in by setup.py).
 
 
 

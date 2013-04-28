@@ -67,7 +67,9 @@ setup(
     include_package_data = True,
     zip_safe = False,
 
-    package_data = {'convergence.verifier': ['InfoNode.html']},
+    package_data = {
+        'convergence': ['core.yaml'],
+        'convergence.verifier': ['InfoNode.html'] },
     entry_points = {
         'console_scripts': ['convergence = convergence.core:main'],
         'convergence.verifier': list(

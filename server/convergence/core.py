@@ -27,7 +27,7 @@ USA
 
 
 from contextlib import contextmanager, closing
-from os.path import exists, dirname, realpath
+from os.path import exists, join, splitext, dirname, basename, realpath
 import os, sys, logging, pkg_resources
 
 
@@ -67,7 +67,6 @@ def install_reactor():
 
 
 def get_backend_list():
-    from os.path import join, dirname, basename
     from convergence import verifier
     import glob, importlib
 
@@ -137,6 +136,12 @@ def main(argv=None):
     import argparse
     parser = argparse.ArgumentParser(
         description='Convergence {} by Moxie Marlinspike.'.format(__version__))
+    parser.add_argument('-c', '--config',
+        action='append', metavar='path', default=list(),
+        help='Configuration files to process.'
+            ' Can be specified more than once.'
+            ' Values from the latter ones override values in the former.'
+            ' Available CLI options override the values in any config.')
     parser.add_argument('-v', '--verbose',
         action='store_true', help='Verbose operation mode (most logging from twisted).')
     parser.add_argument('--debug',
@@ -144,10 +149,12 @@ def main(argv=None):
     cmds = parser.add_subparsers(
         title='Supported operations (have their own suboptions as well)')
 
+    subcommands = dict()
     @contextmanager
     def subcommand(name, **kwz):
         cmd = cmds.add_parser(name, **kwz)
         cmd.set_defaults(call=name)
+        subcommands[name] = cmd
         yield cmd
 
     with subcommand('notary', help='Start notary daemon.') as cmd:
@@ -169,7 +176,7 @@ def main(argv=None):
                     ' -- these connections should be proxied to the same --tls-port instead.')
         cmd.add_argument('-i', '--interface', metavar='ip_or_hostname',
             help='Interface (IP address or hostname) to listen on for incoming connections (optional).')
-        cmd.add_argument('-c', '--cert', metavar='path', required=True, help='TLS certificate path.')
+        cmd.add_argument('-c', '--cert', metavar='path', help='TLS certificate path.')
         cmd.add_argument('-k', '--cert-key', metavar='path',
             help='TLS private key path. Not necessary if also contained in the --cert file.')
         cmd.add_argument('-d', '--db', metavar='path', default=default_db_path,
@@ -204,21 +211,42 @@ def main(argv=None):
         cmd.add_argument('--cert-expire', metavar='days', type=int, default=14600,
             help='Expiration period for generated cert in days (default: %(default)s).')
 
-    opts = parser.parse_args(argv if argv is not None else sys.argv[1:])
+    if argv is None: argv = sys.argv[1:]
+    opts = parser.parse_args(argv)
 
-    # This must be done before any other twisted-related stuff:
+    # This must be done before any other twisted-related stuff and imports
     if opts.call == 'notary': reactor = install_reactor()
 
-    # TODO: extended logging configuration
+
+    ## Configuration files (if any)
+    if opts.config:
+        from convergence import config
+        cfg = config.AttrDict.from_yaml(
+            '{}.yaml'.format(splitext(realpath(__file__))[0]) )
+        for k in opts.config: cfg.update_yaml(k)
+        # Set configuration-file options as new "defaults"
+        for k,v in (cfg.get(opts.call) or dict()).viewitems():
+            if hasattr(opts, k) and v is not None: setattr(opts, k, v)
+        # Rebase command-line options on top of these
+        parser.parse_args(argv, opts)
+    else: cfg = None
+
+
+    ## Logging
     from twisted.python import log as twisted_log
     if opts.debug: log = logging.DEBUG
     elif opts.verbose: log = logging.INFO
     else: log = logging.WARNING
-    logging.basicConfig( level=log,
-        format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
+    if not cfg:
+        logging.basicConfig( level=log,
+            datefmt='%Y-%m-%d %H:%M:%S',
+            format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
+    else: config.configure_logging(cfg.logging, log)
     twisted_log.PythonLoggingObserver().start()
     log = logging.getLogger('convergence.core')
 
+
+    ## Actions
     if opts.call == 'notary':
         if opts.tls_port_proxied is None and not opts.no_https:
             opts.tls_port_proxied = default_proxied_tls_port # stays disabled otherwise
@@ -246,6 +274,13 @@ def main(argv=None):
             print()
             if not opts.backend: parser.error('Backend name must be specified.')
             return
+
+        if opts.cert is None:
+            if not opts.no_https:
+                parser.error('Notary TLS certificate must be specified via -c/--cert option.')
+            if opts.cert_key is None:
+                parser.error( 'Option -k/--cert-key must be specified'
+                    ' (used to sign notary responses) even with --no-https .' )
 
         try: backend = backends[opts.backend]
         except KeyError:

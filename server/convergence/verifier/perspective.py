@@ -87,33 +87,37 @@ class NetworkPerspectiveVerifier(Verifier):
 
     def verify(self, host, port, fingerprint):
         deferred = defer.Deferred()
-        factory = CertificateFetcherClientFactory(deferred, host, port)
-        contextFactory = CertificateContextFactory(
+        factory_ctx = CertificateContextFactory(
             deferred, fingerprint, verify_ca='verify_ca' in self.flags,
             # Don't use SNI/matching for IP addresses
             hostname=host if not re.search(r'^(\d+\.){3}\d+$', host) else None )
+        factory = CertificateFetcherClientFactory(deferred, host, port, factory_ctx)
 
-        log.debug('Fetching certificate from: ' + host + ':' + str(port))
+        log.debug('Fetching certificate from: {}:{}'.format(host, port))
 
-        reactor.connectSSL(host, port, factory, contextFactory)
+        reactor.connectSSL(host, port, factory, factory_ctx)
         return deferred
 
 
 class CertificateFetcherClient(Protocol):
 
     def connectionMade(self):
-        log.debug('Connection made...')
+        log.debug('Connected to {}'.format(self.transport.getPeer()))
 
 
 class CertificateFetcherError(Exception): pass
 
-class CertificateFetcherClientFactory(ClientFactory):
+class CertificateFetcherClientFactory(ClientFactory, object):
 
     noisy = False
     protocol = CertificateFetcherClient
 
-    def __init__(self, deferred, host, port):
-        self.deferred, self.host, self.port = deferred, host, port
+    def __init__(self, deferred, host, port, ctx):
+        self.deferred, self.host, self.port, self.ctx = deferred, host, port, ctx
+
+    def buildProtocol(self, addr):
+        self.ctx.address = addr.host # for later verification
+        return super(CertificateFetcherClientFactory, self).buildProtocol(addr)
 
     def clientConnectionFailed(self, connector, reason):
         try:
@@ -146,41 +150,40 @@ def _dnsname_to_pat(dn):
             pats.append(frag.replace(r'\*', '[^.]*'))
     return re.compile(r'\A' + r'\.'.join(pats) + r'\Z', re.IGNORECASE)
 
-# The match_hostname() function from Python 3.2.2
-def match_hostname(x509, hostname):
-    '''Verify that *cert* (in decoded format as returned by
-            SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules
-            are mostly followed, but IP addresses are not accepted for *hostname*.
-        CertificateError is raised on failure. On success, the function returns nothing.'''
-    if not x509: raise ValueError('empty or no certificate')
-    dnsnames = list()
+def _addr_to_tuple(addr):
+    try: return map(int, addr.split('.'))
+    except ValueError: return None
+
+def match_x509(x509, hostname=None, address=None):
+    'match_hostname() function from Python 3.2.2, adapted to work with pyOpenSSL.'
+    if address:
+        if ':' in address: raise ValueError('IPv6 addresses ({}) are not supported'.format(address))
+        address = _addr_to_tuple(address)
+    patterns = list()
     for ext in xrange(x509.get_extension_count()):
         ext = x509.get_extension(ext)
         if ext.get_short_name() == 'subjectAltName':
             for val in str(ext).split(','):
-                if not val.strip().startswith('DNS:'): continue
-                val = val.strip()[4:]
-                if _dnsname_to_pat(val).match(hostname): return
-                dnsnames.append(val)
-    if not dnsnames:
-        # The subject is only checked when there is no dNSName entry in subjectAltName
+                val = val.strip()
+                if hostname and val.startswith('DNS:'):
+                    if _dnsname_to_pat(val[4:]).match(hostname): return
+                    patterns.append(val[4:])
+                if address and val.startswith('IP:'):
+                    if address == _addr_to_tuple(val[3:]): return
+                    patterns.append(val[3:])
+    if not patterns:
         val = x509.get_subject().commonName
-        if _dnsname_to_pat(val).match(hostname): return
-        dnsnames.append(val)
-    if len(dnsnames) > 1:
-        raise CertificateError(( 'hostname {!r} does'
-            ' not match either of {}' ).format(hostname, ', '.join(map(repr, dnsnames))))
-    elif len(dnsnames) == 1:
-        raise CertificateError(( 'hostname {!r} does'
-            ' not match {!r}' ).format(hostname, dnsnames[0]))
-    else:
-        raise CertificateError( 'no appropriate'
-            ' commonName or subjectAltName fields were found' )
+        if hostname and _dnsname_to_pat(val).match(hostname): return
+        if address and address == _addr_to_tuple(val): return
+        patterns.append(val)
+    raise CertificateError(( 'Hostname/address {!r}/{!r} does not'
+        ' match any of: {}' ).format(hostname, address, ', '.join(map(repr, patterns))))
 
 
 class CertificateContextFactory(ssl.ContextFactory):
 
     isClient = True
+    hostname = address = None
 
     def __init__(self, deferred, fingerprint, verify_ca, hostname=None):
         self.deferred, self.fingerprint = deferred, fingerprint
@@ -208,8 +211,8 @@ class CertificateContextFactory(ssl.ContextFactory):
                 if not self.verify_ca or preverify_ok else None
 
             if fingerprintSeen == self.fingerprint:
-                if self.verify_ca and self.hostname:
-                    try: match_hostname(x509, self.hostname)
+                if self.verify_ca and (self.hostname or self.address):
+                    try: match_x509(x509, self.hostname, self.address)
                     except CertificateError as err:
                         log.debug('Failed to match certificate against hostname: {}'.format(err))
                         fingerprintSeen = None # so that it won't get cached

@@ -165,6 +165,7 @@ var Convergence = {
   },
 
   onContentLoad: function(event) {
+    if (this.certificateStatus === null) return;
     var status = this.certificateStatus.getCurrentTabStatus();
     this.setToolTip(status);
   },

@@ -57,6 +57,15 @@ browser extension.
      combine network perspectives with an old-style CA-list verification (and
      whatever other backends).
 
+   - Enable TLS SNI in "perspective" verifier during handshake, so that host can
+     return appropriate cert for a hostname.
+
+         It is done in a hackish way at the very first
+         Context.set_info_callback() callback invocation.
+
+         For a more proper way see [twisted #5374](http://twistedmatrix.com/trac/ticket/5374)
+         (still unresolved at the moment of writing).
+
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.
 

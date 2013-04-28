@@ -83,7 +83,7 @@ CertificateStatus.prototype.getVerificationStatus = function(certificate) {
 
     for (var i=0;i<asArray.length;i++) {
       if (marker) {
-        encoded = String.fromCharCode(asArray[i]);
+        encoded += String.fromCharCode(asArray[i]);
       } else if (asArray[i] == 0x00) {
         marker = true;
       }

@@ -65,14 +65,14 @@ class TargetPage(resource.Resource):
     @defer.inlineCallbacks
     def updateCache(self, host, port, submittedFingerprint):
         try:
-            responseCode, fingerprint =\
+            code, fingerprint =\
                 yield self.verifier.verify(host, int(port), submittedFingerprint)
         except Exception as err:
             log.warn('Fetch certificate error: {}'.format(err))
             raise
 
         log.debug('Got fingerprint: {}'.format(fingerprint))
-        if fingerprint is None: defer.returnValue((responseCode, None))
+        if fingerprint is None: defer.returnValue((code, None))
         else:
             try:
                 recordRows = yield self.database.updateRecordsFor(host, port, fingerprint)
@@ -86,7 +86,9 @@ class TargetPage(resource.Resource):
         if self.isCacheMiss(recordRows, fingerprint):
             log.debug('Handling cache miss...')
             try: code, recordRows = yield self.updateCache(host, port, fingerprint)
-            except: self.sendErrorResponse(request, 503, 'Internal Error')
+            except Exception as err:
+                log.warn('Certificate-fetch handling error: {}'.format(err))
+                self.sendErrorResponse(request, 503, 'Internal Error')
             else: self.sendResponse(request, code, recordRows)
         else: self.sendResponse(request, 200, recordRows)
 

@@ -10,7 +10,7 @@ Setup
 --------------------
 
 
-## Installation
+### Installation
 
  - Install the dependencies (example for debian/ubuntu):
 
@@ -35,7 +35,7 @@ Setup
 Alternatively, "./convergence-cli" can be used right from the checkout tree
 without system-wide installation (as per last step).
 
-### Requirements
+##### Requirements
 
  - [Twisted](https://pypi.python.org/pypi/Twisted)
  - [pyOpenSSL](https://pypi.python.org/pypi/pyOpenSSL)
@@ -43,7 +43,7 @@ without system-wide installation (as per last step).
  - (optional) [PyYAML](http://pyyaml.org/) - only if -c/--config option is used.
 
 
-## Configuration
+### Configuration
 
  - Generate a key pair: `convergence gencert`
 
@@ -57,7 +57,7 @@ without system-wide installation (as per last step).
 ```
 
 
-## Publish
+### Publish
 
  - Generate a notary bundle: `convergence-bundle`
  - Publish the resulting file on your website, with a ".notary" extension.

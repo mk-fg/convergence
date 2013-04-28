@@ -66,6 +66,8 @@ browser extension.
          For a more proper way see [twisted #5374](http://twistedmatrix.com/trac/ticket/5374)
          (still unresolved at the moment of writing).
 
+   - Can be configured from YAML file, including python logging module configuration.
+
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.
 

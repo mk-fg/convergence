@@ -38,6 +38,10 @@ browser extension.
    - Supress unhandled non-critical JS errors here and there, mostly to keep JS
      console clean.
 
+   - TODO: Some certificates doesn't seem to work even as exceptions in the
+     client - probably name validation or something - work around that - it
+     should be always possible to access the site - no exceptions there.
+
    - TODO: Checkbox for option to always query enabled localhost notaries first.
 
    - TODO: Make hardcoded check timeouts configurable.

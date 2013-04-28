@@ -90,8 +90,8 @@ class NetworkPerspectiveVerifier(Verifier):
         factory = CertificateFetcherClientFactory(deferred, host, port)
         contextFactory = CertificateContextFactory(
             deferred, fingerprint, verify_ca='verify_ca' in self.flags,
-            # Don't use SNI for IP addresses
-            sni_hostname=host if not re.search(r'^(\d+\.){3}\d+$', host) else None )
+            # Don't use SNI/matching for IP addresses
+            hostname=host if not re.search(r'^(\d+\.){3}\d+$', host) else None )
 
         log.debug('Fetching certificate from: ' + host + ':' + str(port))
 
@@ -131,36 +131,95 @@ class CertificateFetcherClientFactory(ClientFactory):
             except: self.deferred.errback()
 
 
+class CertificateError(ValueError): pass
+
+def _dnsname_to_pat(dn):
+    pats = []
+    for frag in dn.split(r'.'):
+        if frag == '*':
+            # When '*' is a fragment by itself, it matches a non-empty dotless
+            # fragment.
+            pats.append('[^.]+')
+        else:
+            # Otherwise, '*' matches any dotless fragment.
+            frag = re.escape(frag)
+            pats.append(frag.replace(r'\*', '[^.]*'))
+    return re.compile(r'\A' + r'\.'.join(pats) + r'\Z', re.IGNORECASE)
+
+# The match_hostname() function from Python 3.2.2
+def match_hostname(x509, hostname):
+    '''Verify that *cert* (in decoded format as returned by
+            SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules
+            are mostly followed, but IP addresses are not accepted for *hostname*.
+        CertificateError is raised on failure. On success, the function returns nothing.'''
+    if not x509: raise ValueError('empty or no certificate')
+    dnsnames = list()
+    for ext in xrange(x509.get_extension_count()):
+        ext = x509.get_extension(ext)
+        if ext.get_short_name() == 'subjectAltName':
+            for val in str(ext).split(','):
+                if not val.strip().startswith('DNS:'): continue
+                val = val.strip()[4:]
+                if _dnsname_to_pat(val).match(hostname): return
+                dnsnames.append(val)
+    if not dnsnames:
+        # The subject is only checked when there is no dNSName entry in subjectAltName
+        val = x509.get_subject().commonName
+        if _dnsname_to_pat(val).match(hostname): return
+        dnsnames.append(val)
+    if len(dnsnames) > 1:
+        raise CertificateError(( 'hostname {!r} does'
+            ' not match either of {}' ).format(hostname, ', '.join(map(repr, dnsnames))))
+    elif len(dnsnames) == 1:
+        raise CertificateError(( 'hostname {!r} does'
+            ' not match {!r}' ).format(hostname, dnsnames[0]))
+    else:
+        raise CertificateError( 'no appropriate'
+            ' commonName or subjectAltName fields were found' )
+
+
 class CertificateContextFactory(ssl.ContextFactory):
 
     isClient = True
 
-    def __init__(self, deferred, fingerprint, verify_ca, sni_hostname=None):
+    def __init__(self, deferred, fingerprint, verify_ca, hostname=None):
         self.deferred, self.fingerprint = deferred, fingerprint
-        self.verify_ca, self.sni_hostname = verify_ca, sni_hostname
+        self.verify_ca, self.hostname, self.sni_sent = verify_ca, hostname, False
 
     def handshake_callback(self, conn, stage, errno):
-        if self.sni_hostname:
-            conn.set_tlsext_host_name(self.sni_hostname)
-            self.sni_hostname = None
+        if not self.sni_sent and self.hostname:
+            conn.set_tlsext_host_name(self.hostname)
+            self.sni_sent = True
 
     def getContext(self):
         ctx = Context(SSLv23_METHOD)
         ctx.load_verify_locations(ca_certs_pem, '/etc/ssl/certs')
         ctx.set_verify(VERIFY_PEER | VERIFY_FAIL_IF_NO_PEER_CERT, self.verifyCertificate)
         ctx.set_options(OP_NO_SSLv2)
-        if self.sni_hostname: ctx.set_info_callback(self.handshake_callback)
+        if self.hostname: ctx.set_info_callback(self.handshake_callback)
         return ctx
 
     def verifyCertificate(self, connection, x509, errno, depth, preverify_ok):
         if depth != 0: return True
         log.debug('Verifying certificate (ca check: {})'.format(preverify_ok))
 
-        fingerprintSeen = x509.digest('sha1')\
-            if not self.verify_ca or preverify_ok else None
-        if fingerprintSeen == self.fingerprint:
-            self.deferred.callback((200, fingerprintSeen))
-        else:
+        try:
+            fingerprintSeen = x509.digest('sha1')\
+                if not self.verify_ca or preverify_ok else None
+
+            if fingerprintSeen == self.fingerprint:
+                if self.verify_ca and self.hostname:
+                    try: match_hostname(x509, self.hostname)
+                    except CertificateError as err:
+                        log.debug('Failed to match certificate against hostname: {}'.format(err))
+                        fingerprintSeen = None # so that it won't get cached
+                        raise
+                self.deferred.callback((200, fingerprintSeen))
+
+            else:
+                raise CertificateError(fingerprintSeen)
+
+        except CertificateError:
             self.deferred.callback((409, fingerprintSeen))
 
         return False

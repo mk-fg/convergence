@@ -27,9 +27,14 @@ from OpenSSL.SSL import (
     Context, SSLv23_METHOD, TLSv1_METHOD,
     VERIFY_PEER, VERIFY_FAIL_IF_NO_PEER_CERT, OP_NO_SSLv2 )
 
-import re, logging
+import os, re, logging
 
 log = logging.getLogger(__name__)
+
+
+# It's not critical, but includes mozilla certs for major legit hosts like akamai
+ca_certs_pem = '/etc/ssl/certs/ca-certificates.crt'
+if not os.path.exists(ca_certs_pem): ca_certs_pem = None
 
 
 class NetworkPerspectiveVerifier(Verifier):
@@ -84,7 +89,9 @@ class NetworkPerspectiveVerifier(Verifier):
         deferred = defer.Deferred()
         factory = CertificateFetcherClientFactory(deferred, host, port)
         contextFactory = CertificateContextFactory(
-            deferred, fingerprint, verify_ca='verify_ca' in self.flags )
+            deferred, fingerprint, verify_ca='verify_ca' in self.flags,
+            # Don't use SNI for IP addresses
+            sni_hostname=host if not re.search(r'^(\d+\.){3}\d+$', host) else None )
 
         log.debug('Fetching certificate from: ' + host + ':' + str(port))
 
@@ -103,12 +110,10 @@ class CertificateFetcherError(Exception): pass
 class CertificateFetcherClientFactory(ClientFactory):
 
     noisy = False
+    protocol = CertificateFetcherClient
 
     def __init__(self, deferred, host, port):
         self.deferred, self.host, self.port = deferred, host, port
-
-    def buildProtocol(self, addr):
-        return CertificateFetcherClient()
 
     def clientConnectionFailed(self, connector, reason):
         try:
@@ -130,18 +135,26 @@ class CertificateContextFactory(ssl.ContextFactory):
 
     isClient = True
 
-    def __init__(self, deferred, fingerprint, verify_ca):
-        self.deferred, self.fingerprint, self.verify_ca = deferred, fingerprint, verify_ca
+    def __init__(self, deferred, fingerprint, verify_ca, sni_hostname=None):
+        self.deferred, self.fingerprint = deferred, fingerprint
+        self.verify_ca, self.sni_hostname = verify_ca, sni_hostname
+
+    def handshake_callback(self, conn, stage, errno):
+        if self.sni_hostname:
+            conn.set_tlsext_host_name(self.sni_hostname)
+            self.sni_hostname = None
 
     def getContext(self):
         ctx = Context(SSLv23_METHOD)
+        ctx.load_verify_locations(ca_certs_pem, '/etc/ssl/certs')
         ctx.set_verify(VERIFY_PEER | VERIFY_FAIL_IF_NO_PEER_CERT, self.verifyCertificate)
         ctx.set_options(OP_NO_SSLv2)
+        if self.sni_hostname: ctx.set_info_callback(self.handshake_callback)
         return ctx
 
     def verifyCertificate(self, connection, x509, errno, depth, preverify_ok):
         if depth != 0: return True
-        log.debug('Verifying certificate...')
+        log.debug('Verifying certificate (ca check: {})'.format(preverify_ok))
 
         fingerprintSeen = x509.digest('sha1')\
             if not self.verify_ca or preverify_ok else None

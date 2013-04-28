@@ -39,5 +39,5 @@ ConvergenceUtil.persistUrl = function(url, callback) {
     Components.interfaces.nsIWebBrowserPersist.PERSIST_FLAGS_BYPASS_CACHE;
 
 
-  wbp.saveURI(uri, null, null, null, null, temporaryFile);
+  wbp.saveURI(uri, null, null, null, null, temporaryFile, null);
 };

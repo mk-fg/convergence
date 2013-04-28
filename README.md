@@ -16,15 +16,15 @@ browser extension.
 
    - Should work with newer firefox versions.
 
+     - Merged fix from upstream [PR #170](https://github.com/moxie0/Convergence/pull/170).
+
      - Fixed major issue with extension hanging forever polling on connection to
        notary after receiving http response (bbdc538).
-
-         Upstream [PR #173](https://github.com/moxie0/Convergence/pull/173).
+       Upstream [PR #173](https://github.com/moxie0/Convergence/pull/173).
 
      - Minor issue with displaying cached fingerprint timestamps as NaN-NaN-NaN
        (816c74e).
-
-         Upstream [PR #174](https://github.com/moxie0/Convergence/pull/174).
+       Upstream [PR #174](https://github.com/moxie0/Convergence/pull/174).
 
    - Bumped plugin version, max ff version is 50.* and automatic upstream
      updates are disabled.

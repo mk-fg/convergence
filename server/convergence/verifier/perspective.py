@@ -130,7 +130,7 @@ class CertificateFetcherClientFactory(ClientFactory, object):
         log.debug('Connection lost')
 
         if not self.deferred.called:
-            log.debug('Lost before verification callback')
+            log.debug('Connection lost before verification callback')
             try: raise CertificateFetcherError('Connection lost')
             except: self.deferred.errback()
 

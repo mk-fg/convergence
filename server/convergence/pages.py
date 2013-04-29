@@ -47,11 +47,15 @@ class TargetPage(resource.Resource):
         self.verifier, self.privateKey = verifier, privateKey
 
     def sendErrorResponse(self, request, code, message):
+        if request._disconnected: return
         request.setResponseCode(code)
         request.write('<html><body>' + message + '</body></html>')
         request.finish()
 
     def sendResponse(self, request, code, recordRows):
+        if request._disconnected:
+            log.debug('Lost connection to client before response')
+            return
         response = NotaryResponse(request, self.privateKey)
         response.sendResponse(code, recordRows)
 

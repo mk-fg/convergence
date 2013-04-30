@@ -78,10 +78,10 @@ class TargetPage(resource.Resource):
         return True
 
     @defer.inlineCallbacks
-    def updateCache(self, request, host, port, submittedFingerprint):
+    def updateCache(self, request, host, port, address, submittedFingerprint):
         try:
-            code, fingerprint =\
-                yield self.verifier.verify(host, int(port), submittedFingerprint, request.log)
+            code, fingerprint = yield self.verifier.verify(
+                host, int(port), address, submittedFingerprint, request.log )
         except Exception as err:
             request.log.warn('Fetch certificate error: {}'.format(err))
             raise
@@ -97,10 +97,11 @@ class TargetPage(resource.Resource):
             else: defer.returnValue((code, recordRows))
 
     @defer.inlineCallbacks
-    def getRecordsComplete(self, recordRows, request, host, port, fingerprint):
+    def getRecordsComplete(self, recordRows, request, host, port, address, fingerprint):
         if self.isCacheMiss(recordRows, fingerprint):
             request.log.debug('Handling cache miss...')
-            try: code, recordRows = yield self.updateCache(request, host, port, fingerprint)
+            try:
+                code, recordRows = yield self.updateCache(request, host, port, address, fingerprint)
             except Exception as err:
                 request.log.warn('Certificate-fetch handling error: {}'.format(err))
                 self.sendErrorResponse(request, 503, 'Internal Error')
@@ -122,24 +123,25 @@ class TargetPage(resource.Resource):
             self.sendErrorResponse(request, 400, 'You must specify a target.')
             return
 
-        target, fingerprint = request.postpath[0], None
-
-        if '+' not in target:
+        if '+' not in request.postpath[0]:
             self.sendErrorResponse(request, 400, 'Destination port must be specified.')
             return
 
-        host, port = target.split('+')
+        host, port = request.postpath[0].split('+')
+        fingerprint, address = None,\
+            request.postpath[1] if len(request.postpath) > 1 else None
 
         if request.method == 'POST':
             if 'fingerprint' not in request.args:
                 self.sendErrorResponse(request, 400, 'Fingerprint must be specified.')
                 return
-            else:
-                fingerprint = request.args['fingerprint'][0]
-                request.log.debug('Fingerprint: {}'.format(fingerprint))
+            fingerprint = request.args['fingerprint'][0]
+
+        request.log.debug( 'Checking {}:{} (ip: {}) against {}'\
+            .format(host, port, address or 'any', fingerprint) )
 
         deferred = self.database.getRecordsFor(host, port)
-        deferred.addCallback(self.getRecordsComplete, request, host, port, fingerprint)
+        deferred.addCallback(self.getRecordsComplete, request, host, port, address, fingerprint)
         deferred.addErrback(self.getRecordsError, request)
 
         return server.NOT_DONE_YET

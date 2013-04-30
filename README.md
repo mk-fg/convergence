@@ -38,14 +38,16 @@ browser extension.
    - Supress unhandled non-critical JS errors here and there, mostly to keep JS
      console clean.
 
-   - TODO: Provide IP addresses for queried hostnames, as they're bound to
-     resolve differently from time to time otherwise.
+   - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
+     (hostname, port), because of cdn's and round-robin-dns mirrors -
+     server-side as well, though there can be several signatures for one
+     hostname there.
 
    - TODO: Some certificates doesn't seem to work even as exceptions in the
      client - probably name validation or something - work around that - it
      should be always possible to access the site - no exceptions there.
 
-   - TODO: Checkbox for option to always query enabled localhost notaries first.
+   - TODO: "Always query this notary" checkbox or priority tiers.
 
    - TODO: Make hardcoded check timeouts configurable.
 

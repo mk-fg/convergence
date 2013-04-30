@@ -85,7 +85,7 @@ class NetworkPerspectiveVerifier(Verifier):
                 else: self.flags.add(flag)
         log.debug('Enabled options: {}'.format(', '.join(self.flags)))
 
-    def verify(self, host, port, fingerprint, log):
+    def verify(self, host, port, address, fingerprint, log):
         deferred = defer.Deferred()
         factory_ctx = CertificateContextFactory(
             deferred, fingerprint, log=log, verify_ca='verify_ca' in self.flags,
@@ -95,7 +95,7 @@ class NetworkPerspectiveVerifier(Verifier):
 
         log.debug('Fetching certificate from: {}:{}'.format(host, port))
 
-        reactor.connectSSL(host, port, factory, factory_ctx)
+        reactor.connectSSL(address or host, port, factory, factory_ctx)
         return deferred
 
 

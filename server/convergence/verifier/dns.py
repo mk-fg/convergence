@@ -49,7 +49,7 @@ class DNSVerifier(Verifier):
         log.debug('Catalog resolution failure: ' + str(error))
         return (409, None)
 
-    def verify(self, host, port, fingerprint, log):
+    def verify(self, host, port, address, fingerprint, log):
         formatted = ''.join(fingerprint.split(':')).lower()
         deferred = twisted.names.client.lookupText('%s.%s' % (formatted, self.host))
 

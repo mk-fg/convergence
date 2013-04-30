@@ -38,6 +38,9 @@ browser extension.
    - Supress unhandled non-critical JS errors here and there, mostly to keep JS
      console clean.
 
+   - TODO: Provide IP addresses for queried hostnames, as they're bound to
+     resolve differently from time to time otherwise.
+
    - TODO: Some certificates doesn't seem to work even as exceptions in the
      client - probably name validation or something - work around that - it
      should be always possible to access the site - no exceptions there.

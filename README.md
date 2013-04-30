@@ -38,6 +38,10 @@ browser extension.
    - Supress unhandled non-critical JS errors here and there, mostly to keep JS
      console clean.
 
+   - Send IP along with hostname (for e.g. SNI and cert validation) and port,
+     because same name can be resolved to different hosts in case of CDNs or
+     round-robin-dns mirrors, which can have unrelated certificates.
+
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
      (hostname, port), because of cdn's and round-robin-dns mirrors -
      server-side as well, though there can be several signatures for one
@@ -92,6 +96,14 @@ browser extension.
          (still unresolved at the moment of writing).
 
    - Can be configured from YAML file, including python logging module configuration.
+
+   - Pass IP address to verifiers along with hostname, if provided (see
+     corresponding send feature in client for rationale).
+
+   - Batch same-target requests arriving at the same time (lot of static content
+     from subdomain, for instance), returning same response to all of them,
+     instead of running a separate check (and e.g. connection) for each one of
+     them.
 
    - TODO: [CrossBear](https://pki.net.in.tum.de/) verifier via dns-txt they
      provide.

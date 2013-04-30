@@ -56,19 +56,39 @@ class TargetPage(resource.Resource):
     def __init__(self, databaseConnection, privateKey, verifier):
         self.database = FingerprintDatabase(databaseConnection)
         self.verifier, self.privateKey = verifier, privateKey
+        self.request_hash = dict()
 
+
+    def _check_request_hash(func):
+        'Duplicate response on check requests for the same target.'
+        def _send(self, request, code, *args, **kws):
+            requests = [request] if not request.key\
+                else self.request_hash.pop(request.key)
+            for req in requests:
+                if req is not request:
+                    req.log.debug( 'Cloning response'
+                        ' (code: {}) from parallel request'.format(code) )
+                func(self, req, code, *args, **kws)
+        return _send
+
+    @_check_request_hash
     def sendErrorResponse(self, request, code, message):
         if request._disconnected: return
         request.setResponseCode(code)
         request.write('<html><body>' + message + '</body></html>')
         request.finish()
 
+    @_check_request_hash
     def sendResponse(self, request, code, recordRows):
         if request._disconnected:
             request.log.debug('Lost connection to client before response')
             return
+        # TODO: cache these in _check_request_hash as well
         response = NotaryResponse(request, self.privateKey)
         response.sendResponse(code, recordRows)
+
+    del _check_request_hash
+
 
     def isCacheMiss(self, recordRows, fingerprint):
         if not recordRows: return True
@@ -113,7 +133,7 @@ class TargetPage(resource.Resource):
         self.sendErrorResponse(request, 503, 'Error retrieving records.')
 
     def render(self, request):
-        request.log = TaggedLogger(log)
+        request.key, request.log = None, TaggedLogger(log)
 
         if request.method != 'POST' and request.method != 'GET':
             self.sendErrorResponse(request, 405, 'Unsupported method.')
@@ -140,9 +160,15 @@ class TargetPage(resource.Resource):
         request.log.debug( 'Checking {}:{} (ip: {}) against {}'\
             .format(host, port, address or 'any', fingerprint) )
 
-        deferred = self.database.getRecordsFor(host, port)
-        deferred.addCallback(self.getRecordsComplete, request, host, port, address, fingerprint)
-        deferred.addErrback(self.getRecordsError, request)
+        # Group same-target requests arriving at the same time
+        request.key = host, port, address, fingerprint
+        if request.key in self.request_hash:
+            self.request_hash[request.key].add(request)
+        else:
+            self.request_hash[request.key] = {request}
+            deferred = self.database.getRecordsFor(host, port)
+            deferred.addCallback(self.getRecordsComplete, request, host, port, address, fingerprint)
+            deferred.addErrback(self.getRecordsError, request)
 
         return server.NOT_DONE_YET
 

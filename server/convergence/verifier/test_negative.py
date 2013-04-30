@@ -14,7 +14,7 @@ class AlwaysFalseVerifier(Verifier):
 
     description = 'Verifier that always returns negative result. For testing purposes only.'
 
-    def verify(self, host, port, fingerprint):
+    def verify(self, host, port, fingerprint, log):
         return defer.succeed((409, None))
 
 

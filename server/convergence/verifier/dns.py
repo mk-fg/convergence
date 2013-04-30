@@ -41,20 +41,20 @@ class DNSVerifier(Verifier):
         super(DNSVerifier, self).__init__()
         self.host = host
 
-    def _dnsLookupComplete(self, result, fingerprint):
+    def _dnsLookupComplete(self, result, fingerprint, log):
         log.debug('Catalog result: ' + str(result[0][0].payload.data[0]))
         return (200, fingerprint)
 
-    def _dnsLookupError(self, error):
+    def _dnsLookupError(self, error, log):
         log.debug('Catalog resolution failure: ' + str(error))
         return (409, None)
 
-    def verify(self, host, port, fingerprint):
+    def verify(self, host, port, fingerprint, log):
         formatted = ''.join(fingerprint.split(':')).lower()
         deferred = twisted.names.client.lookupText('%s.%s' % (formatted, self.host))
 
-        deferred.addCallback(self._dnsLookupComplete, fingerprint)
-        deferred.addErrback(self._dnsLookupError)
+        deferred.addCallback(self._dnsLookupComplete, fingerprint, log)
+        deferred.addErrback(self._dnsLookupError, log)
 
         return deferred
 

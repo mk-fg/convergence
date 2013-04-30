@@ -15,7 +15,7 @@ class AlwaysTrueVerifier(Verifier):
     description = 'Verifier that always returns positive result'\
         ' and the same fingerprint as was passed to it. For testing purposes only.'
 
-    def verify(self, host, port, fingerprint):
+    def verify(self, host, port, fingerprint, log):
         return defer.succeed((200, fingerprint))
 
 

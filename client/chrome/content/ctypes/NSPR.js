@@ -44,16 +44,16 @@ NSPR.initialize = function(nsprPath) {
   NSPR.types = new Object();
 
   NSPR.types.PRSocketOptionData = ctypes.StructType('PRSocketOptionData',
-                                                   [{'option' : ctypes.int},
+                                                    [{'option' : ctypes.int},
                                                     {'value' : ctypes.int}]);
 
 
   NSPR.types.PRTimeParameters = ctypes.StructType('PRTimeParameters',
-                                             [{'tp_gmt_offset' : ctypes.int32_t},
+                                              [{'tp_gmt_offset' : ctypes.int32_t},
                                             {'tp_dst_offset' : ctypes.int32_t}]);
 
   NSPR.types.PRExplodedTime = ctypes.StructType('PRExplodedTime',
-                                           [{'tm_usec' : ctypes.int32_t},
+                                            [{'tm_usec' : ctypes.int32_t},
                                         {'tm_sec' : ctypes.int32_t},
                                         {'tm_min' : ctypes.int32_t},
                                         {'tm_hour' : ctypes.int32_t},
@@ -72,10 +72,10 @@ NSPR.initialize = function(nsprPath) {
 
   NSPR.types.PRHostEnt = ctypes.StructType('PRHostEnt',
                                 [{ 'h_name'      : ctypes.char.ptr                 },
-                                 { 'h_aliases'   : ctypes.char.ptr.ptr             },
-                                 { 'h_addrtype'  : ctypes.int                      },
-                                 { 'h_length'    : ctypes.int                      },
-                                 { 'h_addr_list' : ctypes.uint8_t.array(4).ptr.ptr }]);
+                                  { 'h_aliases'   : ctypes.char.ptr.ptr             },
+                                  { 'h_addrtype'  : ctypes.int                      },
+                                  { 'h_length'    : ctypes.int                      },
+                                  { 'h_addr_list' : ctypes.uint8_t.array(4).ptr.ptr }]);
 
 
   NSPR.types.PRLock = ctypes.StructType('PRLock');
@@ -85,15 +85,15 @@ NSPR.initialize = function(nsprPath) {
   NSPR.types.PRTimeParamFn = ctypes.FunctionType(ctypes.default_abi, NSPR.types.PRTimeParameters, [NSPR.types.PRExplodedTime.ptr]);
 
   NSPR.types.PRPollDesc = ctypes.StructType('PRPollDesc',
-                                           [{'fd' : NSPR.types.PRFileDesc.ptr},
+                                            [{'fd' : NSPR.types.PRFileDesc.ptr},
                                             {'in_flags' : ctypes.int16_t},
                                             {'out_flags' : ctypes.int16_t}]);
 
   NSPR.types.PRNetAddr = ctypes.StructType('PRNetAddr',
                                   [{'family': ctypes.uint16_t},
-                                   {'port': ctypes.uint16_t},
-                                   {'ip': ctypes.uint32_t},
-                                   {'pad' : ctypes.char.array(8)}]);
+                                    {'port': ctypes.uint16_t},
+                                    {'ip': ctypes.uint32_t},
+                                    {'pad' : ctypes.char.array(8)}]);
 
   NSPR.types.PRAddrInfo = ctypes.StructType('PRAddrInfo');
 
@@ -134,6 +134,18 @@ NSPR.initialize = function(nsprPath) {
     buffer : ctypes.ArrayType(ctypes.char),
     unsigned_buffer : ctypes.ArrayType(ctypes.unsigned_char),
 
+    // libc helper
+    inet_ntoa : sharedLib.declare('inet_ntoa',
+                                  ctypes.default_abi,
+                                  ctypes.char.ptr,
+                                  ctypes.uint32_t),
+
+    // libc helper
+    inet_aton : sharedLib.declare('inet_aton',
+                                  ctypes.default_abi,
+                                  ctypes.uint32_t,
+                                  ctypes.char.ptr),
+
     PR_NewTCPSocketPair : sharedLib.declare('PR_NewTCPSocketPair',
                                             ctypes.default_abi,
                                             ctypes.int,
@@ -156,8 +168,8 @@ NSPR.initialize = function(nsprPath) {
                                       NSPR.types.PRFileDesc.ptr.ptr),
 
     PR_NewPollableEvent :  sharedLib.declare('PR_NewPollableEvent',
-                                             ctypes.default_abi,
-                                             NSPR.types.PRFileDesc.ptr),
+                                              ctypes.default_abi,
+                                              NSPR.types.PRFileDesc.ptr),
 
     PR_SetPollableEvent : sharedLib.declare('PR_SetPollableEvent',
                                             ctypes.default_abi,
@@ -165,10 +177,10 @@ NSPR.initialize = function(nsprPath) {
                                             NSPR.types.PRFileDesc.ptr),
 
     PR_GMTParameters : sharedLib.declare('PR_GMTParameters',
-                                         NSPR.types.PRTimeParamFn.ptr),
-                                             // ctypes.default_abi,
-                                             // PRTimeParameters,
-                                             // PRExplodedTime.ptr),
+                                          NSPR.types.PRTimeParamFn.ptr),
+                                              // ctypes.default_abi,
+                                              // PRTimeParameters,
+                                              // PRExplodedTime.ptr),
 
     PR_GetError : sharedLib.declare('PR_GetError',
                                     ctypes.default_abi,
@@ -180,14 +192,14 @@ NSPR.initialize = function(nsprPath) {
                                             NSPR.types.PRPollDesc.ptr),
 
     PR_ConnectContinue : sharedLib.declare('PR_ConnectContinue',
-                                           ctypes.default_abi,
-                                           ctypes.int,
-                                           NSPR.types.PRFileDesc.ptr,
-                                           ctypes.int16_t),
+                                            ctypes.default_abi,
+                                            ctypes.int,
+                                            NSPR.types.PRFileDesc.ptr,
+                                            ctypes.int16_t),
 
     PR_Now : sharedLib.declare('PR_Now',
-                                   ctypes.default_abi,
-                                   ctypes.int64_t),
+                                    ctypes.default_abi,
+                                    ctypes.int64_t),
 
     PR_ExplodeTime : sharedLib.declare('PR_ExplodeTime',
                                           ctypes.default_abi,
@@ -197,9 +209,9 @@ NSPR.initialize = function(nsprPath) {
                                           NSPR.types.PRExplodedTime.ptr),
 
     PR_ImplodeTime : sharedLib.declare('PR_ImplodeTime',
-                                           ctypes.default_abi,
-                                           ctypes.int64_t,
-                                           NSPR.types.PRExplodedTime.ptr),
+                                            ctypes.default_abi,
+                                            ctypes.int64_t,
+                                            NSPR.types.PRExplodedTime.ptr),
 
     PR_GetRandomNoise : sharedLib.declare('PR_GetRandomNoise',
                                               ctypes.default_abi,
@@ -212,8 +224,8 @@ NSPR.initialize = function(nsprPath) {
                                     ctypes.int),
 
     PR_NewLock : sharedLib.declare('PR_NewLock',
-                             ctypes.default_abi,
-                             ctypes.void_t),
+                              ctypes.default_abi,
+                              ctypes.void_t),
 
     PR_Lock : sharedLib.declare('PR_Lock',
                           ctypes.default_abi,
@@ -250,27 +262,27 @@ NSPR.initialize = function(nsprPath) {
                                 NSPR.types.PRNetAddr.ptr),
 
     PR_GetHostByName : sharedLib.declare('PR_GetHostByName',
-                                         ctypes.default_abi,
-                                         ctypes.int,
-                                         ctypes.char.ptr,
-                                         ctypes.char.ptr,
-                                         ctypes.int,
-                                         NSPR.types.PRHostEnt.ptr),
+                                          ctypes.default_abi,
+                                          ctypes.int,
+                                          ctypes.char.ptr,
+                                          ctypes.char.ptr,
+                                          ctypes.int,
+                                          NSPR.types.PRHostEnt.ptr),
 
     PR_GetAddrInfoByName : sharedLib.declare('PR_GetAddrInfoByName',
-                                             ctypes.default_abi,
-                                             NSPR.types.PRAddrInfo.ptr,
-                                             ctypes.char.ptr,
-                                             ctypes.uint16_t,
-                                             ctypes.int),
+                                              ctypes.default_abi,
+                                              NSPR.types.PRAddrInfo.ptr,
+                                              ctypes.char.ptr,
+                                              ctypes.uint16_t,
+                                              ctypes.int),
 
     PR_EnumerateAddrInfo : sharedLib.declare('PR_EnumerateAddrInfo',
-                                             ctypes.default_abi,
-                                             ctypes.voidptr_t,
-                                             ctypes.voidptr_t,
-                                             NSPR.types.PRAddrInfo.ptr,
-                                             ctypes.uint16_t,
-                                             NSPR.types.PRNetAddr.ptr),
+                                              ctypes.default_abi,
+                                              ctypes.voidptr_t,
+                                              ctypes.voidptr_t,
+                                              NSPR.types.PRAddrInfo.ptr,
+                                              ctypes.uint16_t,
+                                              NSPR.types.PRNetAddr.ptr),
 
     PR_FreeAddrInfo : sharedLib.declare('PR_FreeAddrInfo',
                                         ctypes.default_abi,
@@ -286,49 +298,49 @@ NSPR.initialize = function(nsprPath) {
                                             NSPR.types.PRNetAddr.ptr),
 
     PR_ntohs : sharedLib.declare('PR_ntohs',
-                                 ctypes.default_abi,
-                                 ctypes.uint16_t,
-                                 ctypes.uint16_t),
+                                  ctypes.default_abi,
+                                  ctypes.uint16_t,
+                                  ctypes.uint16_t),
 
     PR_GetSockName : sharedLib.declare('PR_GetSockName',
-                                       ctypes.default_abi,
-                                       ctypes.int32_t,
-                                       NSPR.types.PRFileDesc.ptr,
-                                       NSPR.types.PRNetAddr.ptr),
+                                        ctypes.default_abi,
+                                        ctypes.int32_t,
+                                        NSPR.types.PRFileDesc.ptr,
+                                        NSPR.types.PRNetAddr.ptr),
 
     PR_InitializeNetAddr : sharedLib.declare('PR_InitializeNetAddr',
-                                             ctypes.default_abi,
-                                             ctypes.int32_t,
-                                             ctypes.int32_t,
-                                             ctypes.uint16_t,
-                                             NSPR.types.PRNetAddr.ptr),
+                                              ctypes.default_abi,
+                                              ctypes.int32_t,
+                                              ctypes.int32_t,
+                                              ctypes.uint16_t,
+                                              NSPR.types.PRNetAddr.ptr),
 
     PR_NewTCPSocket : sharedLib.declare('PR_NewTCPSocket',
                                         ctypes.default_abi,
                                         NSPR.types.PRFileDesc.ptr),
 
     PR_Connect : sharedLib.declare('PR_Connect',
-                                   ctypes.default_abi,
-                                   ctypes.int32_t,
-                                   NSPR.types.PRFileDesc.ptr,
-                                   NSPR.types.PRNetAddr.ptr,
-                                   ctypes.uint32_t),
+                                    ctypes.default_abi,
+                                    ctypes.int32_t,
+                                    NSPR.types.PRFileDesc.ptr,
+                                    NSPR.types.PRNetAddr.ptr,
+                                    ctypes.uint32_t),
 
     PR_SecondsToInterval : sharedLib.declare('PR_SecondsToInterval',
-                                             ctypes.default_abi,
-                                             ctypes.uint32_t,
-                                             ctypes.uint32_t),
+                                              ctypes.default_abi,
+                                              ctypes.uint32_t,
+                                              ctypes.uint32_t),
 
     PR_OpenTCPSocket : sharedLib.declare('PR_OpenTCPSocket', // symbol name
-                                   ctypes.default_abi, // cdecl calling convention
-                                   NSPR.types.PRFileDesc.ptr, // return (PRFileDesc*)
-                                   ctypes.int32_t), // first arg
+                                    ctypes.default_abi, // cdecl calling convention
+                                    NSPR.types.PRFileDesc.ptr, // return (PRFileDesc*)
+                                    ctypes.int32_t), // first arg
 
     PR_SetSocketOption : sharedLib.declare('PR_SetSocketOption',
-                                     ctypes.default_abi,
-                                     ctypes.int32_t,
-                                     NSPR.types.PRFileDesc.ptr,
-                                     NSPR.types.PRSocketOptionData.ptr),
+                                      ctypes.default_abi,
+                                      ctypes.int32_t,
+                                      NSPR.types.PRFileDesc.ptr,
+                                      NSPR.types.PRSocketOptionData.ptr),
 
     PR_Bind : sharedLib.declare('PR_Bind',
                           ctypes.default_abi,
@@ -350,14 +362,14 @@ NSPR.initialize = function(nsprPath) {
                             ctypes.uint32_t), // timeout interval
 
     PR_Close : sharedLib.declare('PR_Close',
-                           ctypes.default_abi,
-                           ctypes.int32_t,
-                           NSPR.types.PRFileDesc.ptr),
+                            ctypes.default_abi,
+                            ctypes.int32_t,
+                            NSPR.types.PRFileDesc.ptr),
 
     PR_Available : sharedLib.declare('PR_Available',
-                                     ctypes.default_abi,
-                                     ctypes.int32_t,
-                                     NSPR.types.PRFileDesc.ptr),
+                                      ctypes.default_abi,
+                                      ctypes.int32_t,
+                                      NSPR.types.PRFileDesc.ptr),
 
     PR_Poll : sharedLib.declare('PR_Poll',
                                 ctypes.default_abi,
@@ -374,11 +386,11 @@ NSPR.initialize = function(nsprPath) {
                                 ctypes.int32_t),
 
     PR_Write : sharedLib.declare('PR_Write',
-                                 ctypes.default_abi,
-                                 ctypes.int32_t,
-                                 NSPR.types.PRFileDesc.ptr,
-                                 ctypes.voidptr_t,
-                                 ctypes.int32_t),
+                                  ctypes.default_abi,
+                                  ctypes.int32_t,
+                                  NSPR.types.PRFileDesc.ptr,
+                                  ctypes.voidptr_t,
+                                  ctypes.int32_t),
 
     PR_Recv : sharedLib.declare('PR_Recv',
                           ctypes.default_abi,

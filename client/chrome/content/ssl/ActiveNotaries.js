@@ -65,7 +65,7 @@ ActiveNotaries.prototype.checkNotaryValidity = function(host, port, certificate)
   return certificate.sha1 == notaryFingerprint;
 };
 
-ActiveNotaries.prototype.checkHostValidity = function(host, port, certificate) {
+ActiveNotaries.prototype.checkHostValidity = function(host, port, ip, certificate) {
   dump('Checking host validity...\n');
   var target = host + ':' + port;
   var results = this.buildCheckNotaries();
@@ -83,7 +83,7 @@ ActiveNotaries.prototype.checkHostValidity = function(host, port, certificate) {
 
   for (var i in checkNotaries) {
     dump('Checking checknotary: ' + i + '\n');
-    var notaryResponse = checkNotaries[i].checkValidity(host, port, certificate, bounceNotary);
+    var notaryResponse = checkNotaries[i].checkValidity(host, port, ip, certificate, bounceNotary);
 
     if (notaryResponse == ConvergenceResponseStatus.VERIFICATION_SUCCESS) {
       successCount++;
@@ -206,10 +206,10 @@ ActiveNotaries.prototype.isNotary = function(host, port) {
   return this.getNotary(host, port) != null;
 };
 
-ActiveNotaries.prototype.checkValidity = function(host, port, certificate) {
+ActiveNotaries.prototype.checkValidity = function(host, port, ip, certificate) {
   if (this.isNotary(host, port)) {
     return this.checkNotaryValidity(host, port, certificate);
   } else {
-    return this.checkHostValidity(host, port, certificate);
+    return this.checkHostValidity(host, port, ip, certificate);
   }
 };

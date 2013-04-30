@@ -61,7 +61,7 @@ function sendClientResponse(localSocket, certificateManager, certificateInfo) {
 };
 
 function checkCertificateValidity(
-  certificateCache, activeNotaries, host, port,
+  certificateCache, activeNotaries, host, port, ip,
   certificateInfo, privatePkiExempt)
 {
   var target = host + ':' + port;
@@ -89,7 +89,7 @@ function checkCertificateValidity(
         'status' : ConvergenceResponseStatus.VERIFICATION_SUCCESS }] };
 
   dump('Not cached, checking notaries: ' + certificateInfo.sha1 + '\n');
-  var results = activeNotaries.checkValidity(host, port, certificateInfo);
+  var results = activeNotaries.checkValidity(host, port, ip, certificateInfo);
 
   if (results['status'] == true) {
     dump('Caching notary result: ' + certificateInfo.sha1 + '\n');
@@ -126,7 +126,7 @@ onmessage = function(event) {
 
     var results = this.checkCertificateValidity(
       certificateCache, activeNotaries,
-      destination.host, destination.port,
+      destination.host, destination.port, targetSocket.ip,
       certificateInfo, event.data.settings['privatePkiExempt'] );
 
     if (results['status'] == false) {

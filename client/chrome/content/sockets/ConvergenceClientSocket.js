@@ -46,6 +46,7 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
     NSPR.lib.PR_IpAddrNull, NSPR.lib.PR_AF_INET,
     proxy == null ? port : proxy.port, netAddress );
 
+  this.ip = NSPR.lib.inet_ntoa(netAddress.contents.ip).readString();
   this.fd = NSPR.lib.PR_OpenTCPSocket(NSPR.lib.PR_AF_INET);
 
   if (this.fd == null) {

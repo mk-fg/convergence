@@ -130,8 +130,8 @@ Notary.prototype.makeSSLConnection = function(proxy) {
 };
 
 
-Notary.prototype.sendRequest = function(notarySocket, host, port, certificate) {
-  var requestBuilder = new HttpRequestBuilder(host, port, certificate.sha1);
+Notary.prototype.sendRequest = function(notarySocket, host, port, ip, certificate) {
+  var requestBuilder = new HttpRequestBuilder(host, port, ip, certificate.sha1);
   var request = requestBuilder.buildRequest();
 
   dump('Sending request: ' + request + '\n');
@@ -161,7 +161,7 @@ Notary.prototype.checkFingerprintList = function(response, certificate) {
   return ConvergenceResponseStatus.VERIFICATION_FAILURE;
 };
 
-Notary.prototype.checkValidity = function(host, port, certificate, proxy) {
+Notary.prototype.checkValidity = function(host, port, ip, certificate, proxy) {
   var notarySocket = null;
 
   try {
@@ -172,7 +172,7 @@ Notary.prototype.checkValidity = function(host, port, certificate, proxy) {
       return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
     }
 
-    this.sendRequest(notarySocket, host, port, certificate);
+    this.sendRequest(notarySocket, host, port, ip, certificate);
     var response = this.readResponse(notarySocket);
 
     switch (response.getResponseCode()) {

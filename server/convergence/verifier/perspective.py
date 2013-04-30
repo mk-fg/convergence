@@ -85,13 +85,13 @@ class NetworkPerspectiveVerifier(Verifier):
                 else: self.flags.add(flag)
         log.debug('Enabled options: {}'.format(', '.join(self.flags)))
 
-    def verify(self, host, port, fingerprint):
+    def verify(self, host, port, fingerprint, log):
         deferred = defer.Deferred()
         factory_ctx = CertificateContextFactory(
-            deferred, fingerprint, verify_ca='verify_ca' in self.flags,
+            deferred, fingerprint, log=log, verify_ca='verify_ca' in self.flags,
             # Don't use SNI/matching for IP addresses
             hostname=host if not re.search(r'^(\d+\.){3}\d+$', host) else None )
-        factory = CertificateFetcherClientFactory(deferred, host, port, factory_ctx)
+        factory = CertificateFetcherClientFactory(deferred, host, port, factory_ctx, log)
 
         log.debug('Fetching certificate from: {}:{}'.format(host, port))
 
@@ -102,7 +102,7 @@ class NetworkPerspectiveVerifier(Verifier):
 class CertificateFetcherClient(Protocol):
 
     def connectionMade(self):
-        log.debug('Connected to {}'.format(self.transport.getPeer()))
+        self.log.debug('Connected to {}'.format(self.transport.getPeer()))
 
 
 class CertificateFetcherError(Exception): pass
@@ -112,12 +112,15 @@ class CertificateFetcherClientFactory(ClientFactory, object):
     noisy = False
     protocol = CertificateFetcherClient
 
-    def __init__(self, deferred, host, port, ctx):
-        self.deferred, self.host, self.port, self.ctx = deferred, host, port, ctx
+    def __init__(self, deferred, host, port, ctx, log):
+        self.deferred, self.host, self.port = deferred, host, port
+        self.ctx, self.log = ctx, log
 
     def buildProtocol(self, addr):
         self.ctx.address = addr.host # for later verification
-        return super(CertificateFetcherClientFactory, self).buildProtocol(addr)
+        p = super(CertificateFetcherClientFactory, self).buildProtocol(addr)
+        p.log = self.log
+        return p
 
     def clientConnectionFailed(self, connector, reason):
         try:
@@ -127,10 +130,10 @@ class CertificateFetcherClientFactory(ClientFactory, object):
         except: self.deferred.errback()
 
     def clientConnectionLost(self, connector, reason):
-        log.debug('Connection lost')
+        self.log.debug('Connection lost')
 
         if not self.deferred.called:
-            log.debug('Connection lost before verification callback')
+            self.log.debug('Connection lost before verification callback')
             try: raise CertificateFetcherError('Connection lost')
             except: self.deferred.errback()
 
@@ -185,8 +188,8 @@ class CertificateContextFactory(ssl.ContextFactory):
     isClient = True
     hostname = address = None
 
-    def __init__(self, deferred, fingerprint, verify_ca, hostname=None):
-        self.deferred, self.fingerprint = deferred, fingerprint
+    def __init__(self, deferred, fingerprint, log, verify_ca, hostname=None):
+        self.deferred, self.fingerprint, self.log = deferred, fingerprint, log
         self.verify_ca, self.hostname, self.sni_sent = verify_ca, hostname, False
 
     def handshake_callback(self, conn, stage, errno):
@@ -204,7 +207,7 @@ class CertificateContextFactory(ssl.ContextFactory):
 
     def verifyCertificate(self, connection, x509, errno, depth, preverify_ok):
         if depth != 0: return True
-        log.debug('Verifying certificate (ca check: {})'.format(preverify_ok))
+        self.log.debug('Verifying certificate (ca check: {})'.format(preverify_ok))
 
         try:
             fingerprintSeen = x509.digest('sha1')\
@@ -214,7 +217,7 @@ class CertificateContextFactory(ssl.ContextFactory):
                 if self.verify_ca and (self.hostname or self.address):
                     try: match_x509(x509, self.hostname, self.address)
                     except CertificateError as err:
-                        log.debug('Failed to match certificate against hostname: {}'.format(err))
+                        self.log.debug('Failed to match certificate against hostname: {}'.format(err))
                         fingerprintSeen = None # so that it won't get cached
                         raise
                 self.deferred.callback((200, fingerprintSeen))

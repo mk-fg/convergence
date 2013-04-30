@@ -38,7 +38,7 @@ class Verifier(object):
             raise OptionsError('This backend ({}) accepts no options.'.format(name))
 
 
-    def verify(self, host, port, fingerprint):
+    def verify(self, host, port, fingerprint, log):
         '''
         Verify whether are fingerprint is valid for a given target.
 
@@ -50,7 +50,8 @@ class Verifier(object):
         :Parameters:
         - `host` (str) - The target's host name.
         - `port` (int) - The target's port.
-        - `fingerpring` (str) - The fingerprint in question for this target.
+        - `fingerprint` (str) - The fingerprint in question for this target.
+        - `log` (logging.Logger) - Logger to use for request-specific data.
 
         :Returns Type:
         Deferred

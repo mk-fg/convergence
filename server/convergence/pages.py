@@ -28,9 +28,20 @@ from twisted.web import resource, server, error, iweb
 try: from twisted.web.template import renderElement
 except ImportError: renderElement = None
 
-import hashlib, json, base64, types, logging
+import os, hashlib, json, base64, types, logging
 
 log = logging.getLogger(__name__)
+
+
+class TaggedLogger(object):
+    'Wraps logger to produce lines with a random tag prefix.'
+
+    def __init__(self, logger):
+        self.logger = logger
+        self.tag = os.urandom(3).encode('base64').rstrip('=\n').replace('/', '-')
+
+    def __getattr__(self, k):
+        return lambda msg: getattr(self.logger, k)('[{}] {}'.format(self.tag, msg))
 
 
 # This class is responsible for responding to actions
@@ -54,7 +65,7 @@ class TargetPage(resource.Resource):
 
     def sendResponse(self, request, code, recordRows):
         if request._disconnected:
-            log.debug('Lost connection to client before response')
+            request.log.debug('Lost connection to client before response')
             return
         response = NotaryResponse(request, self.privateKey)
         response.sendResponse(code, recordRows)
@@ -67,40 +78,42 @@ class TargetPage(resource.Resource):
         return True
 
     @defer.inlineCallbacks
-    def updateCache(self, host, port, submittedFingerprint):
+    def updateCache(self, request, host, port, submittedFingerprint):
         try:
             code, fingerprint =\
-                yield self.verifier.verify(host, int(port), submittedFingerprint)
+                yield self.verifier.verify(host, int(port), submittedFingerprint, request.log)
         except Exception as err:
-            log.warn('Fetch certificate error: {}'.format(err))
+            request.log.warn('Fetch certificate error: {}'.format(err))
             raise
 
-        log.debug('Got fingerprint: {}'.format(fingerprint))
+        request.log.debug('Got fingerprint: {}'.format(fingerprint))
         if fingerprint is None: defer.returnValue((code, None))
         else:
             try:
                 recordRows = yield self.database.updateRecordsFor(host, port, fingerprint)
             except Exception as err:
-                log.warn('Update records error: {}'.format(err))
+                request.log.warn('Update records error: {}'.format(err))
                 raise
             else: defer.returnValue((code, recordRows))
 
     @defer.inlineCallbacks
     def getRecordsComplete(self, recordRows, request, host, port, fingerprint):
         if self.isCacheMiss(recordRows, fingerprint):
-            log.debug('Handling cache miss...')
-            try: code, recordRows = yield self.updateCache(host, port, fingerprint)
+            request.log.debug('Handling cache miss...')
+            try: code, recordRows = yield self.updateCache(request, host, port, fingerprint)
             except Exception as err:
-                log.warn('Certificate-fetch handling error: {}'.format(err))
+                request.log.warn('Certificate-fetch handling error: {}'.format(err))
                 self.sendErrorResponse(request, 503, 'Internal Error')
             else: self.sendResponse(request, code, recordRows)
         else: self.sendResponse(request, 200, recordRows)
 
     def getRecordsError(self, error, request):
-        log.warn('Get records error: {}'.format(error))
+        request.log.warn('Get records error: {}'.format(error))
         self.sendErrorResponse(request, 503, 'Error retrieving records.')
 
     def render(self, request):
+        request.log = TaggedLogger(log)
+
         if request.method != 'POST' and request.method != 'GET':
             self.sendErrorResponse(request, 405, 'Unsupported method.')
             return
@@ -123,7 +136,7 @@ class TargetPage(resource.Resource):
                 return
             else:
                 fingerprint = request.args['fingerprint'][0]
-                log.debug('Fingerprint: {}'.format(fingerprint))
+                request.log.debug('Fingerprint: {}'.format(fingerprint))
 
         deferred = self.database.getRecordsFor(host, port)
         deferred.addCallback(self.getRecordsComplete, request, host, port, fingerprint)

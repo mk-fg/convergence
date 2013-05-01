@@ -31,12 +31,14 @@ function Notary(serialized) {
     this.region = null;
     this.bundleLocation = null;
     this.enabled = false;
+    this.priority = false;
     this.physicalNotaries = new Array();
     this.open = true;
     this.parent = true;
   } else {
     this.name = serialized.name;
     this.enabled = serialized.enabled;
+    this.priority = Boolean(serialized.priority);
     this.bundleLocation = serialized.bundle_location;
     this.region = serialized.region;
     this.open = true;
@@ -249,6 +251,14 @@ Notary.prototype.setEnabled = function(value) {
   this.enabled = value;
 };
 
+Notary.prototype.getPriority = function() {
+  return this.priority;
+};
+
+Notary.prototype.setPriority = function(value) {
+  this.priority = value;
+};
+
 Notary.prototype.setBundleLocation = function(value) {
   this.bundleLocation = value;
 };
@@ -277,6 +287,7 @@ Notary.prototype.serializeForTransport = function(callback) {
       if(count === 0) callback({
         'name' : self.name,
         'enabled' : self.enabled,
+        'priority' : self.priority,
         'bundle_location' : self.bundleLocation,
         'region' : self.region,
         'physical_notaries' : serializedPhysicalNotaries });
@@ -289,6 +300,7 @@ Notary.prototype.serialize = function(xmlDocument) {
   var proxyElement = xmlDocument.createElement('logical-notary');
   proxyElement.setAttribute('name', this.name);
   proxyElement.setAttribute('enabled', this.enabled);
+  proxyElement.setAttribute('priority', this.priority);
 
   if (this.bundleLocation != null)
     proxyElement.setAttribute('bundle_location', this.bundleLocation);
@@ -308,6 +320,7 @@ Notary.prototype.deserialize = function(logicalElement, version) {
   if (version > 0) {
     this.name = logicalElement.getAttribute('name');
     this.enabled = (logicalElement.getAttribute('enabled') == 'true');
+    this.priority = (logicalElement.getAttribute('priority') == 'true');
 
     if (logicalElement.hasAttribute('bundle_location'))
       this.bundleLocation = logicalElement.getAttribute('bundle_location');

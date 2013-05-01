@@ -141,6 +141,16 @@ ActiveNotaries.prototype.removeNotariesByName = function(notaryList, name) {
   return notaryList;
 };
 
+ActiveNotaries.prototype.removeNotariesByCallback = function(notaryList, callback) {
+  for (var i=notaryList.length-1;i>=0;i--) {
+    if (callback(notaryList[i])) {
+      notaryList.splice(i, 1);
+    }
+  }
+
+  return notaryList;
+};
+
 ActiveNotaries.prototype.getUniqueNotaryQuorum = function(bounceNotary) {
   var notaryQuorum = [];
   var notaryList = this.notaries.slice(0);
@@ -148,10 +158,19 @@ ActiveNotaries.prototype.getUniqueNotaryQuorum = function(bounceNotary) {
   if (bounceNotary != null)
     notaryList = this.removeNotariesByName(notaryList, bounceNotary.getName());
 
+  var notaryListPrio = this.removeNotariesByCallback(
+    notaryList.slice(0), function(notary) { return !notary.priority; } );
+
+  var notary;
   while ((notaryQuorum.length < this.getMaxNotaryQuorum()) && (notaryList.length > 0))
   {
-    var notary = notaryList[Math.floor(Math.random() * notaryList.length)];
-    notaryList = this.removeNotariesByName(notaryList, notary.getName());
+    if (notaryListPrio.length > 0) {
+      notary = notaryListPrio[Math.floor(Math.random() * notaryListPrio.length)];
+      notaryListPrio = this.removeNotariesByName(notaryListPrio, notary.getName());
+    } else {
+      notary = notaryList[Math.floor(Math.random() * notaryList.length)];
+      notaryList = this.removeNotariesByName(notaryList, notary.getName());
+    }
 
     notaryQuorum.push(notary);
   }

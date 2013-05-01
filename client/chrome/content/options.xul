@@ -20,13 +20,15 @@
 	    <treecols>
 	      <treecol id="notaryEnabled" label="Enabled" type="checkbox" editable="true" />
 	      <splitter class="tree-splitter" />
+	      <treecol id="notaryPriority" label="Priority" type="checkbox" editable="true" />
+	      <splitter class="tree-splitter" />
 	      <treecol id="notaryHost" label="Notary Hostname" flex="1" editable="false" primary="true"/>
 	      <splitter class="tree-splitter" />
 	      <treecol id="notaryHTTPPort" label="HTTP" editable="false"/>
 	      <splitter class="tree-splitter" />
 	      <treecol id="notarySSLPort" label="SSL" editable="false"/>
 	    </treecols>
-	    <treechildren />  
+	    <treechildren />
 	  </tree>
 
 	  <separator />
@@ -39,7 +41,7 @@
       </vbox>
     </tabpanel>
     <tabpanel id="advancedTab">
-      <vbox flex="0">	
+      <vbox flex="0">
 	<checkbox id="cache-certificates" label="Cache certificates locally." />
 	<checkbox id="notary-bounce" label="Anonymize communication with notaries." />
 	<checkbox id="connectivity-failure" label="Notary connectivity failure counts as authenticity failure."/>
@@ -56,7 +58,7 @@
 	  <separator />
 	  <hbox>
 	    <label value="Max subset of notaries to query: " control="notary-quorum"/>
-	    <textbox id="notary-quorum" type="number" min="1" max="20" value="3" 
+	    <textbox id="notary-quorum" type="number" min="1" max="20" value="3"
 		     increment="1" decimalplaces="0" maxlength="2" size="2"/>
 	  </hbox>
 	</groupbox>
@@ -73,7 +75,7 @@
 	      <splitter class="tree-splitter" />
 	      <treecol id="cacheFingerprint" label="Fingerprint" flex="1" editable="false" onclick="sortCacheTree(this)" sortDirection="DESC" />
 	    </treecols>
-	    <treechildren />  
+	    <treechildren />
 	  </tree>
 
 	  <separator />
@@ -88,5 +90,5 @@
   </tabpanels>
 </tabbox>
 
- 
+
 </dialog>

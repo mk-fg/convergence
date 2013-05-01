@@ -42,12 +42,16 @@ browser extension.
      because same name can be resolved to different hosts in case of CDNs or
      round-robin-dns mirrors, which can have unrelated certificates.
 
+   - "Priority" checkbox in options dialog to always query marked notaries first
+     (if their count is more than "subset to query" - subset is picked at
+     random among these).
+     Idea is to have some subset of notaries to *always* query, picking others
+     at random from the rest.
+
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
      (hostname, port), because of cdn's and round-robin-dns mirrors -
      server-side as well, though there can be several signatures for one
      hostname there.
-
-   - TODO: "Always query this notary" checkbox or priority tiers.
 
    - TODO: Make hardcoded check timeouts configurable.
 

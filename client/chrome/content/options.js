@@ -227,29 +227,29 @@ function updateNotarySettings() {
   notaryTree.view = {
     rowCount : getNotaryRowCount(),
 
-    getCellText : function(row, column) {
+    getCellText : function(row, col) {
       var notary = getNotaryForRow(row);
       var isLogical = (notary.parent == true);
 
-      if      (column.id == 'notaryHost')     return (isLogical ? getLogicalNotaryName(notary) : notary.getHost());
-      else if (column.id == 'notaryHTTPPort') return (isLogical ? '' : notary.getHTTPPort());
-      else if (column.id == 'notarySSLPort')  return (isLogical ? '' : notary.getSSLPort());
+      if (col.id == 'notaryHost') return (isLogical ? getLogicalNotaryName(notary) : notary.getHost());
+      if (col.id == 'notaryHTTPPort') return (isLogical ? '' : notary.getHTTPPort());
+      if (col.id == 'notarySSLPort') return (isLogical ? '' : notary.getSSLPort());
     },
 
     getCellValue: function(row, col) {
       var notary = getNotaryForRow(row);
       var isLogical = (notary.parent == true);
 
-      return (isLogical ? notary.getEnabled() : false);
+      if (col.id == 'notaryEnabled') return (isLogical ? notary.getEnabled() : false);
+      if (col.id == 'notaryPriority') return (isLogical ? notary.getPriority() : false);
     },
 
     setCellValue: function(row, col, val) {
       var notary = getNotaryForRow(row);
       var isLogical = (notary.parent == true);
-
-      if (isLogical) {
-        notary.setEnabled(val == 'true');
-      }
+      if (!isLogical) return;
+      if (col.id == 'notaryEnabled') return notary.setEnabled(val == 'true');
+      if (col.id == 'notaryPriority') return notary.setPriority(val == 'true');
     },
 
     setTree: function(treebox){this.treebox = treebox; },
@@ -263,9 +263,8 @@ function updateNotarySettings() {
     isContainerEmpty: function(idx) { return false; },
     isSeparator: function(row){ return false; },
     isSorted: function(){ return false; },
-    isEditable: function(row, column) {
-      if (column.id == 'notaryEnabled') return true;
-      else                              return false;
+    isEditable: function(row, col) {
+      return (col.id == 'notaryEnabled' || col.id == 'notaryPriority');
     },
     getLevel: function(row){
       return this.isContainer(row) ? 0 : 1;

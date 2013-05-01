@@ -47,10 +47,6 @@ browser extension.
      server-side as well, though there can be several signatures for one
      hostname there.
 
-   - TODO: Some certificates doesn't seem to work even as exceptions in the
-     client - probably name validation or something - work around that - it
-     should be always possible to access the site - no exceptions there.
-
    - TODO: "Always query this notary" checkbox or priority tiers.
 
    - TODO: Make hardcoded check timeouts configurable.

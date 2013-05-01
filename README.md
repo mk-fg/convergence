@@ -53,6 +53,9 @@ browser extension.
      server-side as well, though there can be several signatures for one
      hostname there.
 
+   - TODO: "Allowed as bounce notary" checkbox in notaries' list to block local
+     notaries from acting as such, for instance.
+
    - TODO: Make hardcoded check timeouts configurable.
 
        So that plugin won't hang on bogus notaries any longer than necessary

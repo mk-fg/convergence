@@ -108,6 +108,9 @@ browser extension.
      instead of running a separate check (and e.g. connection) for each one of
      them.
 
+   - "bind" option for perspective verifier to use for special routing -
+     e.g. through some tunnel or tor/i2p network.
+
    - TODO: Add option to serve bundle for browsers at some URL.
 
    - TODO: Statistics on queries.

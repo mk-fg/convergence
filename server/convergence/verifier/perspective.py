@@ -44,18 +44,20 @@ class NetworkPerspectiveVerifier(Verifier):
     match across network perspective.
     '''
 
-    flags_supported = {'verify_ca'}
-    flags_default = {}
+    opts_default = dict(verify_ca=False, bind=None)
 
     description = (
         'Check if remote presents the same certificate to the notary as it did to client,'
         ' optionally also performing verification against OpenSSL CA list (on the notary host).' )
 
     options_description = '\n'.join([
-        'Optional list of flags, separated by any non-word characters,'
-            ' optionally prefixed by "-" to disable that flag instead of enabling.',
-        'Default flags: {};'.format(', '.join(flags_default) or '(none)'),
-        'supported flags: {}.'.format(', '.join(flags_supported)) ])
+        'List of options in "[-]key1[=value1] [-]key2[=value2] ..."'
+            ' format, separated by spaces or commas.',
+        'Boolean flags can be prefixed with "-" to disable them,'
+            ' otherwise will be enabled if specified without a value.',
+        'Example: verify_ca bind=10.1.2.3',
+        'Default options: {}.'.format(
+            ', '.join(map('{0[0]}={0[1]}'.format, opts_default.viewitems())) or '(none)' ) ])
 
     html_description = '''
         <p>This notary uses the NetworkPerspective verifier.</p>
@@ -71,31 +73,38 @@ class NetworkPerspectiveVerifier(Verifier):
         <p>Optionally, it can also be enabled to do verification against OpenSSL CA list.</p>
     '''
 
-    def __init__(self, flags):
-        self.flags = set(self.flags_default)
-        if flags:
-            flags = re.findall(r'\b[-+=\w]+\b', flags)
-            for flag in flags:
-                disable = False
-                if flag[0] == '-': flag, disable = flag[1:], True
-                if flag not in self.flags_supported:
-                    raise OptionsError(( 'Passed flag {!r} is not supported.'
-                        ' Full list of supported flags: {}' ).format(flag, ', '.join(self.flags_supported)))
-                if disable: self.flags.discard(flag)
-                else: self.flags.add(flag)
-        log.debug('Enabled options: {}'.format(', '.join(self.flags)))
+    def __init__(self, opts):
+        self.opts = self.opts_default.copy()
+        if opts:
+            for opt in re.findall(r'[^,\s]+', opts):
+                value = True
+                if opt[0] == '-': opt, value = opt[1:], False
+                elif '=' in opt:
+                    opt, value = opt.split('=', 1)
+                    if value.lstrip('-').isdigit(): value = int(value)
+                if opt not in self.opts_default:
+                    raise OptionsError(( 'Passed option {!r} is not supported.'
+                        ' Full list of supported options: {}' ).format(opt, ', '.join(self.opts_default)))
+                self.opts[opt] = value
+
+        if self.opts['bind']:
+            bind = self.opts['bind'].rsplit(':', 1)
+            self.opts['bind'] = (bind[0], int(bind[1])) if len(bind) != 1 else (bind[0], 0)
+
+        log.debug('Options: {}'.format(self.opts))
 
     def verify(self, host, port, address, fingerprint, log):
         deferred = defer.Deferred()
         factory_ctx = CertificateContextFactory(
-            deferred, fingerprint, log=log, verify_ca='verify_ca' in self.flags,
+            deferred, fingerprint, log=log, verify_ca=self.opts.get('verify_ca'),
             # Don't use SNI/matching for IP addresses
             hostname=host if not re.search(r'^(\d+\.){3}\d+$', host) else None )
         factory = CertificateFetcherClientFactory(deferred, host, port, factory_ctx, log)
 
         log.debug('Fetching certificate from: {}:{}'.format(host, port))
 
-        reactor.connectSSL(address or host, port, factory, factory_ctx)
+        reactor.connectSSL( address or host, port,
+            factory, factory_ctx, bindAddress=self.opts['bind'] )
         return deferred
 
 

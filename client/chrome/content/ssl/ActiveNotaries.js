@@ -167,6 +167,7 @@ ActiveNotaries.prototype.getUniqueNotaryQuorum = function(bounceNotary) {
     if (notaryListPrio.length > 0) {
       notary = notaryListPrio[Math.floor(Math.random() * notaryListPrio.length)];
       notaryListPrio = this.removeNotariesByName(notaryListPrio, notary.getName());
+      notaryList = this.removeNotariesByName(notaryList, notary.getName());
     } else {
       notary = notaryList[Math.floor(Math.random() * notaryList.length)];
       notaryList = this.removeNotariesByName(notaryList, notary.getName());

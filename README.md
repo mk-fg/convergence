@@ -69,10 +69,6 @@ browser extension.
        So that plugin won't hang on bogus notaries any longer than necessary
        with a specific connection latency in mind.
 
-   - TODO: For google servers, ff interface seem to report different
-     fingerprints than convergence checks - investigate whether it
-     re-establishes connection between check and the actual data channel.
-
    - TODO: Check how other stuff like "https everywhere" gets the certs, maybe
      swap socks proxy mitm for some warning or connection-killer hook.
 

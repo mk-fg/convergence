@@ -48,10 +48,18 @@ browser extension.
      Idea is to have some subset of notaries to *always* query, picking others
      at random from the rest.
 
+   - Certificates for invalid names now can be validated - CN or SubjectAltNames
+     are irrelevant to the client (and always being overidden) - only
+     fingerprint and notary responses matter.
+
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
      (hostname, port), because of cdn's and round-robin-dns mirrors -
      server-side as well, though there can be several signatures for one
      hostname there.
+
+   - TODO: Certificates for IPs don't seem to be checked via notaries at all, so
+     don't have "verificationDetails" comment and never validate with
+     convergence.
 
    - TODO: "Allowed as bounce notary" checkbox in notaries' list to block local
      notaries from acting as such, for instance.

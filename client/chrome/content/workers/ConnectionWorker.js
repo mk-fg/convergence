@@ -132,6 +132,11 @@ onmessage = function(event) {
     if (results['status'] == false) {
       certificateInfo.commonName = new NSS.lib.buffer('Invalid Certificate');
       certificateInfo.altNames = null;
+    } else {
+      // Such override allows totally invalid certificates to be used,
+      //  e.g. if CN and SubjectAltNames had nothing to do with the hostname/ip.
+      certificateInfo.commonName = new NSS.lib.buffer(destination.host);
+      certificateInfo.altNames = null;
     }
 
     certificateInfo.encodeVerificationDetails(results);

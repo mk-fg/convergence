@@ -35,6 +35,8 @@ browser extension.
    - Bugfix in nsIWebBrowserPersist.saveURI call (b5dbb50), preventing adding
      notaries from URL (at least in newer ff).
 
+   - Fix for breakage due to private browsing changes in firefox-20 (ffb7c7b).
+
    - Supress unhandled non-critical JS errors here and there, mostly to keep JS
      console clean.
 

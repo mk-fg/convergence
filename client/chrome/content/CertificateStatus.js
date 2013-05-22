@@ -31,8 +31,26 @@ function CertificateStatus(convergenceManager) {
 CertificateStatus.prototype.getInvalidCertificate = function(destination) {
   dump('Getting invalid certificate for: ' + destination + '\n');
 
-  var badCertService = Components.classes['@mozilla.org/security/recentbadcerts;1']
-  .getService(Components.interfaces.nsIRecentBadCertsService);
+  var badCertService = null;
+  // FF <= 19
+  if (typeof Components.classes['@mozilla.org/security/recentbadcerts;1'] !== 'undefined') {
+    badCertService = Components.classes['@mozilla.org/security/recentbadcerts;1']
+    .getService(Components.interfaces.nsIRecentBadCertsService);
+  }
+  // FF >= 20
+  else if (typeof Components.classes['@mozilla.org/security/x509certdb;1'] !== 'undefined') {
+
+    var certDB = Components.classes['@mozilla.org/security/x509certdb;1']
+      .getService(Components.interfaces.nsIX509CertDB);
+    if (!certDB) return null;
+
+    var pbs = Components.classes['@mozilla.org/privatebrowsing;1']
+      .getService(Components.interfaces.nsIPrivateBrowsingService);
+    badCertService = certDB.getRecentBadCerts(pbs.privateBrowsingEnabled);
+  }
+  else {
+    throw 'Failed to get "bad cert db" service (too new firefox version?)';
+  }
 
   if (!badCertService)
     return null;

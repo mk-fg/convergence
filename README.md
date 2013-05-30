@@ -74,6 +74,8 @@ browser extension.
    - TODO: Check how other stuff like "https everywhere" gets the certs, maybe
      swap socks proxy mitm for some warning or connection-killer hook.
 
+   - TODO: SNI in server or client doesn't seem to be working, test: blogs.atlassian.com
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.

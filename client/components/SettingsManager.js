@@ -424,7 +424,7 @@ SettingsManager.prototype.loadPreferences = function() {
   }
 
   if (!rootElement.item(0).hasAttribute('whitelist_patterns')) {
-    this.whitelistPatterns = new PatternList('^localhost$\n^127\.0\.0\.1$\n^aus3\.mozilla\.org$');
+    this.whitelistPatterns = new PatternList('^localhost$\n^127\\.0\\.0\\.1$\n^aus3\\.mozilla\\.org$');
   }
 
   if (!rootElement.item(0).hasAttribute('version')) {

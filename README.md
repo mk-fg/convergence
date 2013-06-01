@@ -86,6 +86,9 @@ browser extension.
 
    - TODO: SNI in server or client doesn't seem to be working, test: blogs.atlassian.com
 
+   - TODO: better configurable logging instead of just `dump()`, with at least
+     ability to disable it.
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.

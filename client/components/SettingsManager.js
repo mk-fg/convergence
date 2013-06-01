@@ -32,6 +32,7 @@ function SettingsManager() {
   this.privateIpExempt = true;
   this.privatePkiExempt = true;
   this.maxNotaryQuorum = 3;
+  this.whitelistPatterns = new PatternList();
   this.verificationThreshold = 'majority';
   this.notaries = new Array();
 
@@ -103,6 +104,14 @@ SettingsManager.prototype.getCacheCertificates = function() {
   return this.cacheCertificatesEnabled;
 };
 
+SettingsManager.prototype.setWhitelistPatterns = function(text) {
+  this.whitelistPatterns = new PatternList(text);
+};
+
+SettingsManager.prototype.getWhitelistPatterns = function() {
+  return this.whitelistPatterns;
+};
+
 SettingsManager.prototype.getNotaryList = function() {
   return this.notaries.slice(0);
 };
@@ -155,7 +164,8 @@ SettingsManager.prototype.getSerializedSettings = function() {
     'connectivityIsFailureEnabled' : this.connectivityIsFailureEnabled,
     'verificationThreshold'        : this.verificationThreshold,
     'maxNotaryQuorum'              : this.maxNotaryQuorum,
-    'privatePkiExempt'             : this.privatePkiExempt
+    'privatePkiExempt'             : this.privatePkiExempt,
+    'whitelistPatterns'            : this.whitelistPatterns.source,
   };
 };
 
@@ -256,6 +266,7 @@ SettingsManager.prototype.savePreferences = function() {
   rootElement.setAttribute('private_ip_exempt', this.privateIpExempt);
   rootElement.setAttribute('threshold', this.verificationThreshold);
   rootElement.setAttribute('max_notary_quorum', this.maxNotaryQuorum);
+  rootElement.setAttribute('whitelist_patterns', escape(this.whitelistPatterns.source));
   rootElement.setAttribute('version', 1);
 
   var notariesElement = xmlDocument.createElement('notaries');
@@ -381,6 +392,7 @@ SettingsManager.prototype.loadPreferences = function() {
   this.privatePkiExempt = (rootElement.item(0).getAttribute('private_pki_exempt') == 'true');
   this.verificationThreshold = rootElement.item(0).getAttribute('threshold');
   this.maxNotaryQuorum = rootElement.item(0).getAttribute('max_notary_quorum');
+  this.whitelistPatterns = new PatternList(unescape(rootElement.item(0).getAttribute('whitelist_patterns')));
   this.version = rootElement.item(0).getAttribute('version');
 
   if (!rootElement.item(0).hasAttribute('cache_certificates')) {
@@ -409,6 +421,10 @@ SettingsManager.prototype.loadPreferences = function() {
 
   if (!rootElement.item(0).hasAttribute('max_notary_quorum')) {
     this.maxNotaryQuorum = 3;
+  }
+
+  if (!rootElement.item(0).hasAttribute('whitelist_patterns')) {
+    this.whitelistPatterns = new PatternList('^localhost$\n^127\.0\.0\.1$\n^aus3\.mozilla\.org$');
   }
 
   if (!rootElement.item(0).hasAttribute('version')) {

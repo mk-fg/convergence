@@ -37,6 +37,16 @@ browser extension.
 
    - Fix for breakage due to private browsing changes in firefox-20 (ffb7c7b).
 
+   - Added "Exceptions" tab to options for hostname patterns that convergence
+     should not touch.
+
+     Useful for local networks and dynamic hostnames (e.g. "vm-X.mydomain.tld")
+     that never validate with available notaries for some reason, where adding
+     individual exceptions can be problematic.
+
+     Default value is previously hardcoded list of exceptions - localhost and
+     mozilla "aus3" addons-update host.
+
    - Supress unhandled non-critical JS errors here and there, mostly to keep JS
      console clean.
 

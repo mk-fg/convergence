@@ -10,83 +10,92 @@
     <tab label="Notaries"/>
     <tab label="Advanced"/>
     <tab label="Cache Manager"/>
+    <tab label="Exceptions"/>
   </tabs>
   <tabpanels flex="1">
     <tabpanel id="settingsTab" flex="1">
       <vbox flex="1">
-	<hbox flex="1">
+  <hbox flex="1">
 
-	  <tree id="notaryTree" onclick="onTreeSelected();" align="stretch" flex="1" editable="true">
-	    <treecols>
-	      <treecol id="notaryEnabled" label="Enabled" type="checkbox" editable="true" />
-	      <splitter class="tree-splitter" />
-	      <treecol id="notaryPriority" label="Priority" type="checkbox" editable="true" />
-	      <splitter class="tree-splitter" />
-	      <treecol id="notaryHost" label="Notary Hostname" flex="1" editable="false" primary="true"/>
-	      <splitter class="tree-splitter" />
-	      <treecol id="notaryHTTPPort" label="HTTP" editable="false"/>
-	      <splitter class="tree-splitter" />
-	      <treecol id="notarySSLPort" label="SSL" editable="false"/>
-	    </treecols>
-	    <treechildren />
-	  </tree>
+    <tree id="notaryTree" onclick="onTreeSelected();" align="stretch" flex="1" editable="true">
+      <treecols>
+        <treecol id="notaryEnabled" label="Enabled" type="checkbox" editable="true" />
+        <splitter class="tree-splitter" />
+        <treecol id="notaryPriority" label="Priority" type="checkbox" editable="true" />
+        <splitter class="tree-splitter" />
+        <treecol id="notaryHost" label="Notary Hostname" flex="1" editable="false" primary="true"/>
+        <splitter class="tree-splitter" />
+        <treecol id="notaryHTTPPort" label="HTTP" editable="false"/>
+        <splitter class="tree-splitter" />
+        <treecol id="notarySSLPort" label="SSL" editable="false"/>
+      </treecols>
+      <treechildren />
+    </tree>
 
-	  <separator />
-	  <vbox flex="0">
-	    <button id="add-notary-button" pack="start" label="Add Notary" onclick="onAddNotary();" />
-<!--	    <button id="edit-notary-button" pack="start" label="Edit Notary" onclick="onEditNotary();" /> -->
-	    <button id="remove-notary-button" pack="start" label="Remove Notary" onclick="onRemoveNotary();"/>
-	  </vbox>
-	</hbox>
+    <separator />
+    <vbox flex="0">
+      <button id="add-notary-button" pack="start" label="Add Notary" onclick="onAddNotary();" />
+<!--      <button id="edit-notary-button" pack="start" label="Edit Notary" onclick="onEditNotary();" /> -->
+      <button id="remove-notary-button" pack="start" label="Remove Notary" onclick="onRemoveNotary();"/>
+    </vbox>
+  </hbox>
       </vbox>
     </tabpanel>
     <tabpanel id="advancedTab">
       <vbox flex="0">
-	<checkbox id="cache-certificates" label="Cache certificates locally." />
-	<checkbox id="notary-bounce" label="Anonymize communication with notaries." />
-	<checkbox id="connectivity-failure" label="Notary connectivity failure counts as authenticity failure."/>
-	<checkbox id="private-ip-exempt" label="Don't check RFC 1918 (private) IP addresses." />
-	<checkbox id="private-pki-exempt" label="Whitelist private PKI signatures." />
+  <checkbox id="cache-certificates" label="Cache certificates locally." />
+  <checkbox id="notary-bounce" label="Anonymize communication with notaries." />
+  <checkbox id="connectivity-failure" label="Notary connectivity failure counts as authenticity failure."/>
+  <checkbox id="private-ip-exempt" label="Don't check RFC 1918 (private) IP addresses." />
+  <checkbox id="private-pki-exempt" label="Whitelist private PKI signatures." />
 
-	<groupbox>
-	  <caption label="Verification Threshold"/>
-	  <radiogroup id="threshold">
-	    <radio id="consensus" label="Require notary consensus." />
-	    <radio id="majority" label="Require notary majority." />
-	    <radio id="minority" label="Require only one notary to agree." />
-	  </radiogroup>
-	  <separator />
-	  <hbox>
-	    <label value="Max subset of notaries to query: " control="notary-quorum"/>
-	    <textbox id="notary-quorum" type="number" min="1" max="20" value="3"
-		     increment="1" decimalplaces="0" maxlength="2" size="2"/>
-	  </hbox>
-	</groupbox>
-	</vbox>
+  <groupbox>
+    <caption label="Verification Threshold"/>
+    <radiogroup id="threshold">
+      <radio id="consensus" label="Require notary consensus." />
+      <radio id="majority" label="Require notary majority." />
+      <radio id="minority" label="Require only one notary to agree." />
+    </radiogroup>
+    <separator />
+    <hbox>
+      <label value="Max subset of notaries to query: " control="notary-quorum"/>
+      <textbox id="notary-quorum" type="number" min="1" max="20" value="3"
+         increment="1" decimalplaces="0" maxlength="2" size="2"/>
+    </hbox>
+  </groupbox>
+  </vbox>
     </tabpanel>
     <tabpanel id="cacheTab">
       <vbox flex="1">
-	<hbox flex="1">
-	  <tree id="cacheTree" align="stretch" flex="1" editable="true" persist="sortDirection" sortDirection="natural">
-	    <treecols>
-	      <treecol id="cacheLocation" label="Host:Port             " flex="1" editable="false" onclick="sortCacheTree(this)" sortDirection="DESC" />
-	      <splitter class="tree-splitter" />
-	      <treecol id="cacheTimestamp" label="Timestamp          " flex="1" editable="false" onclick="sortCacheTree(this)" sortDirection="DESC" />
-	      <splitter class="tree-splitter" />
-	      <treecol id="cacheFingerprint" label="Fingerprint" flex="1" editable="false" onclick="sortCacheTree(this)" sortDirection="DESC" />
-	    </treecols>
-	    <treechildren />
-	  </tree>
+  <hbox flex="1">
+    <tree id="cacheTree" align="stretch" flex="1" editable="true" persist="sortDirection" sortDirection="natural">
+      <treecols>
+        <treecol id="cacheLocation" label="Host:Port             " flex="1" editable="false" onclick="sortCacheTree(this)" sortDirection="DESC" />
+        <splitter class="tree-splitter" />
+        <treecol id="cacheTimestamp" label="Timestamp          " flex="1" editable="false" onclick="sortCacheTree(this)" sortDirection="DESC" />
+        <splitter class="tree-splitter" />
+        <treecol id="cacheFingerprint" label="Fingerprint" flex="1" editable="false" onclick="sortCacheTree(this)" sortDirection="DESC" />
+      </treecols>
+      <treechildren />
+    </tree>
 
-	  <separator />
-	  <vbox flex="0">
-	    <button id="add-certificate-button" pack="start" label="Add Certificate" onclick="onAddCertificate();" />
-	    <button id="remove-certificate-button" pack="start" label="Remove Certificate" onclick="onRemoveCertificate();" />
-	    <button id="clear-cache-button" pack="start" label="Clear Cache" onclick="onClearCache();"/>
-	  </vbox>
-	</hbox>
+    <separator />
+    <vbox flex="0">
+      <button id="add-certificate-button" pack="start" label="Add Certificate" onclick="onAddCertificate();" />
+      <button id="remove-certificate-button" pack="start" label="Remove Certificate" onclick="onRemoveCertificate();" />
+      <button id="clear-cache-button" pack="start" label="Clear Cache" onclick="onClearCache();"/>
+    </vbox>
+  </hbox>
       </vbox>
     </tabpanel>
+
+    <tabpanel id="exceptionsTab">
+      <vbox flex="1">
+        <description style="white-space: pre-wrap;">List of regexp patterns to match "host" part of an URL (e.g. "^.*\.google\.\w{1,3}$", can be a raw IP address - as entered) that should not be proxied through Convergence. One JS regexp per line.</description>
+        <textbox id="exceptions" flex="1" wrap="off" multiline="true" />
+      </vbox>
+    </tabpanel>
+
   </tabpanels>
 </tabbox>
 

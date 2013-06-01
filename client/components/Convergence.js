@@ -298,17 +298,16 @@ Convergence.prototype = {
   },
 
   isWhitelisted: function(uri) {
-    return uri.host == 'localhost' ||
-      uri.host == '127.0.0.1' ||
-      uri.host == 'aus3.mozilla.org' ||
-      (this.settingsManager.getPrivateIpExempt() && this.rfc1918.test(uri.host));
+    return (
+      this.settingsManager.getWhitelistPatterns().testHost(uri.host) ||
+      (this.settingsManager.getPrivateIpExempt() && this.rfc1918.test(uri.host)) );
   },
 
   applyFilter : function(protocolService, uri, proxy) {
     if (!this.enabled)
       return proxy;
 
-    if ((uri.scheme == 'https') && (!this.isNotaryUri(uri)) && (!this.isWhitelisted(uri))) {
+    if (uri.scheme == 'https' && !this.isNotaryUri(uri) && !this.isWhitelisted(uri)) {
       this.connectionManager.setProxyTunnel(proxy);
 
       return this.localProxy.getProxyInfo();
@@ -389,6 +388,7 @@ loadScript(true, 'ctypes', 'Serialization.js');
 loadScript(true, 'ssl', 'CertificateManager.js');
 loadScript(true, 'ssl', 'CertificateInfo.js');
 loadScript(true, 'proxy', 'HttpProxyServer.js');
+loadScript(true, 'proxy', 'PatternList.js');
 
 loadScript(false, null, 'LocalProxy.js');
 

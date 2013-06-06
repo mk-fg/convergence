@@ -44,9 +44,13 @@ CertificateStatus.prototype.getInvalidCertificate = function(destination) {
       .getService(Components.interfaces.nsIX509CertDB);
     if (!certDB) return null;
 
-    var pbs = Components.classes['@mozilla.org/privatebrowsing;1']
-      .getService(Components.interfaces.nsIPrivateBrowsingService);
-    badCertService = certDB.getRecentBadCerts(pbs.privateBrowsingEnabled);
+    var privateMode = false;
+    // Seem to be unavailable in Nightly 24.0a1, so just to be safe...
+    if (typeof Components.classes['@mozilla.org/privatebrowsing;1'] !== 'undefined')
+      privateMode = Components.classes['@mozilla.org/privatebrowsing;1']
+        .getService(Components.interfaces.nsIPrivateBrowsingService).privateBrowsingEnabled;
+
+    badCertService = certDB.getRecentBadCerts(privateMode);
   }
   else {
     throw 'Failed to get "bad cert db" service (too new firefox version?)';

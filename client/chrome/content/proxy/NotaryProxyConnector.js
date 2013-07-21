@@ -14,7 +14,7 @@ NotaryProxyConnector.prototype.makeConnection = function(clientSocket, destinati
 
   request += '\r\n';
 
-  dump('Sending bounce request: ' + request + '\n');
+  CV9BLog.notary('Sending bounce request: ' + request);
 
   clientSocket.writeBytes(NSPR.lib.buffer(request), request.length);
 

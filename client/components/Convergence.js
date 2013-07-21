@@ -43,9 +43,9 @@ function Convergence() {
     this.registerObserverService();
 
     this.initializeNotaryUpdateTimer(false);
-    dump('Convergence Setup Complete.\n');
+    CV9BLog.core('Convergence Setup Complete.');
   } catch (e) {
-    dump('Initializing error: ' + e + ' , ' + e.stack + '\n');
+    CV9BLog.core('Initializing error: ' + e + ' , ' + e.stack);
   }
 }
 
@@ -89,7 +89,7 @@ Convergence.prototype = {
       SSL.initialize(this.sslFile.path);
       SQLITE.initialize(this.sqliteFile.path);
     } catch (e) {
-      dump('Error initializing ctypes: ' + e + ', ' + e.stack + '\n');
+      CV9BLog.core('Error initializing ctypes: ' + e + ', ' + e.stack);
       throw e;
     }
   },
@@ -126,19 +126,19 @@ Convergence.prototype = {
       this.settingsManager = new SettingsManager();
       this.enabled = this.settingsManager.isEnabled();
     } catch (e) {
-      dump('Error initializing notary manager: ' + e + '\n');
+      CV9BLog.core('Error initializing notary manager: ' + e);
       throw e;
     }
   },
 
   initializeCertificateManager: function() {
-    dump('Configuring cache...\n');
+    CV9BLog.core('Configuring cache...');
     SSL.lib.SSL_ConfigServerSessionIDCache(1000, 60, 60, null);
 
     try {
       this.certificateManager = new CertificateManager();
     } catch (e) {
-      dump('User declined password entry, disabling convergence...\n');
+      CV9BLog.core('User declined password entry, disabling convergence...');
       this.certificateManager = null;
       this.enabled = false;
       return false;
@@ -186,7 +186,7 @@ Convergence.prototype = {
     var difference = Math.max(1, updateBundleTime - Date.now());
     this.timer.init(this, difference, 0);
 
-    dump('Timer will fire in: ' + difference + '\n');
+    CV9BLog.core('Timer will fire in: ' + difference);
   },
 
   setEnabled: function(value) {
@@ -244,22 +244,22 @@ Convergence.prototype = {
 
   observe: function(subject, topic, data) {
     if (topic == 'quit-application') {
-      dump('Got application shutdown request...\n');
+      CV9BLog.core('Got application shutdown request...');
       if (this.connectionManager != null)
         this.connectionManager.shutdown();
     } else if (topic == 'network:offline-status-changed') {
       if (data == 'online') {
-        dump('Got network state change, shutting down listensocket...\n');
+        CV9BLog.core('Got network state change, shutting down listensocket...');
         if (this.connectionManager != null)
           this.connectionManager.shutdown();
-        dump('Initializing listensocket...\n');
+        CV9BLog.core('Initializing listensocket...');
         this.initializeConnectionManager();
       }
     } else if (topic == 'timer-callback') {
-      dump('Got timer update...\n');
+      CV9BLog.core('Got timer update...');
       this.handleNotaryUpdates();
     } else if (topic == 'convergence-notary-updated') {
-      dump('Got update callback...\n');
+      CV9BLog.core('Got update callback...');
       this.settingsManager.savePreferences();
     }
   },
@@ -346,6 +346,8 @@ else
 /** Component Loading **/
 
 var loadScript = function(isChrome, subdir, filename) {
+  try { logger = CV9BLog.core; }
+  catch (e) { logger = function(line) { dump('Convergence.dump: ' + line + '\n'); } }
   try {
     var path = __LOCATION__.parent.clone();
 
@@ -361,7 +363,7 @@ var loadScript = function(isChrome, subdir, filename) {
 
     path.append(filename);
 
-    dump('Loading: ' + path.path + '\n');
+    logger('Loading: ' + path.path);
 
     var fileProtocol = Components.classes['@mozilla.org/network/protocol;1?name=file']
       .getService(Components.interfaces['nsIFileProtocolHandler']);
@@ -370,11 +372,13 @@ var loadScript = function(isChrome, subdir, filename) {
 
     loader.loadSubScript(fileProtocol.getURLSpecFromFile(path));
 
-    dump('Loaded!\n');
+    logger('Loaded!');
   } catch (e) {
-    dump('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack + '\n');
+    logger('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack);
   }
 };
+
+loadScript(true, null, 'Logger.js');
 
 loadScript(true, 'ctypes', 'NSPR.js');
 loadScript(true, 'ctypes', 'NSS.js');

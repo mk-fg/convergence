@@ -29,8 +29,8 @@ function ConvergenceListenSocket(serialized) {
     this.address = Serialization.deserializeAddress(serialized[1]);
     this.listenPort = this.address.port;
 
-    dump('Restored FD: ' + this.fd + '\n');
-    dump('Restored Address: ' + this.address + '\n');
+    CV9BLog.proto('Restored FD: ' + this.fd);
+    CV9BLog.proto('Restored Address: ' + this.address);
   } else {
     var addr = NSPR.types.PRNetAddr();
     NSPR.lib.PR_SetNetAddr(
@@ -56,7 +56,7 @@ function ConvergenceListenSocket(serialized) {
     this.address = addr;
     this.listenPort = NSPR.lib.PR_ntohs(this.address.port);
 
-    dump('LISTEN PORT: ' + this.listenPort + '\n');
+    CV9BLog.proto('Listen port: ' + this.listenPort);
   }
 }
 

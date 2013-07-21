@@ -17,7 +17,7 @@ function PatternList(text) {
     try {
       pat = new RegExp(pat, 'i');
     } catch (err) {
-      dump('Failed to compile regexp - ' + err + ', skipping\n');
+      CV9BLog.settings('Failed to compile regexp - ' + err + ', skipping');
       continue;
     }
     this.patterns.push(pat);

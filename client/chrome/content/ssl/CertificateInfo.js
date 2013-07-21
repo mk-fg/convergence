@@ -38,14 +38,14 @@ function CertificateInfo(certificate, serialized) {
 
   this.md5 = this.calculateFingerprint(certificate, NSS.lib.SEC_OID_MD5, 16);
   this.sha1 = this.calculateFingerprint(certificate, NSS.lib.SEC_OID_SHA1, 20);
-  dump('Calculating PKI root...\n');
+  CV9BLog.pki('Calculating PKI root...');
   this.isLocalPki = this.calculateTrustedPkiRoot(certificate);
   this.original = this.encodeOriginalCertificate(certificate);
 }
 
 CertificateInfo.prototype.calculateTrustedPkiRoot = function(certificate) {
-  var status = NSS.lib.CERT_VerifyCertNow(NSS.lib.CERT_GetDefaultCertDB(),
-                                          certificate, 1, 1, null);
+  var status = NSS.lib.CERT_VerifyCertNow(
+    NSS.lib.CERT_GetDefaultCertDB(), certificate, 1, 1, null);
 
   if (status != 0) {
     return false;
@@ -60,22 +60,22 @@ CertificateInfo.prototype.calculateTrustedPkiRoot = function(certificate) {
   var rootName = NSS.lib.CERT_GetOrgUnitName(rootCertificate.contents.subject.address());
 
   if (!rootName.isNull()) {
-    dump('Root name: ' + rootName.readString() + '\n');
+    CV9BLog.pki('Root name: ' + rootName.readString());
   }
 
   var slots = NSS.lib.PK11_GetAllSlotsForCert(rootCertificate, null);
 
-  dump('Got slots: ' + slots + '\n');
+  CV9BLog.pki('Got slots: ' + slots);
 
   var slotNode = slots.isNull() ? null : slots.contents.head;
   var softwareToken = false;
 
-  dump('SlotNode: ' + slotNode + '\n');
+  CV9BLog.pki('SlotNode: ' + slotNode);
 
   while (slotNode != null && !slotNode.isNull()) {
     var tokenName = NSS.lib.PK11_GetTokenName(slotNode.contents.slot).readString();
 
-    dump('Token: ' + tokenName + '\n');
+    CV9BLog.pki('Token: ' + tokenName);
 
     if (tokenName == 'Software Security Device') {
       softwareToken = true;

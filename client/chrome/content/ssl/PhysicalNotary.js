@@ -7,7 +7,9 @@ function PhysicalNotary(serialized) {
     this.certificate = null;
     this.sha1Fingerprint = null;
   } else {
-    dump('Deserializing across transport: ' + serialized.host + ' : ' + serialized.http_port +'\n');
+    CV9BLog.settings(
+      'Deserializing across transport: ' +
+      serialized.host + ' : ' + serialized.http_port );
     this.host = serialized.host;
     this.httpPort = parseInt(serialized.http_port);
     this.sslPort = parseInt(serialized.ssl_port);
@@ -134,5 +136,5 @@ PhysicalNotary.prototype.deserialize = function(element) {
   this.certificate = certificateNode.nodeValue;
   this.sha1Fingerprint = this.parseSha1Fingerprint(this.certificate);
 
-  dump('Deserialized physical notary: ' + this.host + ' : ' + this.httpPort + '\n');
+  CV9BLog.settings('Deserialized physical notary: ' + this.host + ' : ' + this.httpPort);
 };

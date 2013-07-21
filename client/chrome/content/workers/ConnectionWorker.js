@@ -29,6 +29,7 @@
   **/
 
 importScripts(
+  'chrome://convergence/content/Logger.js',
   'chrome://convergence/content/ctypes/NSPR.js',
   'chrome://convergence/content/ctypes/NSS.js',
   'chrome://convergence/content/ctypes/SSL.js',
@@ -67,7 +68,7 @@ function checkCertificateValidity(
   var target = host + ':' + port;
 
   if (privatePkiExempt && certificateInfo.isLocalPki) {
-    dump('Certificate is a local PKI cert.\n');
+    CV9BLog.worker('Certificate is a local PKI cert.');
     return {
       'status' : true,
       'target' : target,
@@ -77,7 +78,7 @@ function checkCertificateValidity(
         'status' : ConvergenceResponseStatus.VERIFICATION_SUCCESS }] };
   }
 
-  dump('Checking certificate cache: ' + certificateInfo.sha1 + '\n');
+  CV9BLog.worker('Checking certificate cache: ' + certificateInfo.sha1);
 
   if (certificateCache.isCached(host, port, certificateInfo.sha1))
     return {
@@ -88,11 +89,11 @@ function checkCertificateValidity(
         'notary' : 'Certificate Cache',
         'status' : ConvergenceResponseStatus.VERIFICATION_SUCCESS }] };
 
-  dump('Not cached, checking notaries: ' + certificateInfo.sha1 + '\n');
+  CV9BLog.worker('Not cached, checking notaries: ' + certificateInfo.sha1);
   var results = activeNotaries.checkValidity(host, port, ip, certificateInfo);
 
   if (results['status'] == true) {
-    dump('Caching notary result: ' + certificateInfo.sha1 + '\n');
+    CV9BLog.worker('Caching notary result: ' + certificateInfo.sha1);
     certificateCache.cacheFingerprint(host, port, certificateInfo.sha1);
     return results;
   } else {
@@ -101,7 +102,7 @@ function checkCertificateValidity(
 };
 
 onmessage = function(event) {
-  dump('ConnectionWorker got message...\n');
+  CV9BLog.worker('ConnectionWorker got message...');
   var localSocket = null;
   var targetSocket = null;
 
@@ -122,7 +123,7 @@ onmessage = function(event) {
     var certificateCache = new NativeCertificateCache(
       event.data.cacheFile, event.data.settings['cacheCertificatesEnabled'] );
 
-    dump('Checking validity...\n');
+    CV9BLog.worker('Checking validity...');
 
     var results = this.checkCertificateValidity(
       certificateCache, activeNotaries,
@@ -149,11 +150,11 @@ onmessage = function(event) {
 
     certificateCache.close();
 
-    dump('ConnectionWorker moving on!\n');
+    CV9BLog.worker('ConnectionWorker moving on!');
   } catch (e) {
-    dump('ConnectionWorker exception : ' + e + ' , ' + e.stack + '\n');
+    CV9BLog.worker('ConnectionWorker exception : ' + e + ' , ' + e.stack);
     if (localSocket != null) localSocket.close();
     if (targetSocket != null) targetSocket.close();
-    dump('ConnectionWorker moving on from exception...\n');
+    CV9BLog.worker('ConnectionWorker moving on from exception...');
   }
 };

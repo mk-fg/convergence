@@ -23,13 +23,13 @@ Components.utils.import('resource://gre/modules/ctypes.jsm');
   **/
 
 function CertificateStatus(convergenceManager) {
-  dump('CertificateStatus constructor called : ' + convergenceManager.nssFile.path + '\n');
+  CV9BLog.ui('CertificateStatus constructor called : ' + convergenceManager.nssFile.path);
   NSS.initialize(convergenceManager.nssFile.path);
-  dump('Constructed!\n');
+  CV9BLog.ui('Constructed!');
 }
 
 CertificateStatus.prototype.getInvalidCertificate = function(destination) {
-  dump('Getting invalid certificate for: ' + destination + '\n');
+  CV9BLog.ui('Getting invalid certificate for: ' + destination);
 
   var badCertService = null;
   // FF <= 19
@@ -116,7 +116,7 @@ CertificateStatus.prototype.getVerificationStatus = function(certificate) {
 };
 
 CertificateStatus.prototype.getCurrentTabStatus = function() {
-  dump('Getting current tab status...\n');
+  CV9BLog.ui('Getting current tab status...');
   var certificate = this.getCertificateForCurrentTab();
 
   if (certificate != null) {

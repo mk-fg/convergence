@@ -31,15 +31,15 @@ SSL.initialize = function(sslPath) {
   try {
     sharedLib = ctypes.open(sslPath);
   } catch (e) {
-    dump('Failed to find ssl3 in installed directory, checking system paths.\n');
+    CV9BLog.core('Failed to find ssl3 in installed directory, checking system paths.');
     sharedLib = ctypes.open(ctypes.libraryName('ssl3'));
   }
 
   SSL.types = new Object();
 
   SSL.types.SSLGetClientAuthData = ctypes.FunctionType(ctypes.default_abi,
-                                                         ctypes.int,
-                                                         [ctypes.voidptr_t,
+                                                          ctypes.int,
+                                                          [ctypes.voidptr_t,
                                                           NSPR.types.PRFileDesc.ptr,
                                                           NSS.types.CERTDistNames.ptr,
                                                           NSS.types.CERTCertificate.ptr.ptr,
@@ -49,32 +49,32 @@ SSL.initialize = function(sslPath) {
   SSL.types.SSL_AuthCertificate = ctypes.FunctionType(ctypes.default_abi,
                                                       ctypes.int32_t,
                                                       [ctypes.voidptr_t,
-                                                       NSPR.types.PRFileDesc.ptr,
-                                                       ctypes.int32_t,
-                                                       ctypes.int32_t]).ptr;
+                                                        NSPR.types.PRFileDesc.ptr,
+                                                        ctypes.int32_t,
+                                                        ctypes.int32_t]).ptr;
 
   SSL.lib = {
     SSL_ConfigServerSessionIDCache : sharedLib.declare('SSL_ConfigServerSessionIDCache',
-                                                       ctypes.default_abi,
-                                                       ctypes.int,
-                                                       ctypes.int,
-                                                       ctypes.uint32_t,
-                                                       ctypes.uint32_t,
-                                                       ctypes.char.ptr),
+                                                        ctypes.default_abi,
+                                                        ctypes.int,
+                                                        ctypes.int,
+                                                        ctypes.uint32_t,
+                                                        ctypes.uint32_t,
+                                                        ctypes.char.ptr),
 
     SSL_ImportFD : sharedLib.declare('SSL_ImportFD',
-                                         ctypes.default_abi,
-                                         NSPR.types.PRFileDesc.ptr,
-                                         NSPR.types.PRFileDesc.ptr,
-                                         NSPR.types.PRFileDesc.ptr),
+                                          ctypes.default_abi,
+                                          NSPR.types.PRFileDesc.ptr,
+                                          NSPR.types.PRFileDesc.ptr,
+                                          NSPR.types.PRFileDesc.ptr),
 
     SSL_ConfigSecureServer : sharedLib.declare('SSL_ConfigSecureServer',
-                                               ctypes.default_abi,
-                                               ctypes.int,
-                                               NSPR.types.PRFileDesc.ptr,
-                                               NSS.types.CERTCertificate.ptr,
-                                               NSS.types.SECKEYPrivateKey.ptr,
-                                               ctypes.int),
+                                                ctypes.default_abi,
+                                                ctypes.int,
+                                                NSPR.types.PRFileDesc.ptr,
+                                                NSS.types.CERTCertificate.ptr,
+                                                NSS.types.SECKEYPrivateKey.ptr,
+                                                ctypes.int),
 
     SSL_GetClientAuthDataHook : sharedLib.declare('SSL_GetClientAuthDataHook',
                                                       ctypes.default_abi,
@@ -92,15 +92,15 @@ SSL.initialize = function(sslPath) {
                                                     ctypes.voidptr_t),
 
     SSL_ResetHandshake : sharedLib.declare('SSL_ResetHandshake',
-                                               ctypes.default_abi,
-                                               ctypes.int32_t,
-                                               NSPR.types.PRFileDesc.ptr,
-                                               ctypes.int),
+                                                ctypes.default_abi,
+                                                ctypes.int32_t,
+                                                NSPR.types.PRFileDesc.ptr,
+                                                ctypes.int),
 
     SSL_ForceHandshake : sharedLib.declare('SSL_ForceHandshake',
-                                               ctypes.default_abi,
-                                               ctypes.int32_t,
-                                               NSPR.types.PRFileDesc.ptr),
+                                                ctypes.default_abi,
+                                                ctypes.int32_t,
+                                                NSPR.types.PRFileDesc.ptr),
 
     SSL_ForceHandshakeWithTimeout : sharedLib.declare('SSL_ForceHandshakeWithTimeout',
                                                       ctypes.default_abi,

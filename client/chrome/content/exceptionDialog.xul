@@ -41,71 +41,68 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
 <dialog id="convergence-exceptiondialog"
-        windowtype="mozilla:exceptiondialog"
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
-        title="Add Convergence Security Exception"
-        buttons="cancel,extra1"
-        buttonlabelextra1="Add Security Exception"
-        buttonaccesskeyextra1="C"
-        style="width: 500px; height: 480px;"
-        onload="initializeExceptionDialog();"
-        ondialogextra1="addException();"
-        ondialogextra2="checkCert();"
-        persist="screenX screenY width height"
-        defaultButton="extra2">
+	windowtype="mozilla:exceptiondialog"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	title="Add Convergence Security Exception"
+	buttons="cancel,extra1"
+	buttonlabelextra1="Add Security Exception"
+	buttonaccesskeyextra1="C"
+	style="width: 500px; height: 480px;"
+	onload="initializeExceptionDialog();"
+	ondialogextra1="addException();"
+	ondialogextra2="checkCert();"
+	persist="screenX screenY width height"
+	defaultButton="extra2">
 
-  <script type="application/javascript" src="ConvergenceResponseStatus.js"/>	  
-  <script type="application/javascript" src="exceptionManager.js"/>
-  
-  <hbox>
-    <vbox>
-      <image src="chrome://global/skin/icons/warning-large.png"/>
-      <spacer flex="1"/>
-    </vbox>
-    <vbox flex="1">
-      <!-- Note that because of the styling, there must be no whitespace within
-      the description tags -->
-      <description id="warningText"
-                   style="white-space: pre-wrap"/>
-      <description id="warningSupplemental"
-                   style="font-weight: bold; white-space: pre-wrap;"
-                   >Legitimate banks, stores, and other public sites will not ask you to do this.</description>
-    </vbox>
-  </hbox>
+	<script src="Logger.js"/>
+	<script type="application/javascript" src="ConvergenceResponseStatus.js"/>
+	<script type="application/javascript" src="exceptionManager.js"/>
 
-  <groupbox id="locationGroupBox">
-    <caption label="Server"/>
-    <hbox align="center">
-      <label control="locationTextBox" value="Location:"/>
-      <label id="locationLabel" flex="1" class="uri-element"/>
-    </hbox>
-  </groupbox>
+	<hbox>
+		<vbox>
+			<image src="chrome://global/skin/icons/warning-large.png"/>
+			<spacer flex="1"/>
+		</vbox>
+		<vbox flex="1">
+			<!-- Note that because of the styling, there must be no whitespace within
+			the description tags -->
+			<description id="warningText" style="white-space: pre-wrap"/>
+			<description id="warningSupplemental"
+				style="font-weight: bold; white-space: pre-wrap;"
+				>Legitimate banks, stores, and other public sites will not ask you to do this.</description>
+		</vbox>
+	</hbox>
 
-  <groupbox id="certStatusGroupBox" flex="1">
-    <caption label="Certificate Status"/>
-    <vbox  style="overflow: auto;" flex="1">
-      <hbox>
-        <description id="headerDescription" style="white-space: pre-wrap;"
-                     flex="1"/>
-        <vbox>
-          <button id="viewCertButton" label="View..."
-                  accesskey="V"
-                  disabled="false" oncommand="viewCertButtonClick();"/>
-        </vbox>
-      </hbox>      
-      <description id="statusDescription"
-                   style="font-weight: bold; padding-bottom: 1em;"/>
-      <description id="statusLongDescription" style="white-space: pre-wrap;"/>
-      <description id="status2Description"
-                   style="font-weight: bold; padding-bottom: 1em;"/>
-      <description id="status2LongDescription" style="white-space: pre-wrap;"/>
-      <description id="status3Description" 
-                   style="font-weight: bold; padding-bottom: 1em;"/>
-      <description id="status3LongDescription" style="white-space: pre-wrap;"/>
-      <spacer flex="1"/>
-    </vbox>
-<!--    <checkbox id="permanent" disabled="true"
-              label="Permanently store this exception"
-              accesskey="P"/> -->
-  </groupbox>
+	<groupbox id="locationGroupBox">
+		<caption label="Server"/>
+		<hbox align="center">
+			<label control="locationTextBox" value="Location:"/>
+			<label id="locationLabel" flex="1" class="uri-element"/>
+		</hbox>
+	</groupbox>
+
+	<groupbox id="certStatusGroupBox" flex="1">
+		<caption label="Certificate Status"/>
+		<vbox	style="overflow: auto;" flex="1">
+			<hbox>
+				<description id="headerDescription" style="white-space: pre-wrap;" flex="1"/>
+				<vbox>
+					<button id="viewCertButton" label="View..." accesskey="V"
+						disabled="false" oncommand="viewCertButtonClick();"/>
+				</vbox>
+			</hbox>
+			<description id="statusDescription"
+				 style="font-weight: bold; padding-bottom: 1em;"/>
+			<description id="statusLongDescription" style="white-space: pre-wrap;"/>
+			<description id="status2Description"
+				 style="font-weight: bold; padding-bottom: 1em;"/>
+			<description id="status2LongDescription" style="white-space: pre-wrap;"/>
+			<description id="status3Description"
+				 style="font-weight: bold; padding-bottom: 1em;"/>
+			<description id="status3LongDescription" style="white-space: pre-wrap;"/>
+			<spacer flex="1"/>
+		</vbox>
+		<!-- <checkbox id="permanent" disabled="true" -->
+		<!-- 	label="Permanently store this exception" accesskey="P"/> -->
+	</groupbox>
 </dialog>

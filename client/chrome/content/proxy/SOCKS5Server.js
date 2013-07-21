@@ -30,7 +30,7 @@ SOCKS5Server.prototype.readHello = function() {
   var methodCount = hello[1];
   var methods = this.clientSocket.readFully(methodCount);
 
-  dump('Read: ' + methodCount + ' methods...\n');
+  CV9BLog.worker('Read: ' + methodCount + ' methods...');
 
   var response = new NSPR.lib.unsigned_buffer(2);
   response[0] = 0x05;
@@ -70,7 +70,7 @@ SOCKS5Server.prototype.readRequest = function() {
   var destination = this.readDestination(header[3]);
   var port = this.readPort();
 
-  dump('SOCKS parsed: ' + destination + ':' + port + '\n');
+  CV9BLog.worker('SOCKS parsed: ' + destination + ':' + port);
 
   var endpoint = new Object();
   endpoint.host = destination;

@@ -33,12 +33,12 @@ function CertificateManager(serialized) {
     NSS.lib.CERT_GetDefaultCertDB(), 'Convergence' );
 
   if (!this.caCertificate.isNull()) {
-    dump('Found existing certificate!\n');
+    CV9BLog.pki('Found existing certificate!');
     this.updateCertificateTrust(this.caCertificate);
     this.caKey = NSS.lib.PK11_FindKeyByAnyCert(this.caCertificate, null);
     this.needsReboot = false;
   } else {
-    dump('Generating new ca certificate..\n');
+    CV9BLog.pki('Generating new ca certificate..');
     var keys = this.generateKeyPair(true, 'Convergence Local Private');
     this.caKey = keys.privateKey;
     this.caCertificate = this.generateCaCertificate(keys.privateKey, keys.publicKey);
@@ -176,7 +176,7 @@ CertificateManager.prototype.addVerificationDetails = function(certificate, exte
   var status = NSS.lib.CERT_EncodeAndAddBitStrExtension(
     extensionHandle, NSS.lib.SEC_OID_NS_CERT_EXT_COMMENT, commentItem.address(), 0 );
 
-  dump('COMMENT v3 extension result: ' + status + '\n');
+  CV9BLog.pki('COMMENT v3 extension result: ' + status);
 };
 
 CertificateManager.prototype.addAltNames = function(certificate, extensionHandle, altNames) {
@@ -262,12 +262,12 @@ CertificateManager.prototype.generateKeyPair = function(permanent, nick) {
     rsaParams.address(), publicKey.address(), permanent ? 1 : 0, 1, null );
 
   if (privateKey == null || privateKey.isNull()) {
-    dump('KeyPair generation error: ' + NSPR.lib.PR_GetError() + '\n');
+    CV9BLog.pki('KeyPair generation error: ' + NSPR.lib.PR_GetError());
     throw 'Error generating keypair!';
   }
 
   if (publicKey == null || publicKey.isNull()) {
-    dump('KeyPair generation error: ' + NSPR.lib.PR_GetError() + '\n');
+    CV9BLog.pki('KeyPair generation error: ' + NSPR.lib.PR_GetError());
     throw 'Error generating keypair (pub)!'
   }
 

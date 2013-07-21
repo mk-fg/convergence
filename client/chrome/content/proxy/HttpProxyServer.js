@@ -40,7 +40,7 @@ HttpProxyServer.prototype.readHttpHeaders = function() {
 
     headers  += buf;
 
-    dump('Total headers: ' + headers + '\n');
+    CV9BLog.worker('Total headers: ' + headers);
 
     if (headers.indexOf('\r\n\r\n') != -1)
       return headers;
@@ -67,9 +67,9 @@ HttpProxyServer.prototype.parseDestination = function(httpHeaders) {
 };
 
 HttpProxyServer.prototype.getConnectDestination = function() {
-  dump('Reading http headers...\n');
+  CV9BLog.worker('Reading http headers...');
   httpHeaders = this.readHttpHeaders();
 
-  dump('Read http headers: ' + httpHeaders + '\n');
+  CV9BLog.worker('Read http headers: ' + httpHeaders);
   return this.parseDestination(httpHeaders);
 };

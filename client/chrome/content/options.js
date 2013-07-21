@@ -97,7 +97,7 @@ function onAddNotary() {
   if (retVal.notary) {
     for (var i=0;i<notaries.length;i++) {
       if (isDuplicateNotary(notaries[i], retVal.notary)) {
-        dump('Found duplicate: ' + notaries[i].getName()+ '\n');
+        CV9BLog.settings('Found duplicate: ' + notaries[i].getName());
         alert('Sorry, this notary conflicts with a notary that you already have configured.' +
               '  You can only use two notaries from the same organization if they are'       +
               ' configured  for seperate regions.');
@@ -212,7 +212,7 @@ function getNotaryRowCount() {
     }
   }
 
-  dump('Notary row count: ' + count + '\n');
+  CV9BLog.settings('Notary row count: ' + count);
   return count;
 };
 
@@ -381,7 +381,7 @@ function sortCacheTree(column) {
   else if (id == 'cacheFingerprint') sortColumn = 'fingerprint';
   else if (id == 'cacheTimestamp')   sortColumn = 'timestamp';
 
-  dump('id: ' + id + ' column: ' + sortColumn + ' direction: ' + sortDirection + '\n');
+  CV9BLog.settings('id: ' + id + ' column: ' + sortColumn + ' direction: ' + sortDirection);
 
   this.updateCacheSettings(sortColumn, sortDirection);
   column.setAttribute('sortDirection', sortDirection);

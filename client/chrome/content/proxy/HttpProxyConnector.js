@@ -45,7 +45,7 @@ HttpProxyConnector.prototype.sendRequest = function(proxySocket, host, port) {
 };
 
 HttpProxyConnector.prototype.makeConnection = function(proxySocket, host, port) {
-  dump('Making HTTP proxy connection...\n');
+  CV9BLog.worker('Making HTTP proxy connection...');
 
   this.sendRequest(proxySocket, host, port);
   this.readResponse(proxySocket);

@@ -29,6 +29,7 @@
   **/
 
 importScripts(
+  'chrome://convergence/content/Logger.js',
   'chrome://convergence/content/ctypes/NSPR.js',
   'chrome://convergence/content/ctypes/NSS.js',
   'chrome://convergence/content/ctypes/SSL.js',
@@ -138,12 +139,12 @@ ShuffleWorker.prototype.processConnections = function() {
     var modified = false;
 
     if (this.isWakeupEvent(pollfds[connectionsLength].out_flags)) {
-      dump('Bailing out for wakeup...\n');
+      CV9BLog.worker('Bailing out for wakeup...');
       return;
     }
 
     if (this.isAcceptEvent(pollfds[connectionsLength + 1].out_flags)) {
-      dump('Handling accept event...\n');
+      CV9BLog.worker('Handling accept event...');
       this.handleAcceptEvent();
     }
 
@@ -161,18 +162,18 @@ onmessage = function(event) {
   try {
     switch (event.data.type) {
     case TYPE_INITIALIZE:
-      dump('Initializing ShuffleWorker...\n');
+      CV9BLog.worker('Initializing ShuffleWorker...');
       shuffleWorker.initialize(event.data);
       break;
     case TYPE_CONNECTION:
-      dump('Adding ShuffleWorker connection...\n');
+      CV9BLog.worker('Adding ShuffleWorker connection...');
       shuffleWorker.addConnection(event.data);
       break;
     }
 
     shuffleWorker.processConnections();
-    dump('ShuffleWorker complete!\n');
+    CV9BLog.worker('ShuffleWorker complete!');
   } catch (e) {
-    dump('ShuffleWorker exception: ' + e + ' , ' + e.stack + '\n');
+    CV9BLog.worker('ShuffleWorker exception: ' + e + ' , ' + e.stack);
   }
 };

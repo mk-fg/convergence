@@ -24,7 +24,7 @@ MultiDestinationConnector.prototype.makeBlocking = function(fd) {
   var socketOption = NSPR.types.PRSocketOptionData({'option' : 0, 'value' : 0});
   var status = NSPR.lib.PR_SetSocketOption(fd, socketOption.address());
 
-  dump('Switch back to blocking status: ' + status + ' , ' + NSPR.lib.PR_GetError() + '\n');
+  CV9BLog.proto('Switch back to blocking status: ' + status + ' , ' + NSPR.lib.PR_GetError());
 };
 
 MultiDestinationConnector.prototype.waitForConnection = function(pollfds, addresses) {
@@ -34,18 +34,18 @@ MultiDestinationConnector.prototype.waitForConnection = function(pollfds, addres
     return -1;
   }
 
-  dump('Active count: ' + activeCount + '\n');
+  CV9BLog.proto('Active count: ' + activeCount);
 
   while (true) {
     var eventCount = NSPR.lib.PR_Poll(pollfds, pollfds.length, 5000);
 
     if (eventCount == -1) {
-      dump('MultiDestination poll failed!\n');
+      CV9BLog.proto('MultiDestination poll failed!');
       return -1;
     }
 
     if (eventCount == 0) {
-      dump('MultiDestination poll timeout!\n');
+      CV9BLog.proto('MultiDestination poll timeout!');
       return -1;
     }
 
@@ -54,12 +54,12 @@ MultiDestinationConnector.prototype.waitForConnection = function(pollfds, addres
         var connectedStatus = NSPR.lib.PR_ConnectContinue(pollfds[i].fd, pollfds[i].out_flags);
 
         if (connectedStatus == 0) {
-          dump('Got connected event: '  + i + '!\n');
+          CV9BLog.proto('Got connected event: '  + i + '!');
           return i;
         } else if (NSPR.lib.PR_GetError() != NSPR.lib.PR_IN_PROGRESS) {
-          dump('Got error event: ' + i + '!\n');
+          CV9BLog.proto('Got error event: ' + i + '!');
           if (--activeCount <= 0) {
-            dump('All MultiDestination polls failed!\n');
+            CV9BLog.proto('All MultiDestination polls failed!');
             return -1;
           }
 
@@ -104,7 +104,7 @@ MultiDestinationConnector.prototype.makeSockets = function(addresses) {
     var fd = NSPR.lib.PR_OpenTCPSocket(NSPR.lib.PR_AF_INET);
 
     if (fd == null) {
-      dump('Unable to construct socket!\n');
+      CV9BLog.proto('Unable to construct socket!');
       continue;
     }
 
@@ -134,7 +134,7 @@ MultiDestinationConnector.prototype.resolveNames = function(destinations) {
       destinations[i].host, NSPR.lib.PR_AF_INET, NSPR.lib.PR_AI_ADDRCONFIG );
 
     if (addrInfo == null || addrInfo.isNull()) {
-      dump('DNS lookup failed: ' + NSPR.lib.PR_GetError() + '\n');
+      CV9BLog.proto('DNS lookup failed: ' + NSPR.lib.PR_GetError());
       continue;
     }
 

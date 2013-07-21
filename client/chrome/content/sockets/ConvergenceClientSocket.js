@@ -63,7 +63,7 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
   }
 
   if (proxy != null) {
-    dump('Making proxied connection...\n');
+    CV9BLog.proto('Making proxied connection...');
     var proxyConnector = new ProxyConnector(proxy);
     proxyConnector.makeConnection(this, host, port);
   }
@@ -80,9 +80,9 @@ function allGoodAuth(arg, fd, foo, bar) {
 }
 
 function clientAuth(arg, fd, caNames, retCert, retKey) {
-  dump('Server requested client certificate...\n');
+  CV9BLog.proto('Server requested client certificate...');
   var status = SSL.lib.NSS_GetClientAuthData(arg, fd, caNames, retCert, retKey);
-  dump('Client certificate status: ' + staus + '\n');
+  CV9BLog.proto('Client certificate status: ' + staus);
 }
 
 ConvergenceClientSocket.prototype.negotiateSSL = function() {
@@ -113,7 +113,7 @@ ConvergenceClientSocket.prototype.negotiateSSL = function() {
       ((status = SSL.lib.SSL_ForceHandshakeWithTimeout(
         this.fd, NSPR.lib.PR_SecondsToInterval(10) )) == -1)
       && (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR) ) {
-    dump('Polling on handshake...\n');
+    CV9BLog.proto('Polling on handshake...');
     if (!this.waitForInput(10000))
       throw 'SSL handshake failed!';
   }
@@ -141,12 +141,12 @@ ConvergenceClientSocket.prototype.readString = function(n) {
 
   while (((read = NSPR.lib.PR_Read(this.fd, buffer, n)) == -1) &&
       (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR)) {
-    dump('polling on read...\n');
+    CV9BLog.proto('polling on read...');
     if (!this.waitForInput(8000)) return null; // TODO: hardcoded fail-timeout
   }
 
   if (read <= 0) {
-    dump('Error read: ' + read + ' , ' + NSPR.lib.PR_GetError() + '\n');
+    CV9BLog.proto('Error read: ' + read + ' , ' + NSPR.lib.PR_GetError());
     return null;
   }
 

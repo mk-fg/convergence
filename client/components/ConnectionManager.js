@@ -90,13 +90,13 @@ ConnectionManager.prototype.initializeWorkerFactory = function() {
     return Components.classes['@mozilla.org/threads/workerfactory;1']
     .createInstance(Components.interfaces.nsIWorkerFactory);
   } catch (e) {
-    dump('Unable to initialize workerfactory, assuming Gecko 8.\n');
+    CV9BLog.worker('Unable to initialize workerfactory, assuming Gecko 8.');
     return null;
   }
 };
 
 ConnectionManager.prototype.spawnConnection = function(clientSocket) {
-  dump('Spawning connectionworker...\n');
+  CV9BLog.worker('Spawning connectionworker...');
 
   var worker;
 
@@ -131,11 +131,11 @@ ConnectionManager.prototype.spawnConnection = function(clientSocket) {
         'certificates' : self.certificateManager.serialize()});
   });
 
-  dump('Posted message to ConnectionWorker!\n');
+  CV9BLog.worker('Posted message to ConnectionWorker!');
 };
 
 ConnectionManager.prototype.initializeShuffleWorker = function() {
-  dump('Initializing shuffleworker...\n');
+  CV9BLog.worker('Initializing shuffleworker...');
   var socketPair = NSPR.types.PRFileDescPtrArray(2);
   var status = NSPR.lib.PR_NewTCPSocketPair(socketPair);
 
@@ -157,11 +157,11 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
   }
 
   shuffleWorker.onmessage = function(event) {
-    dump('ShuffleWorker accepted connection: ' + event.data.clientSocket + '\n');
+    CV9BLog.worker('ShuffleWorker accepted connection: ' + event.data.clientSocket);
     connectionManager.spawnConnection(event.data.clientSocket);
   };
 
-  dump('Posting...\n');
+  CV9BLog.worker('Posting...');
 
   try {
     shuffleWorker.postMessage({
@@ -172,7 +172,7 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
       'sslFile' : this.sslFile.path,
       'nsprFile' : this.nsprFile.path });
   } catch (e) {
-    dump('Posting error: ' + e + ' , ' + e.stack + '\n');
+    CV9BLog.worker('Posting error: ' + e + ' , ' + e.stack);
   }
   return shuffleWorker;
 };

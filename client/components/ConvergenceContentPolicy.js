@@ -40,7 +40,7 @@ ConvergenceContentPolicy.prototype = {
 
   shouldLoad: function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra) {
     if (this.notaryExpression.test(aContentLocation.spec)) {
-      dump('********* DETECTED NOTARY FILE ***************\n');
+      dump('ConvergenceCP: ********* DETECTED NOTARY FILE ***************\n');
 
       ConvergenceUtil.persistUrl(aContentLocation.spec, function(temporaryFile) {
           var observerService = Components.classes['@mozilla.org/observer-service;1']
@@ -59,19 +59,10 @@ ConvergenceContentPolicy.prototype = {
   },
 };
 
-var components = [ConvergenceContentPolicy];
-/**
-  * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
-  * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
-  */
-if (XPCOMUtils.generateNSGetFactory)
-  var NSGetFactory = XPCOMUtils.generateNSGetFactory(components);
-else
-  var NSGetModule = XPCOMUtils.generateNSGetModule(components);
-
-/** Component Loading **/
 
 var loadScript = function(isChrome, subdir, filename) {
+  try { logger = CV9BLog.core; }
+  catch (e) { logger = function(line) { dump('Convergence.dump: ' + line + '\n'); } }
   try {
     var path = __LOCATION__.parent.clone();
 
@@ -87,19 +78,31 @@ var loadScript = function(isChrome, subdir, filename) {
 
     path.append(filename);
 
-    dump('Loading: ' + path.path + '\n');
+    logger('Loading: ' + path.path);
 
     var fileProtocol = Components.classes['@mozilla.org/network/protocol;1?name=file']
-    .getService(Components.interfaces['nsIFileProtocolHandler']);
+      .getService(Components.interfaces['nsIFileProtocolHandler']);
     var loader = Components.classes['@mozilla.org/moz/jssubscript-loader;1']
-    .getService(Components.interfaces['mozIJSSubScriptLoader']);
+      .getService(Components.interfaces['mozIJSSubScriptLoader']);
 
     loader.loadSubScript(fileProtocol.getURLSpecFromFile(path));
 
-    dump('Loaded!\n');
+    logger('Loaded!');
   } catch (e) {
-    dump('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack + '\n');
+    logger('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack);
   }
 };
 
+loadScript(true, null, 'Logger.js');
 loadScript(true, 'util', 'ConvergenceUtil.js');
+
+
+var components = [ConvergenceContentPolicy];
+/**
+  * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
+  * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
+  */
+if (XPCOMUtils.generateNSGetFactory)
+  var NSGetFactory = XPCOMUtils.generateNSGetFactory(components);
+else
+  var NSGetModule = XPCOMUtils.generateNSGetModule(components);

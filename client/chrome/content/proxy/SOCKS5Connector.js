@@ -41,10 +41,11 @@ SOCKS5Connector.prototype.readServerHello = function(proxySocket) {
 };
 
 SOCKS5Connector.prototype.sendConnectRequest = function(proxySocket, host, port) {
-  dump('Sending connect request for: ' + host + ':' + port + '\n');
-  var request = [String.fromCharCode(0x05), String.fromCharCode(0x01),
-                  String.fromCharCode(0x00), String.fromCharCode(0x03),
-                  String.fromCharCode(host.length)];
+  CV9BLog.worker('Sending connect request for: ' + host + ':' + port);
+  var request = [
+    String.fromCharCode(0x05), String.fromCharCode(0x01),
+    String.fromCharCode(0x00), String.fromCharCode(0x03),
+    String.fromCharCode(host.length) ];
 
   var status = proxySocket.writeBytes(NSPR.lib.buffer(request.join('')), 5);
   var status = proxySocket.writeBytes(NSPR.lib.buffer(host), host.length);
@@ -55,7 +56,7 @@ SOCKS5Connector.prototype.sendConnectRequest = function(proxySocket, host, port)
 SOCKS5Connector.prototype.readConnectResponse = function(proxySocket, host) {
   var response = proxySocket.readFully(4);
 
-  dump('Got response: ' + response[1] + '\n');
+  CV9BLog.worker('Got response: ' + response[1]);
 
   if (response[1] != 0x00) {
     proxySocket.close();
@@ -77,7 +78,7 @@ SOCKS5Connector.prototype.readConnectResponse = function(proxySocket, host) {
 };
 
 SOCKS5Connector.prototype.makeConnection = function(proxySocket, host, port) {
-  dump('Making SOCKS5 proxy connection...\n');
+  CV9BLog.worker('Making SOCKS5 proxy connection...');
 
   this.sendClientHello(proxySocket);
   this.readServerHello(proxySocket)

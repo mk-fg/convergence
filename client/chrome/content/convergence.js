@@ -48,7 +48,7 @@ var Convergence = {
     }
 
     if (!status.status) {
-      dump('Displaying certificate fialure notification\n');
+      CV9BLog.ui('Displaying certificate failure notification');
       this.displayCertificateFailureNotification(status);
     }
 
@@ -93,12 +93,12 @@ var Convergence = {
     var convergence = this;
 
     container.addEventListener('TabSelect', function(event) {
-        dump('On tab selected..\n');
+        CV9BLog.ui('On tab selected...');
         try {
           var status = convergence.certificateStatus.getCurrentTabStatus();
           convergence.setToolTip(status);
         } catch (e) {
-          dump(e + ' , ' + e.stack);
+          CV9BLog.ui(e + ' , ' + e.stack);
         }
       }, false);
   },
@@ -123,7 +123,7 @@ var Convergence = {
     try {
       notary = this.convergenceManager.getNewNotaryFromBundle(path);
     } catch (exception) {
-      dump('Got exception: ' + exception + ' , ' + exception.stack + '\n');
+      CV9BLog.ui('Got exception: ' + exception + ' , ' + exception.stack);
       alert('Unknown Notary bundle version: ' + exception.version + '!');
       return;
     }
@@ -145,9 +145,9 @@ var Convergence = {
   },
 
   observe: function(subject, topic, data) {
-    dump('Observe called!\n');
+    CV9BLog.ui('Observe called!');
     if (topic == 'convergence-add-notary') {
-      dump('Adding notary from file: ' + data + '\n');
+      CV9BLog.ui('Adding notary from file: ' + data);
       this.addNotaryFromFile(data);
     } else if (topic == 'convergence-disabled') {
       this.setDisabledStatus();
@@ -158,7 +158,7 @@ var Convergence = {
     if (event.target.id == 'convergence-button' ||
         event.target.id == 'convergence-menu-toggle')
     {
-      dump('onToolBarClick\n');
+      CV9BLog.ui('onToolBarClick');
       this.updateSystemStatus();
       this.updateLocalStatus();
     }

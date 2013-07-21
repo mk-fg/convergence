@@ -26,11 +26,11 @@ function HttpRequestBuilder(host, port, ip, fingerprint) {
   this.port = port;
   this.ip = ip;
   this.fingerprint = fingerprint;
-  dump('Constructed!\n');
+  CV9BLog.proto('Constructed!');
 }
 
 HttpRequestBuilder.prototype.buildRequest = function() {
-  dump('Building request!\n');
+  CV9BLog.proto('Building request!');
 
   postData = 'fingerprint=' + this.fingerprint;
 

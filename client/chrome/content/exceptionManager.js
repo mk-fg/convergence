@@ -29,7 +29,7 @@ function addException() {
   var port = status.target.split(':')[1];
 
   cache.cacheFingerprint(host, port, x509.sha1Fingerprint);
-  dump('Cached: ' + x509.sha1Fingerprint + ' for host: ' + host + ' and port: ' + port + '\n');
+  CV9BLog.pki('Cached: ' + x509.sha1Fingerprint + ' for host: ' + host + ' and port: ' + port);
 
   window.arguments[0]['returnCode'] = true;
   document.documentElement.acceptDialog();
@@ -38,8 +38,8 @@ function addException() {
 function setText(id, value) {
   var element = document.getElementById(id);
   if (!element) return;
-     if (element.hasChildNodes())
-       element.removeChild(element.firstChild);
+      if (element.hasChildNodes())
+        element.removeChild(element.firstChild);
   var textNode = document.createTextNode(value);
   element.appendChild(textNode);
 }

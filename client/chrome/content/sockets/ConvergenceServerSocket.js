@@ -69,21 +69,6 @@ ConvergenceServerSocket.prototype.writeBytes = function(buffer, length) {
   return NSPR.lib.PR_Write(this.fd, buffer, length);
 };
 
-// ConvergenceServerSocket.prototype.readBytes = function(buffer) {
-//   var read = NSPR.lib.PR_Read(this.fd, buffer, 4096);
-
-//   if (read == -1) {
-//     if (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR) {
-//       return -1;
-//     } else {
-//       dump('Read error: ' + NSPR.lib.PR_GetError() + '\n');
-//       return 0;
-//     }
-//   }
-
-//   return read;
-// };
-
 ConvergenceServerSocket.prototype.readFully = function(length) {
   var buffer = new NSPR.lib.unsigned_buffer(length);
   var offset = 0;
@@ -101,7 +86,7 @@ ConvergenceServerSocket.prototype.readFully = function(length) {
 };
 
 ConvergenceServerSocket.prototype.readString = function() {
-  dump('Reading from FD: ' + this.fd + '\n');
+  CV9BLog.proto('Reading from FD: ' + this.fd);
   var buffer = new NSPR.lib.buffer(4096);
   var read = NSPR.lib.PR_Read(this.fd, buffer, 4095);
 

@@ -25,7 +25,7 @@
 
 
 function NativeCertificateCache(cacheLocation, useCache) {
-  dump('Initializing certificate cache...\n');
+  CV9BLog.pki('Initializing certificate cache...');
   this.useCache = useCache;
   this.connection = SQLITE.types.sqlite3.ptr(0);
 
@@ -91,7 +91,7 @@ NativeCertificateCache.prototype.cacheFingerprint = function(host, port, fingerp
 
 NativeCertificateCache.prototype.isCached = function(host, port, fingerprint) {
   if (!this.useCache) {
-    dump('Ignoring cache...\n');
+    CV9BLog.pki('Ignoring cache...');
     return false;
   }
 

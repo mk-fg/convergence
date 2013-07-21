@@ -88,8 +88,8 @@ browser extension.
 
    - TODO: Newer ff (or it's libs) seem to have trouble connecting to some hosts.
 
-       "Convergence.worker: ConnectionWorker exception : Failed to connect to
-       docs.python.org : 443 -- -5961 , undefined"
+       "Convergence.worker: ConnectionWorker exception - Failed to connect to
+       docs.python.org : 443 -- (-5961) PR_CONNECT_RESET_ERROR, undefined"
 
  - server
 

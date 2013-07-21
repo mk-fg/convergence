@@ -152,7 +152,7 @@ onmessage = function(event) {
 
     CV9BLog.worker('ConnectionWorker moving on!');
   } catch (e) {
-    CV9BLog.worker('ConnectionWorker exception : ' + e + ' , ' + e.stack);
+    CV9BLog.worker('ConnectionWorker exception - ' + e + ', ' + e.stack);
     if (localSocket != null) localSocket.close();
     if (targetSocket != null) targetSocket.close();
     CV9BLog.worker('ConnectionWorker moving on from exception...');

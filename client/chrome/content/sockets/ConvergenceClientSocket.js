@@ -59,7 +59,9 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
     NSPR.lib.PR_Free(netAddressBuffer);
     NSPR.lib.PR_FreeAddrInfo(addrInfo);
     NSPR.lib.PR_Close(this.fd);
-    throw 'Failed to connect to ' + host + ' : ' + port + ' -- ' + NSPR.lib.PR_GetError();
+    var err_code = NSPR.lib.PR_GetError(),
+      err_text = NSPR.lib.PR_ErrorToName(err_code).readString();
+    throw 'Failed to connect to ' + host + ' : ' + port + ' -- (' + err_code + ') ' + err_text;
   }
 
   if (proxy != null) {

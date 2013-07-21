@@ -40,9 +40,9 @@ function handleLocalNotaryBundle(bundlePath) {
 
   try {
     retvalue.notary = convergence.getNewNotaryFromBundle(bundlePath);
-  } catch (exception) {
-    CV9BLog.settings('Got exception: ' + exception + ' , ' + exception.stack);
-    alert('Unknown Notary bundle version: ' + exception.version + '!');
+  } catch (e) {
+    CV9BLog.settings('Got exception: ' + e + ' , ' + e.stack);
+    alert('Unknown Notary bundle version: ' + e.version + '!');
     return false;
   }
 

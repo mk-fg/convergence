@@ -182,10 +182,6 @@ NSPR.initialize = function(nsprPath) {
                                               // PRTimeParameters,
                                               // PRExplodedTime.ptr),
 
-    PR_GetError : sharedLib.declare('PR_GetError',
-                                    ctypes.default_abi,
-                                    ctypes.int),
-
     PR_GetConnectStatus : sharedLib.declare('PR_GetConnectStatus',
                                             ctypes.default_abi,
                                             ctypes.int,
@@ -222,6 +218,11 @@ NSPR.initialize = function(nsprPath) {
     PR_GetError : sharedLib.declare('PR_GetError',
                                     ctypes.default_abi,
                                     ctypes.int),
+
+    PR_ErrorToName : sharedLib.declare('PR_ErrorToName',
+                                    ctypes.default_abi,
+                                    ctypes.char.ptr,
+                                    ctypes.int ),
 
     PR_NewLock : sharedLib.declare('PR_NewLock',
                               ctypes.default_abi,

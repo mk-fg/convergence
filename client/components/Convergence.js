@@ -347,7 +347,10 @@ else
 
 var loadScript = function(isChrome, subdir, filename) {
   try { logger = CV9BLog.core; }
-  catch (e) { logger = function(line) { dump('Convergence.dump: ' + line + '\n'); } }
+  catch (e) {
+    logger = (filename != 'Logger.js') ?
+      function(line) { dump('Convergence.dump: ' + line + '\n') } :
+      function(line) {} }
   try {
     var path = __LOCATION__.parent.clone();
 

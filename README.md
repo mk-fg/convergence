@@ -86,6 +86,11 @@ browser extension.
 
    - TODO: SNI in server or client doesn't seem to be working, test: blogs.atlassian.com
 
+   - TODO: Newer ff (or it's libs) seem to have trouble connecting to some hosts.
+
+       "Convergence.worker: ConnectionWorker exception : Failed to connect to
+       docs.python.org : 443 -- -5961 , undefined"
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.

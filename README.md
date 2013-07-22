@@ -100,7 +100,10 @@ used as public to-port-4242-only proxies.
    - Handle too long (for cert subject line) hostnames by generating wildcard
      certificates (776728d).
 
-   - Saner, prefixed and disableable (per-source, if necessary) logging.
+   - More organized, prefixed and disableable (per-source, if necessary)
+     logging. Can be enabled by setting "convergence.logging.enabled" to true in
+     about:config or (for logs from workers as well) by changing "print_all:
+     null" to true in Logger.js.
 
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
      (hostname, port), because of cdn's and round-robin-dns mirrors -
@@ -121,8 +124,6 @@ used as public to-port-4242-only proxies.
 
    - TODO: Check how other stuff like "https everywhere" gets the certs, maybe
      swap socks proxy mitm for some warning or connection-killer hook.
-
-   - TODO: expose logging configuration via some about:config parameter.
 
  - server
 

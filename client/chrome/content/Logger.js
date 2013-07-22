@@ -5,8 +5,18 @@
 
 var CV9BLog = { // my attempt to produce short yet fairly unique id
 
-  print_all: true,
+  // Set boolean value "convergence.logging.enabled"
+  //  to "true" in about:config to enable logging to ff stdout.
+
+  // Set print_all to true/false for explicit on/off regardless of about:config.
+  // Some logging where "Components" interface is inaccessible (workers)
+  //  might get lost with just about:config flag, but available if print_all=true here.
+  print_all: null,
+
+  // Print logging flag before the message.
   print_component: true,
+
+  // These can be used to selectively enable some logging with print_all=false.
   print_flags: {
     'core' : false,
     'settings' : false,
@@ -25,32 +35,20 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
   },
 
   print: function(flag, line) {
+    if (CV9BLog.print_all === null && typeof Components !== 'undefined') {
+      var prefs = Components.classes['@mozilla.org/preferences-service;1']
+        .getService(Components.interfaces.nsIPrefBranch);
+      var state = prefs.prefHasUserValue('convergence.logging.enabled');
+      if (state) CV9BLog.print_all = prefs.getBoolPref('convergence.logging.enabled');
+      else CV9BLog.print_all = false;
+    };
+
     if (!CV9BLog.print_flags[flag] && !CV9BLog.print_all) { return; }
     if (line.search('\n') != -1) line = '|\n  ' + line.replace(/^\s+|\s+$/, '').split('\n').join('\n  ');
     line = 'Convergence' + (CV9BLog.print_component ? '.' + flag : '') + ': ' + line + '\n';
     dump(line);
     try { Firebug.Console.log(line); } catch(e) { } // this line works in extensions
     try { console.log(line); } catch(e) { } // this line works in HTML files
-  },
-
-  // stolen from: http://stackoverflow.com/questions/130404/javascript-data-formatting-pretty-printer
-  print_json : function(obj, indent) {
-    function IsArray(array) { return !( !array || (!array.length || array.length == 0)
-      || typeof array !== 'object' || !array.constructor || array.nodeType || array.item ); }
-    var result = '';
-    if (indent == null) indent = '';
-    for (var property in obj){
-      var value = obj[property];
-      var txt = '<unknown type>';
-      var t = typeof value;
-      if (t == 'string' || t == 'boolean' || t == 'number') txt = "'" + value + "'";
-      else if (t == 'object') {
-        var od = this.pretty_print_json(value, indent + '	');
-        txt = '\n' + indent + '{\n' + od + '\n' + indent + '}';
-      }
-      result += indent + "'" + property + "' : " + txt + ',\n';
-    }
-    return result.replace(/,\n$/, '');
   },
 
 }

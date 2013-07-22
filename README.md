@@ -97,6 +97,9 @@ used as public to-port-4242-only proxies.
      client connections. NSS still seem to have TLS-1.0 as default, which is
      known to be weak.
 
+   - Handle too long (for cert subject line) hostnames by generating wildcard
+     certificates (776728d).
+
    - Saner, prefixed and disableable (per-source, if necessary) logging.
 
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just

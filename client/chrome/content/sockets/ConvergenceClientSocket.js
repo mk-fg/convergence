@@ -92,8 +92,10 @@ ConvergenceClientSocket.prototype.negotiateSSL = function() {
   status = SSL.lib.SSL_AuthCertificateHook(this.fd, callbackFunction, null);
   if (status == -1) throw 'Error setting auth certificate hook!';
 
-  status = SSL.lib.SSL_SetURL(this.fd, this.host);
-  if (status == -1) throw 'Error setting SNI hostname';
+  if (this.host) { // undefined for e.g. notary connections
+    status = SSL.lib.SSL_SetURL(this.fd, this.host);
+    if (status == -1) throw 'Error setting SNI hostname';
+  }
 
   // var callbackFunction = SSL.types.SSLGetClientAuthData(clientAuth);
   // var status = SSL.lib.SSL_GetClientAuthDataHook(this.fd, callbackFunction, null);

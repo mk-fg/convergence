@@ -61,7 +61,7 @@ SSL.initialize = function(sslPath) {
     SSL_LIBRARY_VERSION_3_0 : 0x0300,
     SSL_LIBRARY_VERSION_TLS_1_0 : 0x0301,
     SSL_LIBRARY_VERSION_TLS_1_1 : 0x0302,
-    SSL_LIBRARY_VERSION_TLS_1_2 : 0x0303, // not defined in nss' sslt.h?
+    SSL_LIBRARY_VERSION_TLS_1_2 : 0x0303, // nss-3.15+ only
     ssl_variant_stream : 0,
     ssl_variant_datagram : 1,
 
@@ -157,13 +157,16 @@ SSL.initialize = function(sslPath) {
   }
 
 
-  // Default is to enable TLS up to 1.0, which is known
-  //  to be weak and already gets rejected by e.g. rackcdn.com.
+  // Default is to enable TLS up to 1.0, which is known to be weak
   var ver_range = new SSL.types.SSLVersionRange;
   ver_range.min = SSL.lib.SSL_LIBRARY_VERSION_3_0;
-  ver_range.max = SSL.lib.SSL_LIBRARY_VERSION_TLS_1_1;
+  ver_range.max = SSL.lib.SSL_LIBRARY_VERSION_TLS_1_2;
 
   var status = SSL.lib.SSL_VersionRangeSetDefault(SSL.lib.ssl_variant_stream, ver_range.address());
-  if (status == -1) throw 'SSL_VersionRangeSetDefault failed';
+  if (status == -1) {
+    ver_range.max = SSL.lib.SSL_LIBRARY_VERSION_TLS_1_1; // nss versions before 3.15
+    status = SSL.lib.SSL_VersionRangeSetDefault(SSL.lib.ssl_variant_stream, ver_range.address());
+    if (status == -1) throw 'SSL_VersionRangeSetDefault failed';
+  }
 
 };

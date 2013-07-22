@@ -93,9 +93,9 @@ used as public to-port-4242-only proxies.
      are irrelevant to the client (and always being overidden) - only
      fingerprint and notary responses matter.
 
-   - Enable TLS-1.1 for the actual client connections. NSS seem to have TLS-1.0
-     as default, which is known to be broken and already gets rejected by
-     e.g. rackcdn.com.
+   - Enable TLS-1.2 (or TLS-1.1 for nss versions before 3.15) for the actual
+     client connections. NSS still seem to have TLS-1.0 as default, which is
+     known to be weak.
 
    - Saner, prefixed and disableable (per-source, if necessary) logging.
 

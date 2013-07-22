@@ -10,6 +10,30 @@ See README in `server` section for details on running notary and `client` for
 browser extension.
 
 
+### Note on compatibility
+
+As changes to both client (addon) and server (notary) in this fork are quite
+extensive at this point, old notaries (pre-fork) might not work with client from
+here.
+
+Due to things like e.g. SNI usage in client it WILL see different certificate
+than non-SNI-using (pre-fork) notary.
+
+Some protocol changes like passing IP address client picked to notary while
+shouldn't (I think) cause old notaries to return http-400, are not (and were
+not) tested with them and may also cause whatever behavior.
+
+In short - just set up your own notaries using code in this fork.
+
+Also, I don't use "bounce notaries", as all notaries I use are private anyway
+and there aren't any useable public ones (due to compatibility things outlined
+above), so that feature might be broken.
+
+I suggest disabling it with your own notaries, as it serves no purpose in that
+case (nothing to anonymize with just one user), while opening notaries to be
+used as public to-port-4242-only proxies.
+
+
 ### Changes from upstream
 
  - client

@@ -109,6 +109,10 @@ CertificateManager.prototype.generatePeerCertificate = function(certificateInfo)
 
   if (commonName.indexOf(',') != -1)
     commonName = "'" + commonName + "'";
+  if (commonName.length > 50) {
+    CV9BLog.pki('Using wildcard-CN hack due to its length for: ' + commonName);
+    commonName = commonName.replace(/.*?\./, '*.');
+  }
 
   var certificateName = 'CN=' + commonName + ',OU=Convergence,O=Convergence,C=US';
 

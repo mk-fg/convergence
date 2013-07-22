@@ -10,7 +10,7 @@ See README in `server` section for details on running notary and `client` for
 browser extension.
 
 
-### Fork
+### Changes from upstream
 
  - client
 
@@ -36,6 +36,11 @@ browser extension.
      notaries from URL (at least in newer ff).
 
    - Fix for breakage due to private browsing changes in firefox-20 (ffb7c7b).
+
+   - Use SNI TLS extension for client connections. This is kinda major flaw in
+     the original extension, as it's quite widespread yet original Convergence
+     only saw "generic" certificate for IP both on client and server (see also
+     corresponding notary fix).
 
    - Added "Exceptions" tab to options for hostname patterns that convergence
      should not touch.
@@ -64,6 +69,8 @@ browser extension.
      are irrelevant to the client (and always being overidden) - only
      fingerprint and notary responses matter.
 
+   - Saner, prefixed and disableable (per-source, if necessary) logging.
+
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
      (hostname, port), because of cdn's and round-robin-dns mirrors -
      server-side as well, though there can be several signatures for one
@@ -84,7 +91,7 @@ browser extension.
    - TODO: Check how other stuff like "https everywhere" gets the certs, maybe
      swap socks proxy mitm for some warning or connection-killer hook.
 
-   - TODO: SNI in server or client doesn't seem to be working, test: blogs.atlassian.com
+   - TODO: expose logging configuration via some about:config parameter.
 
  - server
 

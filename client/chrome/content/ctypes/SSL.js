@@ -113,6 +113,12 @@ SSL.initialize = function(sslPath) {
                                                 NSS.types.CERTCertificate.ptr,
                                                 NSPR.types.PRFileDesc.ptr),
 
+    SSL_SetURL : sharedLib.declare('SSL_SetURL',
+                                                ctypes.default_abi,
+                                                ctypes.int32_t,
+                                                NSPR.types.PRFileDesc.ptr,
+                                                ctypes.char.ptr),
+
     NSS_FindCertKEAType : sharedLib.declare('NSS_FindCertKEAType',
                                             ctypes.default_abi,
                                             ctypes.int,

@@ -34,31 +34,19 @@ ConvergenceServerSocket.prototype.negotiateSSL = function(certificateManager, ce
   var material = certificateManager.generatePeerCertificate(certificateInfo);
 
   this.fd = SSL.lib.SSL_ImportFD(null, this.fd);
+  if (this.fd == null || this.fd.isNull()) throw 'Bad SSL FD!';
 
-  if (this.fd == null || this.fd.isNull()) {
-    throw 'Bad SSL FD!';
-  }
-
-  var status = SSL.lib.SSL_ConfigSecureServer(this.fd, material.certificate, material.key,
-                                                SSL.lib.NSS_FindCertKEAType(material.certificate));
-
-  if (status == -1) {
-    throw 'Error on SSL_ConfigSecureServer!';
-  }
+  var status = SSL.lib.SSL_ConfigSecureServer(
+    this.fd, material.certificate, material.key, SSL.lib.NSS_FindCertKEAType(material.certificate) );
+  if (status == -1) throw 'Error on SSL_ConfigSecureServer!';
 
   var status = SSL.lib.SSL_ResetHandshake(this.fd, NSPR.lib.PR_TRUE);
-
-  if (status == -1) {
-    throw 'Error on SSL_RestHandshake!';
-  }
+  if (status == -1) throw 'Error on SSL_RestHandshake!';
 
   // var status = NSS.lib.SSL_ForceHandshake(this.fd);
 
   var status = SSL.lib.SSL_ForceHandshakeWithTimeout(this.fd, NSPR.lib.PR_SecondsToInterval(10));
-
-  if (status == -1) {
-    throw 'Error completing SSL handshake!';
-  }
+  if (status == -1) throw 'Error completing SSL handshake!';
 };
 
 ConvergenceServerSocket.prototype.available = function() {

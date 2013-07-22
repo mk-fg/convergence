@@ -34,9 +34,8 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
     NSPR.lib.PR_AF_INET,
     NSPR.lib.PR_AI_ADDRCONFIG );
 
-  if (addrInfo == null || addrInfo.isNull()) {
+  if (addrInfo == null || addrInfo.isNull())
     throw 'DNS lookup failed: ' + NSPR.lib.PR_GetError() + '\n';
-  }
 
   var netAddressBuffer = NSPR.lib.PR_Malloc(1024);
   var netAddress = ctypes.cast(netAddressBuffer, NSPR.types.PRNetAddr.ptr);
@@ -49,9 +48,7 @@ function ConvergenceClientSocket(host, port, proxy, fd) {
   this.ip = NSPR.lib.inet_ntoa(netAddress.contents.ip).readString();
   this.fd = NSPR.lib.PR_OpenTCPSocket(NSPR.lib.PR_AF_INET);
 
-  if (this.fd == null) {
-    throw 'Unable to construct socket!\n';
-  }
+  if (this.fd == null) throw 'Unable to construct socket!\n';
 
   var status = NSPR.lib.PR_Connect(this.fd, netAddress, NSPR.lib.PR_SecondsToInterval(5));
 
@@ -88,28 +85,22 @@ function clientAuth(arg, fd, caNames, retCert, retKey) {
 }
 
 ConvergenceClientSocket.prototype.negotiateSSL = function() {
+  var status;
+
   this.fd = SSL.lib.SSL_ImportFD(null, this.fd);
   var callbackFunction = SSL.types.SSL_AuthCertificate(allGoodAuth);
-  var status = SSL.lib.SSL_AuthCertificateHook(this.fd, callbackFunction, null);
+  status = SSL.lib.SSL_AuthCertificateHook(this.fd, callbackFunction, null);
+  if (status == -1) throw 'Error setting auth certificate hook!';
 
-  if (status == -1) {
-    throw 'Error setting auth certificate hook!';
-  }
+  status = SSL.lib.SSL_SetURL(this.fd, this.host);
+  if (status == -1) throw 'Error setting SNI hostname';
 
   // var callbackFunction = SSL.types.SSLGetClientAuthData(clientAuth);
   // var status = SSL.lib.SSL_GetClientAuthDataHook(this.fd, callbackFunction, null);
+  // if (status == -1) throw 'Error setting client auth certificate hook!';
 
-  // if (status == -1) {
-  //   throw 'Error setting client auth certificate hook!';
-  // }
-
-  var status = SSL.lib.SSL_ResetHandshake(this.fd, NSPR.lib.PR_FALSE);
-
-  if (status == -1) {
-    throw 'Error resetting handshake!';
-  }
-
-  var status;
+  status = SSL.lib.SSL_ResetHandshake(this.fd, NSPR.lib.PR_FALSE);
+  if (status == -1) throw 'Error resetting handshake!';
 
   while (
       ((status = SSL.lib.SSL_ForceHandshakeWithTimeout(
@@ -119,10 +110,7 @@ ConvergenceClientSocket.prototype.negotiateSSL = function() {
     if (!this.waitForInput(10000))
       throw 'SSL handshake failed!';
   }
-
-  if (status == -1) {
-    throw 'SSL handshake failed!';
-  }
+  if (status == -1) throw 'SSL handshake failed!';
 
   return SSL.lib.SSL_PeerCertificate(this.fd);
 };

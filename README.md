@@ -50,6 +50,8 @@ used as public to-port-4242-only proxies.
        (816c74e).
        Upstream [PR #174](https://github.com/moxie0/Convergence/pull/174).
 
+     - Fix for breakage due to private browsing changes in firefox-20 (ffb7c7b).
+
    - Bumped plugin version, max ff version is 50.* and automatic upstream
      updates are disabled.
 
@@ -58,8 +60,6 @@ used as public to-port-4242-only proxies.
 
    - Bugfix in nsIWebBrowserPersist.saveURI call (b5dbb50), preventing adding
      notaries from URL (at least in newer ff).
-
-   - Fix for breakage due to private browsing changes in firefox-20 (ffb7c7b).
 
    - Use SNI TLS extension for client connections. This is kinda major flaw in
      the original extension, as it's quite widespread yet original Convergence

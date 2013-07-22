@@ -32,17 +32,17 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
       CV9BLog[flag] = function(line) { return CV9BLog.print(flag, line); }
     }
     for (var flag in CV9BLog.print_flags) { add_helper(flag); }
-  },
 
-  print: function(flag, line) {
     if (CV9BLog.print_all === null && typeof Components !== 'undefined') {
       var prefs = Components.classes['@mozilla.org/preferences-service;1']
         .getService(Components.interfaces.nsIPrefBranch);
       var state = prefs.prefHasUserValue('convergence.logging.enabled');
       if (state) CV9BLog.print_all = prefs.getBoolPref('convergence.logging.enabled');
       else CV9BLog.print_all = false;
-    };
+    }
+  },
 
+  print: function(flag, line) {
     if (!CV9BLog.print_flags[flag] && !CV9BLog.print_all) { return; }
     if (line.search('\n') != -1) line = '|\n  ' + line.replace(/^\s+|\s+$/, '').split('\n').join('\n  ');
     line = 'Convergence' + (CV9BLog.print_component ? '.' + flag : '') + ': ' + line + '\n';

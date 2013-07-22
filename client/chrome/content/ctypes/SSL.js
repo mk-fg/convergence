@@ -37,6 +37,9 @@ SSL.initialize = function(sslPath) {
 
   SSL.types = new Object();
 
+  SSL.types.SSLVersionRange = ctypes.StructType(
+    'SSLVersionRange', [{'min' : ctypes.uint16_t}, {'max' : ctypes.uint16_t}] );
+
   SSL.types.SSLGetClientAuthData = ctypes.FunctionType(ctypes.default_abi,
                                                           ctypes.int,
                                                           [ctypes.voidptr_t,
@@ -54,6 +57,14 @@ SSL.initialize = function(sslPath) {
                                                         ctypes.int32_t]).ptr;
 
   SSL.lib = {
+    SSL_LIBRARY_VERSION_2 : 0x0002,
+    SSL_LIBRARY_VERSION_3_0 : 0x0300,
+    SSL_LIBRARY_VERSION_TLS_1_0 : 0x0301,
+    SSL_LIBRARY_VERSION_TLS_1_1 : 0x0302,
+    SSL_LIBRARY_VERSION_TLS_1_2 : 0x0303, // not defined in nss' sslt.h?
+    ssl_variant_stream : 0,
+    ssl_variant_datagram : 1,
+
     SSL_ConfigServerSessionIDCache : sharedLib.declare('SSL_ConfigServerSessionIDCache',
                                                         ctypes.default_abi,
                                                         ctypes.int,
@@ -119,18 +130,40 @@ SSL.initialize = function(sslPath) {
                                                 NSPR.types.PRFileDesc.ptr,
                                                 ctypes.char.ptr),
 
+    SSL_VersionRangeSet : sharedLib.declare('SSL_VersionRangeSet',
+                                                ctypes.default_abi,
+                                                ctypes.int,
+                                                NSPR.types.PRFileDesc.ptr,
+                                                SSL.types.SSLVersionRange.ptr),
+    SSL_VersionRangeSetDefault : sharedLib.declare('SSL_VersionRangeSetDefault',
+                                                ctypes.default_abi,
+                                                ctypes.int,
+                                                ctypes.int,
+                                                SSL.types.SSLVersionRange.ptr),
+
     NSS_FindCertKEAType : sharedLib.declare('NSS_FindCertKEAType',
-                                            ctypes.default_abi,
-                                            ctypes.int,
-                                            NSS.types.CERTCertificate.ptr),
+                                                ctypes.default_abi,
+                                                ctypes.int,
+                                                NSS.types.CERTCertificate.ptr),
 
     NSS_GetClientAuthData : sharedLib.declare('NSS_GetClientAuthData',
                                                   ctypes.default_abi,
                                                   ctypes.int,
-                                              ctypes.voidptr_t,
+                                                  ctypes.voidptr_t,
                                                   NSPR.types.PRFileDesc.ptr,
                                                   NSS.types.CERTDistNames.ptr,
                                                   NSS.types.CERTCertificate.ptr.ptr,
                                                   NSS.types.SECKEYPrivateKey.ptr.ptr)
   }
+
+
+  // Default is to enable TLS up to 1.0, which is known
+  //  to be weak and already gets rejected by e.g. rackcdn.com.
+  var ver_range = new SSL.types.SSLVersionRange;
+  ver_range.min = SSL.lib.SSL_LIBRARY_VERSION_3_0;
+  ver_range.max = SSL.lib.SSL_LIBRARY_VERSION_TLS_1_1;
+
+  var status = SSL.lib.SSL_VersionRangeSetDefault(SSL.lib.ssl_variant_stream, ver_range.address());
+  if (status == -1) throw 'SSL_VersionRangeSetDefault failed';
+
 };

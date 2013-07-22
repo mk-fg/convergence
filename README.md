@@ -93,6 +93,10 @@ used as public to-port-4242-only proxies.
      are irrelevant to the client (and always being overidden) - only
      fingerprint and notary responses matter.
 
+   - Enable TLS-1.1 for the actual client connections. NSS seem to have TLS-1.0
+     as default, which is known to be broken and already gets rejected by
+     e.g. rackcdn.com.
+
    - Saner, prefixed and disableable (per-source, if necessary) logging.
 
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just

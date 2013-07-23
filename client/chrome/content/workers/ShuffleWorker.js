@@ -72,6 +72,7 @@ ShuffleWorker.prototype.initializeDescriptors = function() {
 };
 
 ShuffleWorker.prototype.initialize = function(data) {
+  if (typeof data.logging === 'boolean') CV9BLog.print_all = data.logging;
   NSPR.initialize(data.nsprFile);
   NSS.initialize(data.nssFile);
   SSL.initialize(data.sslFile);
@@ -96,17 +97,15 @@ ShuffleWorker.prototype.handleConnectionEvents = function(pollfds, connectionsLe
   var modified = false;
 
   for (var i=connectionsLength-2;i>=0;i-=2) {
-    var result = this.connectionPairs[i/2].shuffle(pollfds[i].out_flags,
-                                                    pollfds[i+1].out_flags);
+    var result = this.connectionPairs[i/2]
+      .shuffle(pollfds[i].out_flags, pollfds[i+1].out_flags);
 
     if (result[0]) { // Closed
       this.connectionPairs[i/2].close();
       this.connectionPairs.splice(i/2, 1);
     }
 
-    if (result[0] || result[1]) {
-      modified = true;
-    }
+    if (result[0] || result[1]) modified = true;
   }
 
   return modified;

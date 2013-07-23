@@ -118,20 +118,21 @@ ConnectionManager.prototype.spawnConnection = function(clientSocket) {
 
   var self = this;
   this.settingsManager.getSerializedNotaryList(function(nl) {
-      worker.postMessage({
-        'nsprFile' : self.nsprFile.path,
-        'nssFile' : self.nssFile.path,
-        'sslFile' : self.sslFile.path,
-        'sqliteFile' : self.sqliteFile.path,
-        'cacheFile' : self.cacheFile.path,
-        'notaries' : nl,
-        'clientSocket' : clientSocket,
-        'settings' : self.settingsManager.getSerializedSettings(),
-        'proxy' : self.proxyInfo,
-        'certificates' : self.certificateManager.serialize()});
+    worker.postMessage({
+      'logging' : CV9BLog.print_all,
+      'nsprFile' : self.nsprFile.path,
+      'nssFile' : self.nssFile.path,
+      'sslFile' : self.sslFile.path,
+      'sqliteFile' : self.sqliteFile.path,
+      'cacheFile' : self.cacheFile.path,
+      'notaries' : nl,
+      'clientSocket' : clientSocket,
+      'settings' : self.settingsManager.getSerializedSettings(),
+      'proxy' : self.proxyInfo,
+      'certificates' : self.certificateManager.serialize()});
   });
 
-  CV9BLog.worker('Posted message to ConnectionWorker!');
+  CV9BLog.worker('Posted message to ConnectionWorker');
 };
 
 ConnectionManager.prototype.initializeShuffleWorker = function() {
@@ -139,9 +140,7 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
   var socketPair = NSPR.types.PRFileDescPtrArray(2);
   var status = NSPR.lib.PR_NewTCPSocketPair(socketPair);
 
-  if (status == -1) {
-    throw 'Error constructing pipe!';
-  }
+  if (status == -1) throw 'Error constructing pipe!';
 
   this.wakeupRead = socketPair[0];
   this.wakeupWrite = socketPair[1];
@@ -166,6 +165,7 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
   try {
     shuffleWorker.postMessage({
       'type' : TYPE_INITIALIZE,
+      'logging' : CV9BLog.print_all,
       'fd' : Serialization.serializePointer(this.wakeupRead),
       'listenSocket' : this.listenSocket.serialize(),
       'nssFile' : this.nssFile.path,

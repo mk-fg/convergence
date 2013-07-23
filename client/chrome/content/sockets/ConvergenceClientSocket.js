@@ -109,10 +109,14 @@ ConvergenceClientSocket.prototype.negotiateSSL = function() {
         this.fd, NSPR.lib.PR_SecondsToInterval(10) )) == -1)
       && (NSPR.lib.PR_GetError() == NSPR.lib.PR_WOULD_BLOCK_ERROR) ) {
     CV9BLog.proto('Polling on handshake...');
-    if (!this.waitForInput(10000))
-      throw 'SSL handshake failed!';
+    if (!this.waitForInput(10000)) throw 'SSL handshake failed (timeout)';
   }
-  if (status == -1) throw 'SSL handshake failed!';
+  if (status == -1) {
+    // Not sure if these are correct/meaningful errors here
+    var err_code = NSPR.lib.PR_GetError(),
+      err_text = NSPR.lib.PR_ErrorToName(err_code).readString();
+    throw 'SSL handshake failed: (' + err_code + ') ' + err_text;
+  }
 
   return SSL.lib.SSL_PeerCertificate(this.fd);
 };

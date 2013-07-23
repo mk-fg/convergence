@@ -107,6 +107,7 @@ onmessage = function(event) {
   var targetSocket = null;
 
   try {
+    if (typeof event.logging === 'boolean') CV9BLog.print_all = event.logging;
     NSPR.initialize(event.data.nsprFile);
     NSS.initialize(event.data.nssFile);
     SSL.initialize(event.data.sslFile);

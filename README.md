@@ -101,9 +101,8 @@ used as public to-port-4242-only proxies.
      certificates (776728d).
 
    - More organized, prefixed and disableable (per-source, if necessary)
-     logging. Can be enabled by setting "convergence.logging.enabled" to true in
-     about:config or (for logs from workers as well) by changing "print_all:
-     null" to true in Logger.js.
+     logging. Can be enabled by setting "convergence.logging.enabled" to "true"
+     in about:config or by changing "print_all: null" to "true" in Logger.js.
 
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
      (hostname, port), because of cdn's and round-robin-dns mirrors -

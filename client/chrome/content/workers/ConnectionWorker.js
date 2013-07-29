@@ -102,12 +102,13 @@ function checkCertificateValidity(
 };
 
 onmessage = function(event) {
-  CV9BLog.worker('ConnectionWorker got message...');
   var localSocket = null;
   var targetSocket = null;
 
   try {
-    if (typeof event.logging === 'boolean') CV9BLog.print_all = event.logging;
+    if (typeof event.data.logging === 'boolean') CV9BLog.print_all = event.data.logging;
+    CV9BLog.worker('ConnectionWorker got message...');
+
     NSPR.initialize(event.data.nsprFile);
     NSS.initialize(event.data.nssFile);
     SSL.initialize(event.data.sslFile);

@@ -133,27 +133,20 @@ onmessage = function(event) {
       certificateInfo, event.data.settings['privatePkiExempt'] );
     CV9BLog.worker('Validity check results: ' + CV9BLog.print_json(results));
 
-    if (results['status'] == false) {
-      certificateInfo.commonName = new NSS.lib.buffer('Invalid Certificate');
-      certificateInfo.altNames = null;
-    } else {
-      // Such override allows totally invalid certificates to be used,
-      //  e.g. if CN and SubjectAltNames had nothing to do with the hostname/ip.
-      certificateInfo.commonName = new NSS.lib.buffer(destination.host);
-      certificateInfo.altNames = null;
-    }
+    // Such override allows totally invalid certificates to be used,
+    //  e.g. if CN and SubjectAltNames had nothing to do with the hostname/ip.
+    certificateInfo.commonName = new NSS.lib.buffer(
+      results['status'] === true ? destination.host : 'Invalid Certificate' );
+    certificateInfo.altNames = null;
 
     certificateInfo.encodeVerificationDetails(results);
-
     this.sendClientResponse(localSocket, certificateManager, certificateInfo);
-
     postMessage({
       'clientFd' : Serialization.serializePointer(localSocket.fd),
       'serverFd' : Serialization.serializePointer(targetSocket.fd) });
-
     certificateCache.close();
 
-    CV9BLog.worker('ConnectionWorker moving on!');
+    CV9BLog.worker('ConnectionWorker done');
   } catch (e) {
     CV9BLog.worker('ConnectionWorker exception - ' + e + ', ' + e.stack);
     if (localSocket != null) localSocket.close();

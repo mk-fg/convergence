@@ -171,7 +171,7 @@ onmessage = function(event) {
     }
 
     shuffleWorker.processConnections();
-    CV9BLog.worker('ShuffleWorker complete!');
+    CV9BLog.worker('ShuffleWorker done');
   } catch (e) {
     CV9BLog.worker('ShuffleWorker exception: ' + e + ' , ' + e.stack);
   }

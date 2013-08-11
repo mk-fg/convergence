@@ -31,8 +31,8 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
 
   _init: function() {
     var add_helper = function(flag) {
-      CV9BLog[flag] = function(line) { return CV9BLog.print(flag.replace('_', '.'), line); }
-    }
+      CV9BLog[flag] = function(line, json) {
+        return CV9BLog.print(flag.replace('_', '.'), line, json); }; };
     for (var flag in CV9BLog.print_flags) { add_helper(flag); }
 
     if (CV9BLog.print_all === null && typeof Components !== 'undefined') {
@@ -44,8 +44,9 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
     }
   },
 
-  print: function(flag, line) {
+  print: function(flag, line, json) {
     if (!CV9BLog.print_flags[flag] && !CV9BLog.print_all) { return; }
+    if (json) line += CV9BLog.print_json(json);
     if (line.search('\n') != -1) line = '|\n  ' + line.replace(/^\s+|\s+$/, '').split('\n').join('\n  ');
     line = 'Convergence' + (CV9BLog.print_component ? '.' + flag : '') + ': ' + line + '\n';
     dump(line);

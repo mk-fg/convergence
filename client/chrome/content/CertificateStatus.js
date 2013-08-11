@@ -122,7 +122,7 @@ CertificateStatus.prototype.getCurrentTabStatus = function() {
 
   if (certificate != null) {
     var status = this.getVerificationStatus(certificate)
-    CV9BLog.ui('Tab cert verification status:' + CV9BLog.print_json(status));
+    CV9BLog.ui('Tab cert verification status:', status);
     return status;
   }
 

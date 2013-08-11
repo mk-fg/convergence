@@ -131,7 +131,7 @@ onmessage = function(event) {
       certificateCache, activeNotaries,
       destination.host, destination.port, targetSocket.ip,
       certificateInfo, event.data.settings['privatePkiExempt'] );
-    CV9BLog.worker_conn('Validity check results: ' + CV9BLog.print_json(results));
+    CV9BLog.worker_conn('Validity check results:', results);
 
     // Such override allows totally invalid certificates to be used,
     //  e.g. if CN and SubjectAltNames had nothing to do with the hostname/ip.

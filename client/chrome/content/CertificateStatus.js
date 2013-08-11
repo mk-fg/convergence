@@ -74,7 +74,8 @@ CertificateStatus.prototype.getCertificateForCurrentTab = function() {
   if (browser.currentURI.scheme != 'https')
     return null;
 
-  var securityProvider = browser.securityUI.QueryInterface(Components.interfaces.nsISSLStatusProvider);
+  var securityProvider = browser.securityUI
+    .QueryInterface(Components.interfaces.nsISSLStatusProvider);
 
   if (securityProvider.SSLStatus != null) {
     return securityProvider.SSLStatus.serverCert;
@@ -120,7 +121,9 @@ CertificateStatus.prototype.getCurrentTabStatus = function() {
   var certificate = this.getCertificateForCurrentTab();
 
   if (certificate != null) {
-    return this.getVerificationStatus(certificate);
+    var status = this.getVerificationStatus(certificate)
+    CV9BLog.ui('Tab cert verification status:' + CV9BLog.print_json(status));
+    return status;
   }
 
   return null;

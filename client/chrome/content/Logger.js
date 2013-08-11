@@ -21,6 +21,8 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
     'core' : false,
     'settings' : false,
     'worker' : false,
+    'worker_conn' : false,
+    'worker_shuffle' : false,
     'proto' : false,
     'ui' : false,
     'notary' : false,
@@ -29,7 +31,7 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
 
   _init: function() {
     var add_helper = function(flag) {
-      CV9BLog[flag] = function(line) { return CV9BLog.print(flag, line); }
+      CV9BLog[flag] = function(line) { return CV9BLog.print(flag.replace('_', '.'), line); }
     }
     for (var flag in CV9BLog.print_flags) { add_helper(flag); }
 

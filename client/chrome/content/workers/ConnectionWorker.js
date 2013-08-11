@@ -68,7 +68,7 @@ function checkCertificateValidity(
   var target = host + ':' + port;
 
   if (privatePkiExempt && certificateInfo.isLocalPki) {
-    CV9BLog.worker('Certificate is a local PKI cert.');
+    CV9BLog.worker_conn('Certificate is a local PKI cert.');
     return {
       'status' : true,
       'target' : target,
@@ -78,7 +78,7 @@ function checkCertificateValidity(
         'status' : ConvergenceResponseStatus.VERIFICATION_SUCCESS }] };
   }
 
-  CV9BLog.worker('Checking certificate cache: ' + certificateInfo.sha1);
+  CV9BLog.worker_conn('Checking certificate cache: ' + certificateInfo.sha1);
 
   if (certificateCache.isCached(host, port, certificateInfo.sha1))
     return {
@@ -89,11 +89,11 @@ function checkCertificateValidity(
         'notary' : 'Certificate Cache',
         'status' : ConvergenceResponseStatus.VERIFICATION_SUCCESS }] };
 
-  CV9BLog.worker('Not cached, checking notaries: ' + certificateInfo.sha1);
+  CV9BLog.worker_conn('Not cached, checking notaries: ' + certificateInfo.sha1);
   var results = activeNotaries.checkValidity(host, port, ip, certificateInfo);
 
   if (results['status'] === true) {
-    CV9BLog.worker('Caching notary result: ' + certificateInfo.sha1);
+    CV9BLog.worker_conn('Caching notary result: ' + certificateInfo.sha1);
     certificateCache.cacheFingerprint(host, port, certificateInfo.sha1);
     return results;
   } else {
@@ -107,7 +107,7 @@ onmessage = function(event) {
 
   try {
     if (typeof event.data.logging === 'boolean') CV9BLog.print_all = event.data.logging;
-    CV9BLog.worker('ConnectionWorker got message...');
+    CV9BLog.worker_conn('Got message...');
 
     NSPR.initialize(event.data.nsprFile);
     NSS.initialize(event.data.nssFile);
@@ -125,13 +125,13 @@ onmessage = function(event) {
     var certificateCache = new NativeCertificateCache(
       event.data.cacheFile, event.data.settings['cacheCertificatesEnabled'] );
 
-    CV9BLog.worker('Checking validity...');
+    CV9BLog.worker_conn('Checking validity...');
 
     var results = this.checkCertificateValidity(
       certificateCache, activeNotaries,
       destination.host, destination.port, targetSocket.ip,
       certificateInfo, event.data.settings['privatePkiExempt'] );
-    CV9BLog.worker('Validity check results: ' + CV9BLog.print_json(results));
+    CV9BLog.worker_conn('Validity check results: ' + CV9BLog.print_json(results));
 
     // Such override allows totally invalid certificates to be used,
     //  e.g. if CN and SubjectAltNames had nothing to do with the hostname/ip.
@@ -146,11 +146,11 @@ onmessage = function(event) {
       'serverFd' : Serialization.serializePointer(targetSocket.fd) });
     certificateCache.close();
 
-    CV9BLog.worker('ConnectionWorker done');
+    CV9BLog.worker_conn('done');
   } catch (e) {
-    CV9BLog.worker('ConnectionWorker exception - ' + e + ', ' + e.stack);
+    CV9BLog.worker_conn('exception - ' + e + ', ' + e.stack);
     if (localSocket != null) localSocket.close();
     if (targetSocket != null) targetSocket.close();
-    CV9BLog.worker('ConnectionWorker moving on from exception...');
+    CV9BLog.worker_conn('moving on from exception...');
   }
 };

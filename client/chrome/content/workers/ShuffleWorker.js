@@ -138,12 +138,12 @@ ShuffleWorker.prototype.processConnections = function() {
     var modified = false;
 
     if (this.isWakeupEvent(pollfds[connectionsLength].out_flags)) {
-      CV9BLog.worker('Bailing out for wakeup...');
+      CV9BLog.worker_shuffle('Bailing out for wakeup...');
       return;
     }
 
     if (this.isAcceptEvent(pollfds[connectionsLength + 1].out_flags)) {
-      CV9BLog.worker('Handling accept event...');
+      CV9BLog.worker_shuffle('Handling accept event...');
       this.handleAcceptEvent();
     }
 
@@ -161,18 +161,18 @@ onmessage = function(event) {
   try {
     switch (event.data.type) {
     case TYPE_INITIALIZE:
-      CV9BLog.worker('Initializing ShuffleWorker...');
+      CV9BLog.worker_shuffle('Initializing...');
       shuffleWorker.initialize(event.data);
       break;
     case TYPE_CONNECTION:
-      CV9BLog.worker('Adding ShuffleWorker connection...');
+      CV9BLog.worker_shuffle('Adding connection...');
       shuffleWorker.addConnection(event.data);
       break;
     }
 
     shuffleWorker.processConnections();
-    CV9BLog.worker('ShuffleWorker done');
+    CV9BLog.worker_shuffle('done');
   } catch (e) {
-    CV9BLog.worker('ShuffleWorker exception: ' + e + ' , ' + e.stack);
+    CV9BLog.worker_shuffle('exception: ' + e + ' , ' + e.stack);
   }
 };

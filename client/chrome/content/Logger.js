@@ -51,6 +51,33 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
     try { console.log(line); } catch(e) { } // this line works in HTML files
   },
 
+  // Can be used as: CV9BLog.proto('Got object:' + CV9BLog.print_json(obj));
+  print_json : function(obj, cut, indent) {
+    if (indent == null) indent = '  ';
+    if (cut == null) cut = 50;
+    return '\n' + CV9BLog._print_json(obj, cut, indent);
+  },
+  _print_json : function(obj, cut, indent) {
+    function IsArray(array) { return !( !array || (!array.length || array.length == 0)
+      || typeof array !== 'object' || !array.constructor || array.nodeType || array.item ); }
+    var result = '';
+    if (indent == null) indent = '';
+    if (cut == null) cut = 16384;
+    for (var property in obj) {
+      var value = obj[property];
+      var txt = '<unknown type>';
+      var t = typeof value;
+      if (t == 'string') {
+        if (value.length > cut) value = value.substr(0, cut) + '...';
+        txt = "`" + value + "'"; }
+      if (t == 'boolean' || t == 'number') txt = value.toString();
+      else if (t == 'object')
+        txt = '\n' + CV9BLog._print_json(value, cut, indent + '  ') + '\n';
+      result += indent + property + ": " + txt + '\n';
+    }
+    return result;
+  },
+
 }
 
 CV9BLog._init()

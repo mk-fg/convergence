@@ -92,7 +92,7 @@ function checkCertificateValidity(
   CV9BLog.worker('Not cached, checking notaries: ' + certificateInfo.sha1);
   var results = activeNotaries.checkValidity(host, port, ip, certificateInfo);
 
-  if (results['status'] == true) {
+  if (results['status'] === true) {
     CV9BLog.worker('Caching notary result: ' + certificateInfo.sha1);
     certificateCache.cacheFingerprint(host, port, certificateInfo.sha1);
     return results;
@@ -131,6 +131,7 @@ onmessage = function(event) {
       certificateCache, activeNotaries,
       destination.host, destination.port, targetSocket.ip,
       certificateInfo, event.data.settings['privatePkiExempt'] );
+    CV9BLog.worker('Validity check results: ' + CV9BLog.print_json(results));
 
     if (results['status'] == false) {
       certificateInfo.commonName = new NSS.lib.buffer('Invalid Certificate');

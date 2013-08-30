@@ -395,6 +395,7 @@ Notary.constructFromV0Json = function(notaryJson) {
 };
 
 Notary.constructFromBundle = function(bundlePath) {
+  CV9BLog.notary('Loading bundle: ' + bundlePath);
   Components.utils.import('resource://gre/modules/NetUtil.jsm');
 
   var file = Components.classes['@mozilla.org/file/local;1']

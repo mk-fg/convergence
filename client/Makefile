@@ -16,6 +16,7 @@ build: clean
 	zip -qr $(ZIP_NAME) ./chrome
 	zip -qr $(ZIP_NAME) ./chrome.manifest
 	zip -qr $(ZIP_NAME) ./components
+	zip -qr $(ZIP_NAME) ./defaults
 	zip -qr $(ZIP_NAME) ./style
 	zip -qr $(ZIP_NAME) ./install.rdf
 	zip -qr $(ZIP_NAME) ./update.rdf

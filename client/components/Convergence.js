@@ -27,6 +27,27 @@
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 
+
+function findMozLibFile(path, fallback) {
+  // As of ff-22, all major libs should be folded to mozjs.dll on windows.
+  // See:
+  //  https://github.com/mk-fg/convergence/issues/1
+  //  https://bugzilla.mozilla.org/show_bug.cgi?id=648407
+  var libFile, libNames = ['mozjs', 'xul', fallback];
+
+  for (var i = 0; i < libNames.length; i++) {
+    libFile = path.clone();
+    libFile.append(ctypes.libraryName(libNames[i]));
+    if (libFile.exists()) {
+      CV9BLog.core('Found lib for ' + fallback + ': ' + libFile.path);
+      break;
+    }
+  }
+  // Current ctypes init code can handle missing paths
+  return libFile;
+}
+
+
 function Convergence() {
   try {
     this.wrappedJSObject = this;
@@ -72,17 +93,11 @@ Convergence.prototype = {
       Components.utils.import('resource://gre/modules/Services.jsm');
       Components.utils.import('resource://gre/modules/ctypes.jsm');
 
-      this.nsprFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
-      this.nsprFile.append(ctypes.libraryName('nspr4'));
-
-      this.nssFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
-      this.nssFile.append(ctypes.libraryName('nss3'));
-
-      this.sslFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
-      this.sslFile.append(ctypes.libraryName('ssl3'));
-
-      this.sqliteFile = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
-      this.sqliteFile.append(ctypes.libraryName('mozsqlite3'));
+      var libDir = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
+      this.nsprFile = findMozLibFile(libDir, 'nspr4');
+      this.nssFile = findMozLibFile(libDir, 'nss3');
+      this.sslFile = findMozLibFile(libDir, 'ssl3');
+      this.sqliteFile = findMozLibFile(libDir, 'mozsqlite3');
 
       NSPR.initialize(this.nsprFile.path);
       NSS.initialize(this.nssFile.path);

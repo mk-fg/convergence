@@ -100,6 +100,11 @@ used as public to-port-4242-only proxies.
      logging. Can be enabled by setting "convergence.logging.enabled" to "true"
      in about:config or by changing "print_all: null" to "true" in Logger.js.
 
+   - Work with nspr/nss/sqlite/ssl libs folded into libxul, as per [mozilla bug
+     648407](https://bugzilla.mozilla.org/show_bug.cgi?id=648407) (FF >= 22).
+     Doesn't seem to solve similar issue on Windows, unfortunately - see
+     [#1 here](https://github.com/mk-fg/convergence/issues/1).
+
    - TODO: Cache fingerprnts for (hostname, port, ip) tuples, not just
      (hostname, port), because of cdn's and round-robin-dns mirrors -
      server-side as well, though there can be several signatures for one

@@ -26,7 +26,6 @@ function NSPR() {
 }
 
 NSPR.initialize = function(nsprPath) {
-
   var sharedLib;
 
   try {

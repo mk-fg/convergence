@@ -122,8 +122,12 @@ used as public to-port-4242-only proxies.
        So that plugin won't hang on bogus notaries any longer than necessary
        with a specific connection latency in mind.
 
-   - TODO: Check how other stuff like "https everywhere" gets the certs, maybe
-     swap socks proxy mitm for some warning or connection-killer hook.
+   - TODO: Make caching timeouts configurable.
+
+       Caching for longer period might be desirable, especially for exceptions,
+       which ideally would have their own timeout, which can maybe also be
+       configurable when creating each exception, to be less annoying in some
+       cases.
 
  - server
 

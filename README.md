@@ -129,6 +129,9 @@ used as public to-port-4242-only proxies.
        configurable when creating each exception, to be less annoying in some
        cases.
 
+   - TODO: CLI tool to work with ff xml config - decode, maybe alter it, and to
+     run queries for random sites via notaries defined there.
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.

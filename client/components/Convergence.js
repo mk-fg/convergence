@@ -117,18 +117,18 @@ Convergence.prototype = {
 
   initializeCtypes: function() {
     try {
-			/*****MY TEST&*******/
-	/* Declare the signature of the function we are going to call */
-	var env=Components.classes["@mozilla.org/process/environment;1"].getService(Components.interfaces.nsIEnvironment);
-	var dir;
-	var path=env.get("PATH");
-	var file = Components.classes["@mozilla.org/file/directory_service;1"]
-           .getService(Components.interfaces.nsIProperties)
-           .get("ProfD", Components.interfaces.nsILocalFile);
-	dir=file.path+"\\extensions\\convergence@extension.thoughtcrime.org\\components\\";
-	env.set("PATH",path+";"+dir);
-	path=env.get("path");
-	/******/
+      /*****MY TEST&*******/
+  /* Declare the signature of the function we are going to call */
+  var env=Components.classes["@mozilla.org/process/environment;1"].getService(Components.interfaces.nsIEnvironment);
+  var dir;
+  var path=env.get("PATH");
+  var file = Components.classes["@mozilla.org/file/directory_service;1"]
+            .getService(Components.interfaces.nsIProperties)
+            .get("ProfD", Components.interfaces.nsILocalFile);
+  dir=file.path+"\\extensions\\convergence@extension.thoughtcrime.org\\components\\";
+  env.set("PATH",path+";"+dir);
+  path=env.get("path");
+  /******/
       Components.utils.import('resource://gre/modules/Services.jsm');
       Components.utils.import('resource://gre/modules/ctypes.jsm');
 

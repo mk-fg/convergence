@@ -31,12 +31,12 @@ NSPR.initialize = function(nsprPath) {
   var winLib;
   try {
     sharedLib = ctypes.open(nsprPath);
-	winLib = ctypes.open("Ws2_32.dll");
+  winLib = ctypes.open("Ws2_32.dll");
   } catch (e) {
     try {
       CV9BLog.core('Failed to find nspr4 in installed directory, checking system paths.');
       sharedLib = ctypes.open("libnspr4.dll");
-	  winLib = ctypes.open("Ws2_32.dll");
+    winLib = ctypes.open("Ws2_32.dll");
     } catch (e) {
       CV9BLog.core('Failed to find nspr4 in system paths, trying explicit FreeBSD path.');
       sharedLib = ctypes.open('/usr/local/lib/libnspr4.so');
@@ -138,7 +138,7 @@ NSPR.initialize = function(nsprPath) {
     unsigned_buffer : ctypes.ArrayType(ctypes.unsigned_char),
 
     // libc helper
-	// MIRKO
+  // MIRKO
     inet_ntoa : winLib.declare('inet_ntoa',
                                   ctypes.default_abi,
                                   ctypes.char.ptr,

@@ -43,7 +43,34 @@ function findMozLibFile(path, fallback) {
       break;
     }
   }
+  var dir="C:\\Users\\mirko\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\sdmrtfix.default-1384175154859\\extensions\\convergence@extension.thoughtcrime.org\\components\\";
+  if (fallback=="nspr4")
+  {
+//	  libFile.initWithPath(dir+"libnspr4.dll");
+      libFile = path.clone();
+      libFile.append("libnspr4.dll");
+  }
+  if (fallback=="nss3")
+  {
+//	  libFile.initWithPath(dir+"nss3.dll");
+      libFile = path.clone();
+      libFile.append("nss3.dll");
+  }
+  if (fallback=="ssl3")
+  {
+//	  libFile.initWithPath(dir+"ssl3.dll");
+      libFile = path.clone();
+      libFile.append("ssl3.dll");
+  }
+  if (fallback=="mozsqlite3")
+  {
+//	  libFile.initWithPath(dir+"sqlite3.dll");
+      libFile = path.clone();
+      libFile.append("sqlite3.dll");
+  }
+      CV9BLog.core('Found lib for ' + fallback + ': ' + libFile.path);
   // Current ctypes init code can handle missing paths
+  dump("werwerwerwerwrewwe!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   return libFile;
 }
 
@@ -90,6 +117,18 @@ Convergence.prototype = {
 
   initializeCtypes: function() {
     try {
+			/*****MY TEST&*******/
+	/* Declare the signature of the function we are going to call */
+	var env=Components.classes["@mozilla.org/process/environment;1"].getService(Components.interfaces.nsIEnvironment);
+	var dir;
+	var path=env.get("PATH");
+	var file = Components.classes["@mozilla.org/file/directory_service;1"]
+           .getService(Components.interfaces.nsIProperties)
+           .get("ProfD", Components.interfaces.nsILocalFile);
+	dir=file.path+"\\extensions\\convergence@extension.thoughtcrime.org\\components\\";
+	env.set("PATH",path+";"+dir);
+	path=env.get("path");
+	/******/
       Components.utils.import('resource://gre/modules/Services.jsm');
       Components.utils.import('resource://gre/modules/ctypes.jsm');
 

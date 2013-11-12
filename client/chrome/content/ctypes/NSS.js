@@ -31,7 +31,8 @@ NSS.initialize = function(nssPath) {
   try {
     sharedLib = ctypes.open(nssPath);
   } catch (e) {
-    CV9BLog.core('Failed to find nss3 in installed directory, checking system paths.');
+    CV9BLog.core('Failed to find nss3 in installed directory, checking system paths.\nFile: '+nssPath);
+	CV9BLog.core("Trying : "+ctypes.libraryName('nss3'));
     sharedLib = ctypes.open(ctypes.libraryName('nss3'));
   }
 

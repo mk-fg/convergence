@@ -1,3 +1,6 @@
+# Avoid adding ignores for tmp files in client/,
+#  as these leftovers can end up being packed into xpi
+
 /client/Convergence.xpi
 
 /server/*.egg-info
@@ -5,4 +8,3 @@
 /server/dist
 *.pyc
 *.pyo
-*.*~

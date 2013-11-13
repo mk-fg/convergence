@@ -178,3 +178,7 @@ used as public to-port-4242-only proxies.
    - TODO: Add option to serve bundle for browsers at some URL.
 
    - TODO: Statistics on queries.
+
+ - packaging
+
+   - TODO: Build scripts for windows (.bat?).

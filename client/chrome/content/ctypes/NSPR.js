@@ -26,24 +26,20 @@ function NSPR() {
 }
 
 NSPR.initialize = function(nsprPath) {
-
   var sharedLib;
-  var winLib;
+
   try {
     sharedLib = ctypes.open(nsprPath);
-  winLib = ctypes.open("Ws2_32.dll");
   } catch (e) {
     try {
       CV9BLog.core('Failed to find nspr4 in installed directory, checking system paths.');
-      sharedLib = ctypes.open("libnspr4.dll");
-    winLib = ctypes.open("Ws2_32.dll");
+      sharedLib = ctypes.open(ctypes.libraryName('nspr4'));
     } catch (e) {
       CV9BLog.core('Failed to find nspr4 in system paths, trying explicit FreeBSD path.');
       sharedLib = ctypes.open('/usr/local/lib/libnspr4.so');
     }
   }
-  CV9BLog.core('NSPR loaded from : '+nsprPath);
-  
+
   NSPR.types = new Object();
 
   NSPR.types.PRSocketOptionData = ctypes.StructType('PRSocketOptionData',
@@ -136,19 +132,6 @@ NSPR.initialize = function(nsprPath) {
 
     buffer : ctypes.ArrayType(ctypes.char),
     unsigned_buffer : ctypes.ArrayType(ctypes.unsigned_char),
-
-    // libc helper
-  // MIRKO
-    inet_ntoa : winLib.declare('inet_ntoa',
-                                  ctypes.default_abi,
-                                  ctypes.char.ptr,
-                                  ctypes.uint32_t),
-
-/*    // libc helper
-    inet_aton : winLib.declare('inet_addr',
-                                  ctypes.default_abi,
-                                  ctypes.uint32_t,
-                                  ctypes.char.ptr),*/
 
     PR_NewTCPSocketPair : sharedLib.declare('PR_NewTCPSocketPair',
                                             ctypes.default_abi,
@@ -265,6 +248,13 @@ NSPR.initialize = function(nsprPath) {
                                 ctypes.uint16_t, // af
                                 ctypes.uint16_t, // port
                                 NSPR.types.PRNetAddr.ptr),
+
+    PR_NetAddrToString : sharedLib.declare('PR_NetAddrToString',
+                                  ctypes.default_abi,
+                                  ctypes.int,
+                                  NSPR.types.PRNetAddr.ptr,
+                                  ctypes.char.ptr,
+                                  ctypes.uint32_t),
 
     PR_GetHostByName : sharedLib.declare('PR_GetHostByName',
                                           ctypes.default_abi,

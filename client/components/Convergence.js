@@ -28,26 +28,6 @@ Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 
 
-function findMozLibFile(path, fallback) {
-  // As of ff-22, all major libs should be folded to mozjs.dll on windows.
-  // See:
-  //  https://github.com/mk-fg/convergence/issues/1
-  //  https://bugzilla.mozilla.org/show_bug.cgi?id=648407
-  var libFile, libNames = ['mozjs', 'xul', fallback];
-
-  for (var i = 0; i < libNames.length; i++) {
-    libFile = path.clone();
-    libFile.append(ctypes.libraryName(libNames[i]));
-    if (libFile.exists()) {
-      CV9BLog.core('Found lib for ' + fallback + ': ' + libFile.path);
-      break;
-    }
-  }
-  // Current ctypes init code can handle missing paths
-  return libFile;
-}
-
-
 function Convergence() {
   try {
     this.wrappedJSObject = this;
@@ -93,11 +73,38 @@ Convergence.prototype = {
       Components.utils.import('resource://gre/modules/Services.jsm');
       Components.utils.import('resource://gre/modules/ctypes.jsm');
 
-      var libDir = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
-      this.nsprFile = findMozLibFile(libDir, 'nspr4');
-      this.nssFile = findMozLibFile(libDir, 'nss3');
-      this.sslFile = findMozLibFile(libDir, 'ssl3');
-      this.sqliteFile = findMozLibFile(libDir, 'mozsqlite3');
+      var FFLibDir = Services.dirsvc.get('GreD', Components.interfaces.nsILocalFile);
+      var FFLibGet = function(name, fallback) {
+        var libPath = FFLibDir.clone();
+        libPath.append(ctypes.libraryName(name));
+        if (fallback && !libPath.exists()) {
+          var libPathFallback = FFLibDir.clone();
+          libPathFallback.append(ctypes.libraryName(fallback));
+          if (libPathFallback.exists()) {
+            CV9BLog.core('Using fallback (' + fallback + ') for lib ' + name + ': ' + libPathFallback.path);
+            libPath = libPathFallback;
+          }
+        }
+        return libPath;
+      }
+
+      if (Services.appinfo.OS != 'WINNT') {
+        // Assuming unix-like system - i.e. Linux, FreeBSD.
+        // SInce FF22, all major libs are folded into libxul on unixes, but separate libs
+        //  should also be available, so we use these to (possibly) work with older versions.
+        // libxul is used as a fallback just in case of weirder platforms.
+        // See: https://bugzilla.mozilla.org/show_bug.cgi?id=648407
+        this.nssFile = FFLibGet('nss3', 'xul');
+        this.nsprFile = FFLibGet('nspr4', 'xul');
+        this.sslFile = FFLibGet('ssl3', 'xul');
+        this.sqliteFile = FFLibGet('mozsqlite3', 'xul');
+      } else {
+        // On windows, separate libs are available only until FF22, after which they're folded into nss3.
+        this.nssFile = FFLibGet('nss3');
+        this.nsprFile = FFLibGet('nspr4', 'nss3');
+        this.sslFile = FFLibGet('ssl3', 'nss3');
+        this.sqliteFile = FFLibGet('mozsqlite3', 'nss3');
+      }
 
       NSPR.initialize(this.nsprFile.path);
       NSS.initialize(this.nssFile.path);

@@ -136,9 +136,8 @@ used as public to-port-4242-only proxies.
 
      These interfaces seem to be way more safe, stable and maintained.
 
-     Looks like it should also be possible to cleanly prevent requests instead
-     of proxying all of them them, as per
-     [this page](http://mdn.beonex.com/en/XUL_School/Intercepting_Page_Loads).
+     Also might need to check on security hooks there and if there's simplier
+     way to override ff cert checks instead of full-blown content proxy.
 
  - server
 

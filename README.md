@@ -132,6 +132,14 @@ used as public to-port-4242-only proxies.
    - TODO: CLI tool to work with ff xml config - decode, maybe alter it, and to
      run queries for random sites via notaries defined there.
 
+   - TODO: replace js-ctypes with XPCOM where possible.
+
+     These interfaces seem to be way more safe, stable and maintained.
+
+     Looks like it should also be possible to cleanly prevent requests instead
+     of proxying all of them them, as per
+     [this page](http://mdn.beonex.com/en/XUL_School/Intercepting_Page_Loads).
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.
@@ -181,4 +189,4 @@ used as public to-port-4242-only proxies.
 
  - packaging
 
-   - TODO: Build scripts for windows (.bat?).
+   - TODO: Build script for windows (bat or cmd).

@@ -132,12 +132,16 @@ used as public to-port-4242-only proxies.
    - TODO: CLI tool to work with ff xml config - decode, maybe alter it, and to
      run queries for random sites via notaries defined there.
 
-   - TODO: replace js-ctypes with XPCOM where possible.
+   - TODO: Replace js-ctypes with XPCOM where possible.
 
      These interfaces seem to be way more safe, stable and maintained.
 
      Also might need to check on security hooks there and if there's simplier
      way to override ff cert checks instead of full-blown content proxy.
+
+   - TODO: At least some failures in the extension can be made more informative
+     - i.e. ctypes load fail can force-disable addon and issue a dialog box
+     telling user why, not just result in broken interfaces.
 
  - server
 
@@ -189,3 +193,7 @@ used as public to-port-4242-only proxies.
  - packaging
 
    - TODO: Build script for windows (bat or cmd).
+
+   - TODO: Update this (and maybe add one to /client) doc with simple debug
+     steps - i.e. how to enable logging (about:config), were to expect it
+     (jsconsole with +1 thing enabled, otherwise terminal or "-console" opt).

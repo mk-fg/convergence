@@ -143,6 +143,8 @@ used as public to-port-4242-only proxies.
      - i.e. ctypes load fail can force-disable addon and issue a dialog box
      telling user why, not just result in broken interfaces.
 
+   - TODO: Merge tack branch if/when there will be something real to test it on.
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.

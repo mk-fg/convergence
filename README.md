@@ -1,4 +1,4 @@
-Convergence
+Convergence "Extra"
 --------------------
 
 This is a fork of Moxie Marlinspike's Convergence tool: http://convergence.io/
@@ -52,8 +52,15 @@ used as public to-port-4242-only proxies.
 
      - Fix for breakage due to private browsing changes in firefox-20 (ffb7c7b).
 
-   - Bumped plugin version, max ff version is 50.* and automatic upstream
-     updates are disabled.
+   - Updated extension metadata to avoid clashes with the original thing and/or
+     other forks.
+
+     This one should be named "Convergence Extra", have a bit different version
+     schema and distinct UUIDs for components.
+     Settings for both are shared and should be compatible.
+
+     Should probably still be a bad idea to have more than one Convergence
+     extension enabled.
 
    - Backends' "isNotaryUri" check seem to have typo bugs (c96d242), messing up
      results (silently with >1 notaries).
@@ -132,6 +139,10 @@ used as public to-port-4242-only proxies.
    - TODO: CLI tool to work with ff xml config - decode, maybe alter it, and to
      run queries for random sites via notaries defined there.
 
+     Can also be implemented as
+     [XPCOM commandline component](https://developer.mozilla.org/en-US/docs/Chrome/Command_Line),
+     but that might be a bad idea due to unnecessary dep on firefox/xulrunner.
+
    - TODO: Replace js-ctypes with XPCOM where possible.
 
      These interfaces seem to be way more safe, stable and maintained.
@@ -144,6 +155,9 @@ used as public to-port-4242-only proxies.
      telling user why, not just result in broken interfaces.
 
    - TODO: Merge tack branch if/when there will be something real to test it on.
+
+   - TODO: Add bootstrap.js to load extension after installation without
+     requiring browser restart.
 
  - server
 

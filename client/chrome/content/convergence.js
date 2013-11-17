@@ -104,7 +104,7 @@ var Convergence = {
   },
 
   initializeConvergenceManager: function() {
-    this.convergenceManager = Components.classes['@thoughtcrime.org/convergence;1']
+    this.convergenceManager = Components.classes['@fraggod.net/convergence;1']
     .getService().wrappedJSObject;
     this.certificateStatus = new CertificateStatus(this.convergenceManager);
   },

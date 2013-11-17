@@ -52,8 +52,8 @@ function Convergence() {
 
 Convergence.prototype = {
   classDescription:   'Convergence Javascript Component',
-  classID:            Components.ID('{ec13aa86-9da1-41f0-b37e-331a0435fb18}'),
-  contractID:         '@thoughtcrime.org/convergence;1',
+  classID:            Components.ID('{44d8bf5b-d0f8-4e2a-876d-5df3813a56c6}'),
+  contractID:         '@fraggod.net/convergence;1',
   QueryInterface:     XPCOMUtils.generateQI([Components.interfaces.nsIClassInfo]),
   extensionVersion:   '0.0',
   enabled:            true,

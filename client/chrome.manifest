@@ -1,11 +1,11 @@
-content     convergence    chrome/content/
+content convergence chrome/content/
 overlay chrome://browser/content/browser.xul chrome://convergence/content/convergence.xul
 style chrome://browser/content/convergence.xul chrome://convergence/style/toolbar.css
 
-category content-policy ConvergenceContentPolicy @thoughtcrime.org/convergence-contentpolicy;1
+category content-policy ConvergenceContentPolicy @fraggod.net/convergence-contentpolicy;1
 
-component {6B065D8C-9B68-11E0-8355-062C4924019B} components/ConvergenceContentPolicy.js
-contract @thoughtcrime.org/convergence-contentpolicy;1 {6B065D8C-9B68-11E0-8355-062C4924019B}
+component {b2e4ed6b-0c15-4a4b-9b40-f0324e938378} components/ConvergenceContentPolicy.js
+contract @fraggod.net/convergence-contentpolicy;1 {b2e4ed6b-0c15-4a4b-9b40-f0324e938378}
 
-component {ec13aa86-9da1-41f0-b37e-331a0435fb18} components/Convergence.js
-contract @thoughtcrime.org/convergence;1 {ec13aa86-9da1-41f0-b37e-331a0435fb18}
+component {44d8bf5b-d0f8-4e2a-876d-5df3813a56c6} components/Convergence.js
+contract @fraggod.net/convergence;1 {44d8bf5b-d0f8-4e2a-876d-5df3813a56c6}

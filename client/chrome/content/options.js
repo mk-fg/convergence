@@ -24,7 +24,7 @@ function getNotaryTree() {
 }
 
 function onOptionsLoad() {
-  convergence = Components.classes['@thoughtcrime.org/convergence;1'].getService().wrappedJSObject;
+  convergence = Components.classes['@fraggod.net/convergence;1'].getService().wrappedJSObject;
   settingsManager = convergence.getSettingsManager();
   notaries = settingsManager.getNotaryList();
 

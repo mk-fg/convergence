@@ -28,13 +28,13 @@ Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 function ConvergenceContentPolicy() {
   this.wrappedJSObject = this;
   this.notaryExpression = new RegExp('http[s]?:\/\/.+\\.notary');
-  this.convergenceManager = Components.classes['@thoughtcrime.org/convergence;1'].getService().wrappedJSObject;
+  this.convergenceManager = Components.classes['@fraggod.net/convergence;1'].getService().wrappedJSObject;
 }
 
 ConvergenceContentPolicy.prototype = {
   classDescription: 'Convergence NotaryWatcherComponent',
-  classID: Components.ID('{6B065D8C-9B68-11E0-8355-062C4924019B}'),
-  contractID: '@thoughtcrime.org/convergence-contentpolicy;1',
+  classID: Components.ID('{b2e4ed6b-0c15-4a4b-9b40-f0324e938378}'),
+  contractID: '@fraggod.net/convergence-contentpolicy;1',
   QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIContentPolicy]),
   _xpcom_categories: [{category: 'content-policy'}],
 

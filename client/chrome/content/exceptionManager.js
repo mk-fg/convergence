@@ -23,7 +23,7 @@ function addException() {
     .getService(Components.interfaces.nsIX509CertDB);
   var x509 = certificateDatabase.constructX509FromBase64(status.certificate);
 
-  var convergence = Components.classes['@thoughtcrime.org/convergence;1'].getService().wrappedJSObject;
+  var convergence = Components.classes['@fraggod.net/convergence;1'].getService().wrappedJSObject;
   var cache = convergence.getNativeCertificateCache();
   var host = status.target.split(':')[0];
   var port = status.target.split(':')[1];

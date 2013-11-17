@@ -33,7 +33,7 @@ function onBrowse() {
 
 
 function handleLocalNotaryBundle(bundlePath) {
-  var convergence = Components.classes['@thoughtcrime.org/convergence;1']
+  var convergence = Components.classes['@fraggod.net/convergence;1']
     .getService().wrappedJSObject;
 
   var retvalue = window.arguments[0];

@@ -3,11 +3,22 @@ Convergence "Extra"
 
 This is a fork of Moxie Marlinspike's Convergence tool: http://convergence.io/
 
-Good high-level overview of the tool can be found in Moxie's "SSL And The Future
-Of Authenticity" talk at BlackHat USA 2011: http://www.youtube.com/watch?v=Z7Wl2FW2TcA
+Convergence is a Firefox browser addon replacing default Certificate Authority
+TLS authentication model with custom validation model, which is implemented by
+"notary" servers.
 
-See README in `server` section for details on running notary and `client` for
-browser extension.
+Queries to notary servers can be anonymized via simple (built-in) onion routing,
+list of such notaries to trust can be changed at any time and validation logic
+on notaries themselves is designed to be customizable to provide "trust agility"
+property, which current CA system lacks.
+
+Good high-level overview of the tool and approach can be found in Moxie's "SSL
+And The Future Of Authenticity" talk at BlackHat USA 2011: http://www.youtube.com/watch?v=Z7Wl2FW2TcA
+
+See also [wikipedia page](https://en.wikipedia.org/wiki/Convergence_%28SSL%29).
+
+More details on creating and running a notary server can be found in README file
+in `server` section. `client` directory contains browser extension.
 
 
 ### Note on compatibility

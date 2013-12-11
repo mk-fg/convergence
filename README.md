@@ -20,6 +20,9 @@ See also [wikipedia page](https://en.wikipedia.org/wiki/Convergence_%28SSL%29).
 More details on creating and running a notary server can be found in README file
 in `server` section. `client` directory contains browser extension.
 
+More-or-less up-to-date version of the built addon is available for install via AMO:
+https://addons.mozilla.org/en-us/firefox/addon/convergence-extra/
+
 
 ### Note on compatibility
 

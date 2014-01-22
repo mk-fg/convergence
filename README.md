@@ -172,6 +172,10 @@ used as public to-port-4242-only proxies.
    - TODO: Add bootstrap.js to load extension after installation without
      requiring browser restart.
 
+   - TODO: Use
+     [Log.jsm](https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Log.jsm)
+     for logging, if available.
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.

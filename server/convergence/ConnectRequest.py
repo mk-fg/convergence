@@ -16,9 +16,9 @@
 # USA
 #
 
-from twisted.web.http import Request
-from twisted.internet import reactor
 from twisted.internet.protocol import BaseProtocol, ClientFactory
+from twisted.internet import reactor
+from twisted.web import http
 
 import re, logging
 
@@ -30,11 +30,11 @@ log = logging.getLogger(__name__)
 # and will only setup a proxy tunnel to a destination port
 # of 4242.
 
-class ConnectRequest(Request):
+class ConnectRequest(http.Request):
 
-    def __init__(self, channel, queued, reactor=reactor):
-        Request.__init__(self, channel, queued)
-        self.reactor = reactor
+    def __init__(self, channel, queued, log=log):
+        http.Request.__init__(self, channel, queued)
+        self.log = log
 
     def isValidConnectRequest(self, method, destinations):
         if (method is None or destinations is None or len(destinations) == 0):
@@ -58,26 +58,26 @@ class ConnectRequest(Request):
         headers = self.getAllHeaders()
         destinationHeaders = self.requestHeaders.getRawHeaders('x-convergence-notary')
 
-        if destinationHeaders is None:
-            return destinations
-        else:
+        if destinationHeaders is not None:
             destinations.extend(destinationHeaders)
-            return destinations
+
+        self.log.debug('Destination(s): %s', destinations)
+        return destinations
 
     def process(self):
-        log.debug('Got connect request: ' + self.uri)
+        self.log.debug('Got connect request: %s', self.uri)
 
         destinations = self.getDestinations()
 
         if self.isValidConnectRequest(self.method, destinations):
-            log.debug('Got connect request...')
+            self.log.debug('Valid connect request')
             self.proxyRequest(destinations);
         else:
-            log.debug('Denying request...')
+            self.log.debug('Denying invalid connect request')
             self.denyRequest()
 
     def proxyRequest(self, destinations):
-        factory = NotaryConnectionFactory(self)
+        factory = NotaryConnectionFactory(self, log=self.log)
         factory.protocol = NotaryConnection
 
         for destination in destinations:
@@ -86,15 +86,16 @@ class ConnectRequest(Request):
             elif (destination.find('+') != -1):
                 destination = destination.split('+')[0]
 
-            log.debug('Connecting to: ' + destination)
+            self.log.debug('Connecting to: %s', destination)
 
-            connector = self.reactor.connectTCP(destination, 4242, factory)
+            connector = reactor.connectTCP(destination, 4242, factory)
             factory.addConnector(connector, destination)
 
     def denyRequest(self):
-        self.setResponseCode(403, 'Access Denied')
+        self.setResponseCode(http.FORBIDDEN, 'Access Denied')
         self.setHeader('Connection', 'close')
-        self.write('<html>The request you issued is not an authorized Convergence Notary request.\n')
+        self.write( '<html>The request you issued is'
+            ' not an authorized Convergence Notary request.</html>\n' )
         self.finish()
 
 
@@ -102,28 +103,29 @@ class ConnectRequest(Request):
 # notary.
 class NotaryConnection(BaseProtocol):
 
-    def __init__(self, client, host):
+    def __init__(self, client, host, log=log):
         self.client = client
         self.host = host
 
     def connectionMade(self):
-        log.debug('Connection made to : ' + self.host + '...')
+        self.log.debug('Connection made to notary: %s', self.host)
         self.client.channel.proxyConnection = self
         self.client.channel.setRawMode()
         self.client.transport.write('HTTP/1.0 200 Connection Established\r\n')
         self.client.transport.write('Proxy-Agent: Convergence\r\n')
-        self.client.transport.write('X-Convergence-Notary: ' + self.host + '\r\n\r\n');
+        self.client.transport.write('X-Convergence-Notary: {}\r\n\r\n'.format(self.host))
 
     def dataReceived(self, data):
         self.client.transport.write(data)
 
     def connectionLost(self, reason):
-        log.debug('Connection lost from server: ' + str(reason))
+        self.log.debug('Connection to notary lost: %s', reason)
         self.client.transport.loseConnection()
 
 # The ConnectionFactory for a proxy tunnel to another notary.
 class NotaryConnectionFactory(ClientFactory):
-    def __init__(self, client):
+
+    def __init__(self, client, log=log):
         self.client = client
         self.connectors = []
         self.connectorHosts = {}
@@ -140,7 +142,7 @@ class NotaryConnectionFactory(ClientFactory):
                     connector.disconnect()
 
             host = self.connectorHosts[self.connectedConnector]
-            return NotaryConnection(self.client, host)
+            return NotaryConnection(self.client, host, log=self.log)
 
     def addConnector(self, connector, host):
         self.connectors.append(connector)
@@ -148,14 +150,15 @@ class NotaryConnectionFactory(ClientFactory):
 
     def clientConnectionFailed(self, connector, reason):
         if connector in self.connectors:
-            log.debug('Connection to notary failed: '
-                + self.connectorHosts[connector] + ' , ' + str(reason))
+            self.log.debug(
+                'Connection to notary (%s) failed: %s',
+                self.connectorHosts[connector], reason )
             self.connectors.remove(connector)
             del self.connectorHosts[connector]
 
         if len(self.connectors) == 0:
-            log.warning('Connection to notary failed!')
-            self.client.setResponseCode(int(404), 'Unable to connect')
+            self.log.warning('Connection to notary failed!')
+            self.client.setResponseCode(http.NOT_FOUND, 'Unable to connect')
             self.client.setHeader('Connection', 'close')
             self.client.write('<html><body>Unable to connect to notary!</body></html>')
             self.client.finish()

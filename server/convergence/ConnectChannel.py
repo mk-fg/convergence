@@ -16,7 +16,7 @@
 # USA
 #
 
-from twisted.web.http import HTTPChannel
+from twisted.web.http import HTTPChannel, HTTPFactory
 from ConnectRequest import ConnectRequest
 
 import logging
@@ -27,19 +27,31 @@ log = logging.getLogger(__name__)
 # The HTTPChannel for incoming CONNECT requests to other notaries.
 
 class ConnectChannel(HTTPChannel):
-    requestFactory = ConnectRequest
 
-    def __init__(self):
-        self.proxyConnection = None
+    def __init__(self, log):
+        self.log, self.proxyConnection = log, None
         HTTPChannel.__init__(self)
 
+    def requestFactory(self, *args, **kws):
+        kws['log'] = self.log
+        return ConnectRequest(*args, **kws)
+
     def rawDataReceived(self, data):
-        log.debug('Shuffling raw data...')
+        self.log.debug('Shuffling raw data (%s bytes)', len(data))
         self.proxyConnection.transport.write(data)
 
     def connectionLost(self, reason):
-        log.debug('Connection lost from client: ' + str(reason))
+        self.log.debug('Connection lost from client: %s', reason)
         if (self.proxyConnection is not None):
             self.proxyConnection.transport.loseConnection()
 
         HTTPChannel.connectionLost(self, reason)
+
+class ConnectChannelFactory(HTTPFactory):
+
+        def buildProtocol(self, addr):
+            log = TaggedLogger(log)
+            log.debug('New ConnectChannel for client: %s', addr)
+            p = self.ConnectChannel(log)
+            p.factory, p.timeOut = self, self.timeOut
+            return p

@@ -89,11 +89,21 @@ def get_backend_list():
 
 def build_notary(opts, verifier):
     from convergence.pages import TargetPage, InfoPage
-    from convergence.ConnectChannel import ConnectChannel
+    from convergence.ConnectChannel import ConnectChannelFactory
 
     from twisted.web import http, server, resource
+    from twisted.web.iweb import IAccessLogFormatter
     from twisted.application import strports, service
     from twisted.enterprise import adbapi
+    from zope.interface import provider
+
+    @provider(IAccessLogFormatter)
+    def taggedLogFormatter(timestamp, request):
+        'Extends access log with a tag field to tie in with other (e.g. debug) logging.'
+        line = http.combinedLogFormatter(timestamp, request)
+        try: tag = request.log.tag
+        except AttributeError: tag = '-'
+        return '{} "{}"'.format(line, tag)
 
     cert_key_path = opts.cert_key or opts.cert
     cert_key = open(opts.cert_key or opts.cert).read() # TODO: is it really used?
@@ -102,13 +112,13 @@ def build_notary(opts, verifier):
     database = adbapi.ConnectionPool( 'sqlite3',
         opts.db, cp_max=1, cp_min=1, check_same_thread=False )
 
-    connectFactory = http.HTTPFactory(timeout=10)
-    connectFactory.protocol = ConnectChannel
+    connectFactory = ConnectChannelFactory(
+        timeout=10, logFormatter=taggedLogFormatter )
 
     notary = resource.Resource()
     notary.putChild('', InfoPage(verifier))
     notary.putChild('target', TargetPage(database, cert_key, verifier))
-    notaryFactory = server.Site(notary)
+    notaryFactory = server.Site(notary, logFormatter=taggedLogFormatter)
 
     # It'd be easier and more flexible to specify endpoints in config, but we don't have one yet
     ep_interface = '' if not opts.interface else ':interface={}'.format(opts.interface)
@@ -136,16 +146,19 @@ def main(argv=None):
     import argparse
     parser = argparse.ArgumentParser(
         description='Convergence {} by Moxie Marlinspike.'.format(__version__))
+
     parser.add_argument('-c', '--config',
         action='append', metavar='path', default=list(),
         help='Configuration files to process.'
             ' Can be specified more than once.'
             ' Values from the latter ones override values in the former.'
             ' Available CLI options override the values in any config.')
+
     parser.add_argument('-v', '--verbose',
         action='store_true', help='Verbose operation mode (most logging from twisted).')
     parser.add_argument('--debug',
         action='store_true', help='Even more verbose operation than with --verbose.')
+
     cmds = parser.add_subparsers(
         title='Supported operations (have their own suboptions as well)')
 
@@ -234,14 +247,15 @@ def main(argv=None):
 
     ## Logging
     from twisted.python import log as twisted_log
-    if opts.debug: log = logging.DEBUG
-    elif opts.verbose: log = logging.INFO
-    else: log = logging.WARNING
+    if opts.debug: level = logging.DEBUG
+    elif opts.verbose: level = logging.INFO
+    else: level = logging.WARNING
     if not cfg:
-        logging.basicConfig( level=log,
+        logging.basicConfig( level=level,
             datefmt='%Y-%m-%d %H:%M:%S',
             format='%(asctime)s :: %(name)s :: %(levelname)s: %(message)s' )
-    else: config.configure_logging(cfg.logging, log)
+    else: config.configure_logging(cfg.logging, level)
+    twisted_log.defaultObserver.stop()
     twisted_log.PythonLoggingObserver().start()
     log = logging.getLogger('convergence.core')
 

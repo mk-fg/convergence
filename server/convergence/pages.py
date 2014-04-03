@@ -41,7 +41,7 @@ class TaggedLogger(object):
         self.tag = os.urandom(3).encode('base64').rstrip('=\n').replace('/', '-')
 
     def __getattr__(self, k):
-        return lambda msg: getattr(self.logger, k)('[{}] {}'.format(self.tag, msg))
+        return lambda tpl,*a,**kw: getattr(self.logger, k)('[{}] {}'.format(self.tag, tpl), *a, **kw)
 
 
 # This class is responsible for responding to actions
@@ -67,7 +67,7 @@ class TargetPage(resource.Resource):
             for req in requests:
                 if req is not request:
                     req.log.debug( 'Cloning response'
-                        ' (code: {}) from parallel request'.format(code) )
+                        ' (code: %s) from parallel request', code )
                 func(self, req, code, *args, **kws)
         return _send
 
@@ -103,16 +103,16 @@ class TargetPage(resource.Resource):
             code, fingerprint = yield self.verifier.verify(
                 host, int(port), address, submittedFingerprint, request.log )
         except Exception as err:
-            request.log.warn('Fetch certificate error: {}'.format(err))
+            request.log.warn('Fetch certificate error: %s', err)
             raise
 
-        request.log.debug('Got fingerprint: {}'.format(fingerprint))
+        request.log.debug('Got fingerprint: %s', fingerprint)
         if fingerprint is None: defer.returnValue((code, None))
         else:
             try:
                 recordRows = yield self.database.updateRecordsFor(host, port, fingerprint)
             except Exception as err:
-                request.log.warn('Update records error: {}'.format(err))
+                request.log.warn('Update records error: %s', err)
                 raise
             else: defer.returnValue((code, recordRows))
 
@@ -123,13 +123,13 @@ class TargetPage(resource.Resource):
             try:
                 code, recordRows = yield self.updateCache(request, host, port, address, fingerprint)
             except Exception as err:
-                request.log.warn('Certificate-fetch handling error: {}'.format(err))
+                request.log.warn('Certificate-fetch handling error: %s', err)
                 self.sendErrorResponse(request, 503, 'Internal Error')
             else: self.sendResponse(request, code, recordRows)
         else: self.sendResponse(request, 200, recordRows)
 
     def getRecordsError(self, error, request):
-        request.log.warn('Get records error: {}'.format(error))
+        request.log.warn('Get records error: %s', error)
         self.sendErrorResponse(request, 503, 'Error retrieving records.')
 
     def render(self, request):
@@ -157,8 +157,9 @@ class TargetPage(resource.Resource):
                 return
             fingerprint = request.args['fingerprint'][0]
 
-        request.log.debug( 'Checking {}:{} (ip: {}) against {}'\
-            .format(host, port, address or 'any', fingerprint) )
+        request.log.debug(
+            'Checking %s:%s (ip: %s) against %s',
+            host, port, address or 'any', fingerprint )
 
         # Group same-target requests arriving at the same time
         request.key = host, port, address, fingerprint

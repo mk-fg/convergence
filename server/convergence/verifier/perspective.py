@@ -32,9 +32,17 @@ import os, re, logging
 log = logging.getLogger(__name__)
 
 
-# It's not critical, but includes mozilla certs for major legit hosts like akamai
-ca_certs_pem = '/etc/ssl/certs/ca-certificates.crt'
-if not os.path.exists(ca_certs_pem): ca_certs_pem = None
+# None = use OpenSSL defaults
+ca_certs_pem = None
+
+# Prefer Mozilla Certs from https://pypi.python.org/pypi/certifi/, if available
+try: import certifi
+except ImportError: pass
+else: ca_certs_pem = certifi.where()
+
+# Includes mozilla certs for major legit hosts like akamai - http://www.cacert.org/
+cacert_pem = '/etc/ssl/certs/ca-certificates.crt'
+if os.path.exists(cacert_pem): ca_certs_pem = cacert_pem
 
 
 class NetworkPerspectiveVerifier(Verifier):

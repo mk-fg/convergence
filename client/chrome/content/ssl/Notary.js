@@ -52,6 +52,7 @@ function Notary(serialized) {
 
   var log_prefix = '[' + this.name + '] ';
   this.log = function(line, json) { CV9BLog.notary(log_prefix + line, json); }
+  this.log.error = function(err) { CV9BLog.notary.error(err, log_prefix); }
 }
 
 Notary.prototype.getHttpDestinations = function() {
@@ -195,7 +196,7 @@ Notary.prototype.checkValidity = function(host, port, ip, certificate, proxy) {
       return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
     }
   } catch (e) {
-    this.log(e + ' , ' + e.stack);
+    this.log.error(e);
     return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
   } finally {
     if (notarySocket != null) {

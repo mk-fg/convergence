@@ -161,7 +161,6 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
   };
 
   CV9BLog.worker('Posting...');
-
   try {
     shuffleWorker.postMessage({
       'type' : TYPE_INITIALIZE,
@@ -172,7 +171,7 @@ ConnectionManager.prototype.initializeShuffleWorker = function() {
       'sslFile' : this.sslFile.path,
       'nsprFile' : this.nsprFile.path });
   } catch (e) {
-    CV9BLog.worker('Posting error: ' + e + ' , ' + e.stack);
+    CV9BLog.worker.error(e, 'Posting error - ');
   }
   return shuffleWorker;
 };

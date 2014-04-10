@@ -146,11 +146,11 @@ onmessage = function(event) {
       'serverFd' : Serialization.serializePointer(targetSocket.fd) });
     certificateCache.close();
 
-    CV9BLog.worker_conn('done');
+    CV9BLog.worker_conn('Done');
   } catch (e) {
-    CV9BLog.worker_conn('exception - ' + e + ', ' + e.stack);
+    CV9BLog.worker_conn.error(e);
     if (localSocket != null) localSocket.close();
     if (targetSocket != null) targetSocket.close();
-    CV9BLog.worker_conn('moving on from exception...');
+    CV9BLog.worker_conn('Moving on from exception...');
   }
 };

@@ -169,10 +169,7 @@ onmessage = function(event) {
       shuffleWorker.addConnection(event.data);
       break;
     }
-
     shuffleWorker.processConnections();
-    CV9BLog.worker_shuffle('done');
-  } catch (e) {
-    CV9BLog.worker_shuffle('exception: ' + e + ' , ' + e.stack);
-  }
+    CV9BLog.worker_shuffle('Done');
+  } catch (e) { CV9BLog.worker_shuffle.error(e); }
 };

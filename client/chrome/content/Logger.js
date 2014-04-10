@@ -61,12 +61,14 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
         CV9BLog[flag] = function(line, json) {
           return CV9BLog.print(flag.replace('_', '.'), line, json); }
       }
+      CV9BLog[flag].error = function(err, prefix) {
+        return CV9BLog[flag]((prefix || '') + 'Exception: ' + err, CV9BLog.format_trace(err)); }
     }
     for (var flag in CV9BLog.print_flags) { add_helper(flag); }
   },
 
   format: function(line, json) {
-    if (json) line += '\n' + CV9BLog.print_json(json);
+    if (json) line += '\n' + CV9BLog.format_json(json);
     if (line.search('\n') != -1) line = '|\n  ' + line.replace(/^\s+|\s+$/, '').split('\n').join('\n  ');
     return line;
   },
@@ -80,7 +82,7 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
     if (!no_nspr) {
       try { CV9BLog.print_nspr(line); }
       catch (e) {
-        CV9BLog.print(flag, 'NSPR logging error: ' + e, null, true);
+        // CV9BLog.print(flag, 'NSPR logging error: ' + e, null, true);
         nspr_err = e;
       }
     }
@@ -109,14 +111,14 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
       throw 'Logging: NSPR write failure';
   },
 
-  // Can be used as: CV9BLog.proto('Got object:' + CV9BLog.print_json(obj));
-  print_json: function(obj, cut, indent) {
+  // Can be used as: CV9BLog.proto('Got object:' + CV9BLog.format_json(obj));
+  format_json: function(obj, cut, indent) {
     if (indent == null) indent = '  ';
-    if (cut == null) cut = 50;
     if (typeof obj == 'string') obj = obj.replace(/^\s+|\s+$/, '').split('\n');
-    return CV9BLog._print_json(obj, cut, indent);
+    else if (cut == null) cut = 50;
+    return CV9BLog._format_json(obj, cut, indent);
   },
-  _print_json: function(obj, cut, indent) {
+  _format_json: function(obj, cut, indent) {
     function IsArray(array) { return !( !array || (!array.length || array.length == 0)
       || typeof array !== 'object' || !array.constructor || array.nodeType || array.item ); }
     var result = '';
@@ -131,10 +133,20 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
         txt = '`' + value.replace('\r', '') + "'"; }
       if (t == 'boolean' || t == 'number') txt = value.toString();
       else if (t == 'object')
-        txt = '\n' + CV9BLog._print_json(value, cut, indent + '  ') + '\n';
+        txt = '\n' + CV9BLog._format_json(value, cut, indent + '  ') + '\n';
       result += indent + property + ': ' + txt + '\n';
     }
     return result;
+  },
+
+  format_trace: function(err) {
+    var stack = err ? err.stack : null;
+    if (stack === null || typeof stack === 'undefined') {
+      err = new Error();
+      err = err.stack.replace(/^.*?\n/, '');
+      stack = stack === null ? err : err.replace(/^.*?\n/, '');
+    }
+    return stack;
   },
 
 }

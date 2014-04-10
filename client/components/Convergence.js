@@ -44,9 +44,9 @@ function Convergence() {
     this.registerObserverService();
 
     this.initializeNotaryUpdateTimer(false);
-    CV9BLog.core('Convergence Setup Complete.');
+    CV9BLog.core('Convergence setup complete');
   } catch (e) {
-    CV9BLog.core('Initializing error: ' + e + ' , ' + e.stack);
+    CV9BLog.core.error(e, 'Convergence init error - ');
   }
 }
 
@@ -111,7 +111,7 @@ Convergence.prototype = {
       SSL.initialize(this.sslFile.path);
       SQLITE.initialize(this.sqliteFile.path);
     } catch (e) {
-      CV9BLog.core('Error initializing ctypes: ' + e + ', ' + e.stack);
+      CV9BLog.core.error(e, 'Error initializing ctypes - ');
       throw e;
     }
   },
@@ -398,9 +398,7 @@ var loadScript = function(isChrome, subdir, filename) {
     loader.loadSubScript(fileProtocol.getURLSpecFromFile(path));
 
     logger('Loaded!');
-  } catch (e) {
-    logger('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack);
-  }
+  } catch (e) { logger('Error loading component script: ' + path.path + ' : ' + e); }
 };
 
 loadScript(true, null, 'Logger.js');

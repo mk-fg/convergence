@@ -41,7 +41,7 @@ function handleLocalNotaryBundle(bundlePath) {
   try {
     retvalue.notary = convergence.getNewNotaryFromBundle(bundlePath);
   } catch (e) {
-    CV9BLog.settings('Got exception: ' + e + ' , ' + e.stack);
+    CV9BLog.settings.error(e);
     alert('Unknown Notary bundle version: ' + e.version + '!');
     return false;
   }

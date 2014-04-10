@@ -97,9 +97,7 @@ var Convergence = {
         try {
           var status = convergence.certificateStatus.getCurrentTabStatus();
           convergence.setToolTip(status);
-        } catch (e) {
-          CV9BLog.ui(e + ' , ' + e.stack);
-        }
+        } catch (e) { CV9BLog.ui.error(e); }
       }, false);
   },
 

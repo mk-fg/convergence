@@ -92,7 +92,7 @@ var loadScript = function(isChrome, subdir, filename) {
 
     logger('Loaded!');
   } catch (e) {
-    logger('Error loading component script: ' + path.path + ' : ' + e + ' , ' + e.stack);
+    logger('Error loading component script: ' + path.path + ' : ' + e);
   }
 };
 

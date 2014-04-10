@@ -84,6 +84,9 @@ ShuffleWorkerItem.prototype.readFromClient = function() {
   if (written == -1)
     written = 0;
 
+  // var sent = this.clientBuffer.readString().slice(0, written);
+  // CV9BLog.worker_shuffle('------- Sent TO SERVER:', sent);
+
   if (written < read) {
     CV9BLog.proto('**** Blocking write to SERVER *****');
     this.serverMode = this.serverMode | NSPR.lib.PR_POLL_WRITE;
@@ -109,6 +112,9 @@ ShuffleWorkerItem.prototype.writeToClient = function() {
 
     written = 0;
   }
+
+  // var sent = this.serverBuffer.readString().slice(0, written);
+  // CV9BLog.worker_shuffle('------- Sent TO CLIENT:', sent);
 
   if (written < this.serverBufferLength) {
     CV9BLog.proto('**** Caught up with half-write to CLIENT ****');

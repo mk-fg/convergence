@@ -2,10 +2,11 @@
 <overlay id="sample"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+	<script src="ctypes/NSS.js" />
+	<script src="ctypes/NSPR.js" />
 	<script src="Logger.js"/>
 	<script src="ConvergenceResponseStatus.js"/>
 	<script src="CertificateStatus.js"/>
-	<script src="ctypes/NSS.js" />
 	<script src="convergence.js"/>
 
 	<toolbarpalette id="BrowserToolbarPalette">

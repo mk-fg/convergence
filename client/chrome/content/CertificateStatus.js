@@ -23,9 +23,9 @@ Components.utils.import('resource://gre/modules/ctypes.jsm');
   **/
 
 function CertificateStatus(convergenceManager) {
-  CV9BLog.ui('CertificateStatus constructor called : ' + convergenceManager.nssFile.path);
   NSS.initialize(convergenceManager.nssFile.path);
-  CV9BLog.ui('Constructed!');
+  NSPR.initialize(convergenceManager.nsprFile.path);
+  CV9BLog.ui('CertificateStatus initialized');
 }
 
 CertificateStatus.prototype.getInvalidCertificate = function(destination) {

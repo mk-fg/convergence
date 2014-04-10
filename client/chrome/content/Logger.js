@@ -66,7 +66,7 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
   },
 
   format: function(line, json) {
-    if (json) line += CV9BLog.print_json(json);
+    if (json) line += '\n' + CV9BLog.print_json(json);
     if (line.search('\n') != -1) line = '|\n  ' + line.replace(/^\s+|\s+$/, '').split('\n').join('\n  ');
     return line;
   },
@@ -113,7 +113,8 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
   print_json: function(obj, cut, indent) {
     if (indent == null) indent = '  ';
     if (cut == null) cut = 50;
-    return '\n' + CV9BLog._print_json(obj, cut, indent);
+    if (typeof obj == 'string') obj = obj.replace(/^\s+|\s+$/, '').split('\n');
+    return CV9BLog._print_json(obj, cut, indent);
   },
   _print_json: function(obj, cut, indent) {
     function IsArray(array) { return !( !array || (!array.length || array.length == 0)
@@ -127,7 +128,7 @@ var CV9BLog = { // my attempt to produce short yet fairly unique id
       var t = typeof value;
       if (t == 'string') {
         if (value.length > cut) value = value.substr(0, cut) + '...';
-        txt = '`' + value + "'"; }
+        txt = '`' + value.replace('\r', '') + "'"; }
       if (t == 'boolean' || t == 'number') txt = value.toString();
       else if (t == 'object')
         txt = '\n' + CV9BLog._print_json(value, cut, indent + '  ') + '\n';

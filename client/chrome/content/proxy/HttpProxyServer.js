@@ -63,6 +63,6 @@ HttpProxyServer.prototype.getConnectDestination = function() {
   CV9BLog.worker('Reading http headers...');
   httpHeaders = this.readHttpHeaders();
 
-  CV9BLog.worker('Read http headers: ' + httpHeaders);
+  CV9BLog.worker('Read http headers:', httpHeaders);
   return this.parseDestination(httpHeaders);
 };

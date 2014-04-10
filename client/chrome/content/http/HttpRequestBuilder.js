@@ -26,14 +26,10 @@ function HttpRequestBuilder(host, port, ip, fingerprint) {
   this.port = port;
   this.ip = ip;
   this.fingerprint = fingerprint;
-  CV9BLog.proto('Constructed!');
 }
 
 HttpRequestBuilder.prototype.buildRequest = function() {
-  CV9BLog.proto('Building request!');
-
   postData = 'fingerprint=' + this.fingerprint;
-
   return 'POST /target/' +
       this.host + '+' + this.port + '/' + this.ip + ' HTTP/1.0\r\n' +
     'Content-Type: application/x-www-form-urlencoded\r\n' +

@@ -49,13 +49,16 @@ function Notary(serialized) {
       this.physicalNotaries.push(new PhysicalNotary(serialized.physical_notaries[i]));
     }
   }
+
+  var log_prefix = '[' + this.name + '] ';
+  this.log = function(line, json) { CV9BLog.notary(log_prefix + line, json); }
 }
 
 Notary.prototype.getHttpDestinations = function() {
   var destinations = new Array();
 
   for (var i=0;i<this.physicalNotaries.length;i++) {
-    CV9BLog.notary('Adding: ' + this.physicalNotaries[i].host + ' : ' + this.physicalNotaries[i].httpPort);
+    this.log('Adding: ' + this.physicalNotaries[i].host + ' : ' + this.physicalNotaries[i].httpPort);
     destinations.push({
       'host' : this.physicalNotaries[i].host ,
       'port' : this.physicalNotaries[i].httpPort });
@@ -100,15 +103,15 @@ Notary.prototype.makeConnection = function(proxy) {
   var notarySocket;
 
   if (typeof proxy != 'undefined' && proxy != null) {
-    CV9BLog.notary('Network proxy for notary: ' + this.httpProxy);
-    CV9BLog.notary( 'Bouncing request through: ' +
+    this.log('Network proxy for notary: ' + this.httpProxy);
+    this.log( 'Bouncing request through: ' +
       proxy.getHttpDestinations() + ' to: ' + this.getBouncedDestinations() );
     notarySocket = new ConvergenceNotarySocket(proxy.getHttpDestinations(), this.getHttpProxy());
     var proxyConnector = new NotaryProxyConnector();
     proxyConnector.makeConnection(notarySocket, this.getBouncedDestinations());
   } else {
-    CV9BLog.notary('Making unbounced request...');
-    CV9BLog.notary('SSL proxy for notary: ' + this.sslProxy);
+    this.log('Creating unbounced notary connection...');
+    this.log('SSL proxy for notary: ' + this.sslProxy);
     notarySocket = new ConvergenceNotarySocket(this.getSslDestinations(), this.getSslProxy());
   }
 
@@ -121,14 +124,14 @@ Notary.prototype.makeSSLConnection = function(proxy) {
   var notaryCertificateInfo = new CertificateInfo(notaryCertificate);
 
   for (var i=0;i<this.physicalNotaries.length;i++) {
-    CV9BLog.notary('Comparing: ' +
+    this.log('Comparing: ' +
       notaryCertificateInfo.sha1 + ' and ' + this.physicalNotaries[i].sha1Fingerprint);
     if (notaryCertificateInfo.sha1 == this.physicalNotaries[i].sha1Fingerprint) {
       return notarySocket;
     }
   }
 
-  CV9BLog.notary('Notary certificate did not match local copy...');
+  this.log('Notary certificate did not match local copy...');
 
   return null;
 };
@@ -137,15 +140,13 @@ Notary.prototype.makeSSLConnection = function(proxy) {
 Notary.prototype.sendRequest = function(notarySocket, host, port, ip, certificate) {
   var requestBuilder = new HttpRequestBuilder(host, port, ip, certificate.sha1);
   var request = requestBuilder.buildRequest();
-
-  CV9BLog.notary('Sending request: ' + request);
-
+  this.log('Sending request:', request);
   notarySocket.writeBytes(NSS.lib.buffer(request), request.length);
 };
 
 Notary.prototype.readResponse = function(notarySocket) {
   var response = new HttpParser(notarySocket);
-  CV9BLog.notary('Got notary response: ' + response.getResponseBody());
+  this.log('Got notary response: ' + response.getResponseBody());
 
   return response;
 };
@@ -154,14 +155,14 @@ Notary.prototype.checkFingerprintList = function(response, certificate) {
   var fingerprintList = response.fingerprintList;
 
   for (var i in fingerprintList) {
-    CV9BLog.notary('Checking fingerprint: '  + fingerprintList[i].fingerprint + ' == ' + certificate.sha1);
+    this.log('Checking fingerprint: '  + fingerprintList[i].fingerprint + ' == ' + certificate.sha1);
     if (fingerprintList[i].fingerprint == certificate.sha1) {
-      CV9BLog.notary('Returning success...');
+      this.log('Returning success...');
       return ConvergenceResponseStatus.VERIFICATION_SUCCESS;
     }
   }
 
-  CV9BLog.notary('Nothing matched!');
+  this.log('Nothing matched!');
   return ConvergenceResponseStatus.VERIFICATION_FAILURE;
 };
 
@@ -172,7 +173,7 @@ Notary.prototype.checkValidity = function(host, port, ip, certificate, proxy) {
     notarySocket = this.makeSSLConnection(proxy);
 
     if (notarySocket == null) {
-      CV9BLog.notary('Failed to construct socket to notary...');
+      this.log('Failed to construct socket to notary...');
       return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
     }
 
@@ -181,20 +182,20 @@ Notary.prototype.checkValidity = function(host, port, ip, certificate, proxy) {
 
     switch (response.getResponseCode()) {
     case 303:
-      CV9BLog.notary('Notary response was inconclusive...');
+      this.log('Notary response was inconclusive...');
       return ConvergenceResponseStatus.VERIFICATION_INCONCLUSIVE;
     case 409:
-      CV9BLog.notary('Notary failed to find matching fingerprint!');
+      this.log('Notary failed to find matching fingerprint!');
       return ConvergenceResponseStatus.VERIFICATION_FAILURE;
     case 200:
-      CV9BLog.notary('Notary indicates match, checking...');
+      this.log('Notary indicates match, checking...');
       return this.checkFingerprintList(response.getResponseBodyJson(), certificate);
     default:
-      CV9BLog.notary('Got error notary response code: ' + response.getResponseCode());
+      this.log('Got error notary response code: ' + response.getResponseCode());
       return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
     }
   } catch (e) {
-    CV9BLog.notary(e + ' , ' + e.stack);
+    this.log(e + ' , ' + e.stack);
     return ConvergenceResponseStatus.CONNECTIVITY_FAILURE;
   } finally {
     if (notarySocket != null) {
@@ -204,7 +205,7 @@ Notary.prototype.checkValidity = function(host, port, ip, certificate, proxy) {
 };
 
 Notary.prototype.update = function() {
-  CV9BLog.notary('Calling update on: ' + this.name);
+  this.log('Calling update on: ' + this.name);
 
   if (this.bundleLocation == null ||
       this.bundleLocation.indexOf('https://') != 0)
@@ -217,7 +218,7 @@ Notary.prototype.update = function() {
     if (notary.version < this.version)
       return;
 
-    CV9BLog.notary('Updating notary with new bundle...');
+    this.log('Updating notary with new bundle...');
 
     self.setName(notary.getName());
     self.setBundleLocation(notary.getBundleLocation());

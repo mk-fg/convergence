@@ -219,6 +219,10 @@ used as public to-port-4242-only proxies.
    - "bind" option for perspective verifier to use for special routing -
      e.g. through some tunnel or tor/i2p network.
 
+   - TODO: With perspectives + ca_check, if newer Twisted is detected, use its
+     new service_identity verifier, check if new cryptography-based (py module)
+     pyopenssl has less hacky way to use SNI.
+
    - TODO: Add option to serve bundle for browsers at some URL.
 
    - TODO: Statistics on queries.

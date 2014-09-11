@@ -176,6 +176,14 @@ used as public to-port-4242-only proxies.
      [Log.jsm](https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Log.jsm)
      for logging, if available.
 
+   - TODO: Store all the xml and sqlite stuff in special ["extension-store"
+     place](https://bugzilla.mozilla.org/show_bug.cgi?id=915838).
+
+   - TODO: Update for compatibility with ff-32 and beyond that (especially e10s
+     "pid for tab" thing).
+
+   - TODO: Migrate to JPM addon SDK, node deps instead of custom modules.
+
  - server
 
    - Has simplier (implementation/maintenance-wise) argparse-based CLI.

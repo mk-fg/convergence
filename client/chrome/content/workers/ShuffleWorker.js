@@ -82,13 +82,31 @@ ShuffleWorker.prototype.initialize = function(data) {
   this.listenSocket = new ConvergenceListenSocket(data.listenSocket);
 };
 
+function allGoodAuthShuffle(arg, fd, foo, bar) {
+  return 0;
+}
+
+var callbackFunction;
+
 ShuffleWorker.prototype.addConnection = function(data) {
   var socketOption = NSPR.types.PRSocketOptionData({'option' : 0, 'value' : 1});
   var client = Serialization.deserializeDescriptor(data.client);
   var server = Serialization.deserializeDescriptor(data.server);
-
+  
+  var status;
+  
   NSPR.lib.PR_SetSocketOption(client, socketOption.address());
   NSPR.lib.PR_SetSocketOption(server, socketOption.address());
+  
+  if (typeof callbackFunction === 'undefined') {
+    callbackFunction = SSL.types.SSL_AuthCertificate(allGoodAuthShuffle);
+  }
+    
+  status = SSL.lib.SSL_AuthCertificateHook(server, callbackFunction, null);
+  
+  if (status == -1) {
+    throw 'Error setting auth certificate hook in ShuffleWorker!';
+  }
 
   this.connectionPairs.push(new ShuffleWorkerItem(client, server));
 };

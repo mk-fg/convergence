@@ -1,6 +1,15 @@
 Convergence "Extra"
 --------------------
 
+-----
+
+**Not maintained here since ~2014 and does not work with newer FIrefox versions.**
+
+If you'd like to work on it, feel free to just fork the repo
+(this is a fork of Moxie's Convergence project anyway).
+
+-----
+
 This is a fork of Moxie Marlinspike's Convergence tool: http://convergence.io/
 
 Convergence is a Firefox browser addon replacing default Certificate Authority
